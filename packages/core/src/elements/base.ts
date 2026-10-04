@@ -22,8 +22,6 @@ export interface BlockSpec extends Box {
   name?: string;
   /** 추가 라벨. value, name 다음 순서로 붙는다. */
   labels?: Label[];
-  /** `iso-block` 뒤에 붙는 클래스(예: `iso-is-active`). */
-  cls?: string;
   /** 블록 속성. null이면 지운다(예: 장식 블록의 `tabindex`). */
   attrs?: Record<string, string | null>;
   /** `iso-select` 이벤트의 `detail`. 최소 `{ index, item }`. */
@@ -48,8 +46,14 @@ const ERROR = "데이터를 표시할 수 없습니다";
 const PAD = 28;
 
 const detail = new WeakMap<Element, unknown>();
-/** 블록마다 마지막으로 쓴 인라인 스타일 문자열. 같으면 건드리지 않는다. */
-const last = new WeakMap<Element, string>();
+
+/**
+ * 색(`--iso-c`) 문법: 16진수·이름·함수(rgb/hsl/hwb/lab/lch/oklab/oklch/color/color-mix/var)만.
+ * `; { } : ! \ * ' "`와 그 밖의 함수(url(), image-set() 등)는 거부한다 — 다른 선언이나
+ * 외부 자원을 끼워 넣지 못하게.
+ */
+const ok = new Set<string>();
+const COLOR = /^([#\w.%\s,/+-]|(rgba?|hsla?|hwb|(ok)?l(ab|ch)|color(-mix)?|var)\(|\))+$/;
 
 export const h = (tag: string, cls?: string, text?: string): HTMLElement => {
   const el = document.createElement(tag);
@@ -58,9 +62,21 @@ export const h = (tag: string, cls?: string, text?: string): HTMLElement => {
   return el;
 };
 
-/** 인라인 스타일 전체를 한 문자열로 쓴다. 마지막으로 쓴 것과 같으면 건드리지 않는다. */
-const css = (el: HTMLElement, s: string): void => {
-  if (last.get(el) !== s) last.set(el, s), (el.style.cssText = s);
+/** 값이 바뀐 경우에만 스타일 속성을 쓴다. 빈 문자열이면 지운다. */
+const set = (el: HTMLElement, prop: string, val: string): void => {
+  if (el.style.getPropertyValue(prop) !== val) el.style.setProperty(prop, val);
+};
+
+/**
+ * 렌더러가 관리하는 인라인 속성만 쓴다. 이번 렌더에서 만든 노드(`fresh`)는 cssText 한 번
+ * (500블록 첫 렌더가 빠르다), 재사용 노드는 바뀐 속성만 setProperty — 사용자가 단 인라인
+ * 속성(`--iso-lift` 등)은 남는다. 값은 숫자이거나 검증한 색뿐이라 cssText로 다른 선언이
+ * 끼어들 수 없다. 노드별 표식(WeakSet)은 500블록에서 눈에 띄게 느려 호출자가 넘긴다.
+ */
+const put = (el: HTMLElement, p: Record<string, string>, fresh: boolean): void => {
+  let s = "";
+  for (const k in p) fresh ? p[k] && (s += k + ":" + p[k] + ";") : set(el, k, p[k]);
+  if (fresh) el.style.cssText = s;
 };
 
 /** CSS에 쓰는 수: 부동소수 꼬리(4.199999…)를 잘라 불필요한 스타일 갱신을 막는다. */
@@ -170,7 +186,10 @@ export abstract class IsoElement<T = unknown> extends HTMLElement {
         let lay: Layout | undefined;
         let msg = EMPTY;
         try {
-          lay = this.layout(this.validate(this.source()));
+          const l = this.layout(this.validate(this.source()));
+          // 같은 색 문자열은 한 번만 검사한다(히트맵 500셀은 색이 몇 가지뿐).
+          for (const { c } of l.blocks) if (c && !ok.has(c)) COLOR.test(c) ? ok.add(c) : bad("bad color " + c);
+          lay = l;
         } catch (e) {
           console.error(`<${this.localName}>`, e);
           msg = ERROR;
@@ -204,17 +223,21 @@ export abstract class IsoElement<T = unknown> extends HTMLElement {
 
     const u = this.n("unit", 24);
     let fl = origin.firstChild as HTMLElement | null;
-    if (fl?.className != "iso-floor") fl = null;
+    if (!fl?.classList.contains("iso-floor")) fl = null;
     if (floor) {
+      const n = !fl;
       if (!fl) origin.prepend((fl = h("div", "iso-floor"))), fl.append(h("i", "iso-top"));
-      this.sty(fl, { ...floor, h: 0 }, "", 0, u);
+      this.sty(fl, { ...floor, h: 0 }, "", 0, u, n);
     } else fl?.remove();
 
     const b = blockBounds(floor ? [...blocks, { ...floor, h: 0 }] : blocks, u);
-    css(
-      scene,
-      `--iso-u:${u}px;--iso-ox:${PAD - b.minX}px;--iso-oy:${PAD - b.minY}px;width:${b.maxX - b.minX + 2 * PAD + mr}px;height:${b.maxY - b.minY + 2 * PAD}px`,
-    );
+    put(scene, {
+      "--iso-u": u + "px",
+      "--iso-ox": PAD - b.minX + "px",
+      "--iso-oy": PAD - b.minY + "px",
+      width: b.maxX - b.minX + 2 * PAD + mr + "px",
+      height: b.maxY - b.minY + 2 * PAD + "px",
+    }, fresh);
 
     const old = this.blocks;
     const next = new Map<string, HTMLElement>();
@@ -222,15 +245,17 @@ export abstract class IsoElement<T = unknown> extends HTMLElement {
       let key = s.key;
       for (let i = 1; next.has(key); i++) key = s.key + "\u0000" + i;
       let el = old.get(key);
+      const n = !el;
       if (!el) {
-        el = h("div");
+        // 블록 클래스는 만들 때 한 번만: 사용자가 단 클래스(`iso-is-active` 등)는 건드리지 않는다.
+        // 상태는 클래스 대신 `attrs`(예: aria-pressed)로 낸다.
+        el = h("div", "iso-block");
         el.tabIndex = 0;
         el.setAttribute("role", "button");
         el.append(h("i", "iso-left"), h("i", "iso-right"), h("i", "iso-top"));
       }
       next.set(key, el);
-      el.className = "iso-block " + (s.cls || "");
-      this.sty(el, s, s.c, s.zi, u);
+      this.sty(el, s, s.c, s.zi, u, n);
       const a: Record<string, string | null> = { "aria-label": s.aria, ...s.attrs };
       for (const k in a) {
         const v = a[k];
@@ -276,19 +301,23 @@ export abstract class IsoElement<T = unknown> extends HTMLElement {
   }
 
   /**
-   * 위치·크기 변수를 한 문자열로 쓴다(바뀐 경우에만). API.md에는 블록 바닥 고도 변수가
+   * 위치·크기 변수(바뀐 경우에만). API.md에는 블록 바닥 고도 변수가
    * 없으므로, 공중에 뜬 블록(z > 0, 예: iso-stack의 위쪽 조각)은 래퍼의 `margin-top`을
    * `-z·u` px만큼 줘서 올린다(u는 `unit` 속성 값, 바뀌면 다시 렌더된다).
    * 절대 배치된 래퍼에서 margin은 `top`에 더해지므로 투영식 Y의 `−z` 항과 같고,
    * 코어 CSS가 호버 들림에 쓰는 transform과 겹치지 않는다. `c`가 비면 CSS 기본색.
    */
-  private sty(el: HTMLElement, { x, y, z = 0, w = 1, d = 1, h = 1 }: Box, c: string, zi: number, u: number): void {
-    css(
-      el,
-      `--iso-x:${r(x)};--iso-y:${r(y)};--iso-w:${r(w)};--iso-d:${r(d)};--iso-h:${r(h)};--iso-z:${zi};` +
-        (c ? `--iso-c:${c};` : "") +
-        (z ? `margin-top:${r(-z * u)}px` : ""),
-    );
+  private sty(el: HTMLElement, { x, y, z = 0, w = 1, d = 1, h = 1 }: Box, c: string, zi: number, u: number, fresh: boolean): void {
+    put(el, {
+      "--iso-x": r(x),
+      "--iso-y": r(y),
+      "--iso-w": r(w),
+      "--iso-d": r(d),
+      "--iso-h": r(h),
+      "--iso-z": "" + zi,
+      "--iso-c": c,
+      "margin-top": z ? r(-z * u) + "px" : "",
+    }, fresh);
   }
 
   private fire = (e: Event): void => {

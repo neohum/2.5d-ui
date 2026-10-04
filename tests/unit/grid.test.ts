@@ -164,7 +164,7 @@ describe("<iso-ledger>", () => {
     const before = blocks(el);
     const scene = el.querySelector(".iso-scene");
     const pos = () => blocks(el).map((b) => [v(b, "--iso-x"), v(b, "--iso-y")]);
-    const act = () => blocks(el).map((b) => b.classList.contains("iso-is-active"));
+    const act = () => blocks(el).map((b) => b.getAttribute("aria-pressed") == "true");
     expect(pos()).toEqual([["0", "0"], ["1", "-1"], ["0", "0"]]);
     expect(act()).toEqual([false, true, false]);
     expect(before[1].getAttribute("aria-pressed")).toBe("true");
@@ -194,7 +194,7 @@ describe("<iso-ledger>", () => {
   test.each([["abc"], ["9"], ["-1"], [""]])("범위 밖·잘못된 selected(%s)는 선택 없음", (s) => {
     const el = mk({ selected: s });
     expect(err).not.toHaveBeenCalled();
-    expect(blocks(el).some((b) => b.classList.contains("iso-is-active"))).toBe(false);
+    expect(blocks(el).some((b) => b.getAttribute("aria-pressed") == "true")).toBe(false);
   });
 
   test("클릭·Enter → iso-select와 selected 갱신, 같은 장을 다시 누르면 해제", () => {

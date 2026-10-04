@@ -41,8 +41,26 @@ iso-ledger .iso-block,
   transform: translateY(-50%);
 }
 
-.iso-is-active > .iso-label--side {
+[aria-pressed="true"] > .iso-label--side {
   left: calc(2.598 * var(--iso-u) + 8px);
+}
+
+/* 선택된 장 강조는 .iso-is-active와 같은 모양이지만 상태는 aria-pressed에서 읽는다
+   (렌더러가 블록 클래스를 건드리지 않도록). 키보드 포커스의 점선 윤곽이 이긴다.
+   들림은 --iso-lift라 모션 감소에서는 토큰이 0px.
+   맨 오른쪽을 면 클래스로 둔다: `> :not(...)`처럼 아무 요소에나 맞는 꼴이면 페이지의 모든
+   요소(500블록 히트맵의 면 2000개 포함)에서 이 규칙을 검사해 첫 렌더가 약 10 ms 느려진다. */
+iso-ledger [aria-pressed="true"] > .iso-top,
+iso-ledger [aria-pressed="true"] > .iso-left,
+iso-ledger [aria-pressed="true"] > .iso-right {
+  translate: 0 calc(var(--iso-lift) * -1);
+}
+
+iso-ledger [aria-pressed="true"]:not(:focus-visible) > .iso-top,
+iso-ledger [aria-pressed="true"]:not(:focus-visible) > .iso-left,
+iso-ledger [aria-pressed="true"]:not(:focus-visible) > .iso-right {
+  outline: 2px solid var(--iso-ink);
+  outline-offset: -1px;
 }
 
 /* iso-kpi 그릇(두 번째 블록): 잉크색을 옅게 깐 반투명 상자. 라이트·다크 모두 바탕과 구분된다. */

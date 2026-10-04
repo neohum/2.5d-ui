@@ -67,7 +67,7 @@ export class IsoLedger extends IsoElement<Sheet[]> {
           c: color(i),
           zi: i + 1,
           aria: ts[i],
-          cls: on ? "iso-is-active" : "",
+          // 선택 상태는 aria-pressed 하나로: 보조기술과 elements.css 강조가 같은 값을 본다.
           attrs: { "aria-pressed": "" + on },
           // 라벨 열 자리와 빼냄 트랜지션은 elements.css(.iso-label--side, W·P 기준).
           labels: [{ t: ts[i], cls: "iso-label--ground iso-label--side" }],

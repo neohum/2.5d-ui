@@ -43,7 +43,7 @@ test.describe("화면", () => {
     const sheet = led.locator(".iso-block").nth(3);
     await sheet.locator(".iso-top").click();
     await expect(led).toHaveAttribute("selected", "3");
-    await expect(sheet).toHaveClass(/iso-is-active/);
+    await expect(sheet).toHaveAttribute("aria-pressed", "true");
     await sheet.focus();
     await page.keyboard.press("Enter");
     await expect(led).not.toHaveAttribute("selected");
