@@ -20,8 +20,34 @@ test("키보드 포커스는 블록을 들고 점선 윤곽을 그린다", async
   await expect(block).toBeFocused();
   const top = block.locator(".iso-top");
   await expect(top).toHaveCSS("outline-style", "dashed");
-  await expect(block).toHaveCSS("transform", "matrix(1, 0, 0, 1, 0, -6)");
+  // 블록 자체는 움직이지 않고 보이는 자식만 translate로 들린다.
+  await expect(block).toHaveCSS("transform", "none");
+  await expect(top).toHaveCSS("translate", "0px -6px");
   await expect(page.locator("#single")).toHaveScreenshot("single-focus.png");
+});
+
+test("호버 들림 뒤에도 아래 모서리 근처에서 호버가 유지된다(고정 히트 패드)", async ({ page }) => {
+  const block = page.locator("#single .iso-block");
+  // #single: w 2, d 1, h 3, u 32. 앞 바닥 꼭짓점 = 블록 원점 + (0.866·(w−d)·u, 0.5·(w+d)·u).
+  const o = await block.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return { x: r.left, y: r.top };
+  });
+  const fx = o.x + 0.866 * 32;
+  const fy = o.y + 1.5 * 32;
+  const settle = () =>
+    page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
+  // 꼭짓점 4px 위: 들기 전엔 면 위, 6px 들린 뒤엔 면 밖이지만 히트 패드 안.
+  await page.mouse.move(fx, fy - 4);
+  await settle();
+  await expect(block.locator(".iso-top")).toHaveCSS("translate", "0px -6px");
+  expect(await block.evaluate((el) => el.matches(":hover"))).toBe(true);
+  const hit = await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.closest(".iso-block") !== null, [fx, fy - 4]);
+  expect(hit).toBe(true);
+  // 실루엣 밖(꼭짓점 4px 아래)은 블록을 잡지 않는다.
+  await page.mouse.move(fx, fy + 4);
+  await settle();
+  expect(await block.evaluate((el) => el.matches(":hover"))).toBe(false);
 });
 
 test("면은 2D 변환만 쓴다", async ({ page }) => {
@@ -40,8 +66,8 @@ test("면은 2D 변환만 쓴다", async ({ page }) => {
 
 test("--iso-h는 <number>로 등록되어 트랜지션된다", async ({ page }) => {
   const block = page.locator("#single .iso-block");
-  await expect(block).toHaveCSS("transition-property", "--iso-h, transform");
-  await expect(block).toHaveCSS("transition-duration", "0.18s, 0.18s");
+  await expect(block).toHaveCSS("transition-property", "--iso-h");
+  await expect(block).toHaveCSS("transition-duration", "0.18s");
   // 등록된 <number>는 계산값이 숫자로 정규화된다(미등록이면 "calc(1 + 1)" 문자열 그대로).
   const normalized = await block.evaluate((el) => {
     const s = (el as HTMLElement).style;
@@ -52,17 +78,22 @@ test("--iso-h는 <number>로 등록되어 트랜지션된다", async ({ page }) 
     return v;
   });
   expect(normalized).toBe("2");
-  // 3 → 1로 바꾸면 중간값을 거친다.
-  const mid = await block.evaluate(async (el) => {
+  // 3 → 1 트랜지션을 멈추고 시간을 절반(90ms)으로 고정해 중간값을 읽는다.
+  const mid = await block.evaluate((el) => {
     const s = (el as HTMLElement).style;
     s.setProperty("--iso-h", "3");
     getComputedStyle(el).getPropertyValue("--iso-h");
     s.setProperty("--iso-h", "1");
-    await new Promise((r) => setTimeout(r, 60));
+    const t = el
+      .getAnimations()
+      .find((a) => (a as CSSTransition).transitionProperty === "--iso-h");
+    if (!t) return NaN;
+    t.pause();
+    t.currentTime = 90;
     return Number(getComputedStyle(el).getPropertyValue("--iso-h"));
   });
   expect(mid).toBeGreaterThan(1);
-  expect(mid).toBeLessThan(3);
+  expect(mid).toBeLessThan(2);
 });
 
 test("세 면은 서로 다른 3단 음영을 쓴다", async ({ page }) => {
@@ -78,9 +109,14 @@ test.describe("reduced motion", () => {
 
   test("트랜지션과 들림을 끈다", async ({ page }) => {
     const block = page.locator("#active .iso-is-active");
+    const top = block.locator(".iso-top");
     await expect(block).toHaveCSS("transform", "none");
     await expect(block).toHaveCSS("transition-property", "none");
     await expect(block).toHaveCSS("transition-duration", "0s");
+    await expect(top).toHaveCSS("translate", "none");
+    await expect(top).toHaveCSS("transition-property", "none");
+    // 들림은 꺼도 강조 윤곽은 남는다.
+    await expect(top).toHaveCSS("outline-style", "solid");
   });
 });
 

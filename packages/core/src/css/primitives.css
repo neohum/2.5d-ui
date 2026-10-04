@@ -29,9 +29,35 @@
 }
 
 .iso-block {
-  transition:
-    --iso-h var(--iso-duration) ease-out,
-    transform var(--iso-duration) ease-out;
+  transition: --iso-h var(--iso-duration) ease-out;
+}
+
+/* 들림은 보이는 자식만 옮긴다(translate 속성은 각 면의 transform과 합성된다).
+   블록 자체는 움직이지 않으므로 아래 ::before 히트 패드가 고정되어 호버가 깜빡이지 않는다. */
+.iso-block > * {
+  transition: translate var(--iso-duration) ease-out;
+}
+
+/* 고정 히트 패드: 블록 실루엣(육각형) + 위로 들림 높이만큼. 보이지 않는다. */
+.iso-block:not(.iso-floor)::before {
+  --iso-l: calc(var(--iso-d) * 0.866 * var(--iso-u));
+  --iso-r: calc(var(--iso-w) * 0.866 * var(--iso-u));
+  --iso-b: calc(var(--iso-h) * var(--iso-u) + var(--iso-lift));
+
+  content: "";
+  position: absolute;
+  left: calc(var(--iso-l) * -1);
+  top: calc(var(--iso-b) * -1);
+  width: calc(var(--iso-l) + var(--iso-r));
+  height: calc((var(--iso-w) + var(--iso-d)) * 0.5 * var(--iso-u) + var(--iso-b));
+  clip-path: polygon(
+    var(--iso-l) 0,
+    calc(var(--iso-l) + var(--iso-r)) calc(var(--iso-w) * 0.5 * var(--iso-u)),
+    calc(var(--iso-l) + var(--iso-r)) calc(var(--iso-w) * 0.5 * var(--iso-u) + var(--iso-b)),
+    var(--iso-r) 100%,
+    0 calc(var(--iso-d) * 0.5 * var(--iso-u) + var(--iso-b)),
+    0 calc(var(--iso-d) * 0.5 * var(--iso-u))
+  );
 }
 
 .iso-floor {
@@ -116,8 +142,8 @@
   outline: none;
 }
 
-.iso-block:not(.iso-floor):is(:hover, :focus-visible, .iso-is-active) {
-  transform: translateY(calc(var(--iso-lift) * -1));
+.iso-block:not(.iso-floor):is(:hover, :focus-visible, .iso-is-active) > :not(.iso-label--ground) {
+  translate: 0 calc(var(--iso-lift) * -1);
 }
 
 .iso-block.iso-is-active > :is(.iso-top, .iso-left, .iso-right) {
@@ -143,12 +169,19 @@
   border: 0;
 }
 
+.iso-empty {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--iso-ink-muted);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .iso-block {
+  .iso-block,
+  .iso-block > * {
     transition: none;
   }
 
-  .iso-block:not(.iso-floor):is(:hover, :focus-visible, .iso-is-active) {
-    transform: none;
+  .iso-block:not(.iso-floor):is(:hover, :focus-visible, .iso-is-active) > :not(.iso-label--ground) {
+    translate: none;
   }
 }
