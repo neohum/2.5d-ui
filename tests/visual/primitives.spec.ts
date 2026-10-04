@@ -44,6 +44,10 @@ test("호버 들림 뒤에도 아래 모서리 근처에서 호버가 유지된�
   expect(await block.evaluate((el) => el.matches(":hover"))).toBe(true);
   const hit = await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.closest(".iso-block") !== null, [fx, fy - 4]);
   expect(hit).toBe(true);
+  // 꼭짓점 바로 아래의 겹침 띠(면은 0.5–1px 넘쳐 그려진다)도 들린 뒤까지 호버를 유지한다.
+  await page.mouse.move(fx, fy + 0.2);
+  await settle();
+  expect(await block.evaluate((el) => el.matches(":hover"))).toBe(true);
   // 실루엣 밖(꼭짓점 4px 아래)은 블록을 잡지 않는다.
   await page.mouse.move(fx, fy + 4);
   await settle();

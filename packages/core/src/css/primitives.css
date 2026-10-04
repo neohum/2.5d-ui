@@ -38,7 +38,8 @@
   transition: translate var(--iso-duration) ease-out;
 }
 
-/* 고정 히트 패드: 블록 실루엣(육각형) + 위로 들림 높이만큼. 보이지 않는다. */
+/* 고정 히트 패드: 블록 실루엣(육각형) + 위로 들림 높이만큼. 보이지 않는다.
+   면을 서로 0.5–1px 겹쳐 그리므로 패드도 좌우·아래로 1px 넓혀 면 가장자리를 덮는다. */
 .iso-block:not(.iso-floor)::before {
   --iso-l: calc(var(--iso-d) * 0.866 * var(--iso-u));
   --iso-r: calc(var(--iso-w) * 0.866 * var(--iso-u));
@@ -46,15 +47,15 @@
 
   content: "";
   position: absolute;
-  left: calc(var(--iso-l) * -1);
+  left: calc(var(--iso-l) * -1 - 1px);
   top: calc(var(--iso-b) * -1);
-  width: calc(var(--iso-l) + var(--iso-r));
-  height: calc((var(--iso-w) + var(--iso-d)) * 0.5 * var(--iso-u) + var(--iso-b));
+  width: calc(var(--iso-l) + var(--iso-r) + 2px);
+  height: calc((var(--iso-w) + var(--iso-d)) * 0.5 * var(--iso-u) + var(--iso-b) + 1px);
   clip-path: polygon(
-    var(--iso-l) 0,
-    calc(var(--iso-l) + var(--iso-r)) calc(var(--iso-w) * 0.5 * var(--iso-u)),
-    calc(var(--iso-l) + var(--iso-r)) calc(var(--iso-w) * 0.5 * var(--iso-u) + var(--iso-b)),
-    var(--iso-r) 100%,
+    calc(var(--iso-l) + 1px) 0,
+    100% calc(var(--iso-w) * 0.5 * var(--iso-u)),
+    100% calc(var(--iso-w) * 0.5 * var(--iso-u) + var(--iso-b)),
+    calc(var(--iso-r) + 1px) 100%,
     0 calc(var(--iso-d) * 0.5 * var(--iso-u) + var(--iso-b)),
     0 calc(var(--iso-d) * 0.5 * var(--iso-u))
   );
