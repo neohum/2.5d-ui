@@ -8,6 +8,10 @@ const PAGE = "/packages/core/demo/grid.html";
  * 측정 구간: 엘리먼트 생성 → 연결 → 강제 레이아웃(getBoundingClientRect)까지 — JS·스타일·
  * 레이아웃을 포함하고 페인트는 뺀다. 페이지를 새로 열어 그 페이지의 첫 500블록 렌더만
  * 잰다(같은 데이터 반복 렌더는 Blink 스타일 캐시가 데워져 실제보다 빠르게 나온다).
+ * 카드 예산 그대로 100 ms. 단독 실행(`--workers=1` 또는 이 테스트만)은 84–93 ms로 지킨다.
+ * 전체 스위트를 병렬로 돌리면 다른 워커·호스트 부하와 CPU를 다퉈 96–115 ms까지 흔들린다 —
+ * 측정 환경 문제라 예산을 늘리지 않는다(playwright.config.ts에서 이 테스트를 워커 1개
+ * 프로젝트로 분리하는 것이 해법).
  */
 const RENDER_BUDGET_MS = 100;
 
@@ -54,6 +58,32 @@ test.describe("화면", () => {
     expect(xs).toHaveLength(4);
     expect(new Set(xs).size).toBe(1);
   });
+});
+
+test("색 검사(실제 브라우저, CSS.supports 포함): 올바른 색은 그리고 아닌 것은 오류 상태", async ({ page }, info) => {
+  test.skip(info.project.name != "light", "한 프로젝트에서만");
+  await page.goto(PAGE);
+  await page.waitForFunction(() => !!customElements.get("iso-bars"));
+  const drawn = await page.evaluate(() =>
+    ["RGB(255 0 0)", "HSL(120deg 50% 40%)", "rgb(calc(255 - 1) 0 0)", "var(--iso-color-2)", "notacolor", "12px", "url(x)", "red;top:0"].map((c) => {
+      const el = document.createElement("iso-bars");
+      el.setAttribute("data", JSON.stringify([{ k: "a", v: 1, c }, { k: "b", v: 2, c }]));
+      document.body.append(el);
+      const n = el.querySelectorAll(".iso-block").length;
+      el.remove();
+      return [c, n];
+    }),
+  );
+  expect(drawn).toEqual([
+    ["RGB(255 0 0)", 2],
+    ["HSL(120deg 50% 40%)", 2],
+    ["rgb(calc(255 - 1) 0 0)", 2],
+    ["var(--iso-color-2)", 2],
+    ["notacolor", 0],
+    ["12px", 0],
+    ["url(x)", 0],
+    ["red;top:0", 0],
+  ]);
 });
 
 test("성능: 25×20 히트맵 첫 렌더 (CPU 6배 감속)", async ({ browser }, info) => {
