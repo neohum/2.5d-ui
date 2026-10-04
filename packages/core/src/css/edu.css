@@ -66,3 +66,64 @@ iso-city .iso-city-names > span {
   color: var(--iso-ink);
   background: color-mix(in oklch, var(--iso-floor) 80%, transparent);
 }
+
+/* ---------- iso-map ---------- */
+
+/* 구조물(교탁, 복도): 바닥보다 진한 회색, 고를 수 없다. 이름 라벨은 늘 보인다. */
+iso-map [data-fixture] {
+  --iso-c: color-mix(in oklch, var(--iso-floor), var(--iso-ink) 35%);
+
+  pointer-events: none;
+}
+
+/* 라벨이 칸 면 위에 겹쳐도 읽히게 바닥색 테두리(HTML은 text-shadow, SVG <text>는 stroke). */
+iso-map .iso-scene .iso-block > .iso-label {
+  color: var(--iso-ink);
+  text-shadow: 0 0 2px var(--iso-floor), 0 0 2px var(--iso-floor), 0 0 3px var(--iso-floor);
+  paint-order: stroke;
+  stroke: var(--iso-floor);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+/* 값·상태 칸의 이름 라벨: 값 라벨 바로 아래 줄, 윗면 뒤쪽 위에 얹는다(바닥 앞에 두면 앞 칸에
+   가린다). 윗면이 보이는 만큼 보이고, 장면 위 여백(값 라벨 몫)을 더 쓰지 않는다. 훨씬 높은 앞
+   칸은 여전히 가릴 수 있다(두 경로 같음). 전체 값은 aria-label과 숨김 표에 있다. */
+iso-map .iso-label--name {
+  transform: translate(-50%, 2px);
+}
+
+/* SVG 경로: svg.css의 값 라벨 이동(-16px)을 덮어 같은 자리(줄 가운데 = 꼭짓점 + 8px)로. */
+iso-map .iso-svg .iso-label.iso-label--name {
+  transform: translate(-50%, 2px);
+}
+
+/* 값·상태 칸의 라벨(이름, 값)은 호버·포커스 때만. 숨김 표에는 늘 있다. :focus(가시 포커스만이
+   아님)라 터치 크롬북에서 누르면 보인다. 구조물 라벨은 늘 보인다. */
+iso-map .iso-block:not([data-fixture], :hover, :focus) > .iso-label {
+  opacity: 0;
+}
+
+/* 상태 칸(높이 0): 윗면 색 + 1.5px 점선 윤곽. CSS 경로는 background·outline, SVG 경로는
+   fill·stroke(svg.css가 SVG 다각형의 outline을 끈다). 키보드 포커스 윤곽이 이긴다. */
+iso-map [data-state="absent"] > .iso-top {
+  --iso-map-top: color-mix(in oklch, var(--iso-c) 25%, var(--iso-floor));
+}
+
+iso-map [data-state="empty"] > .iso-top {
+  --iso-map-top: var(--iso-floor);
+}
+
+iso-map [data-state="closed"] > .iso-top {
+  --iso-map-top: color-mix(in oklch, var(--iso-floor) 65%, var(--iso-ink-muted));
+}
+
+iso-map [data-state] > .iso-top {
+  background: var(--iso-map-top);
+  outline: 1.5px dashed var(--iso-ink-muted);
+  outline-offset: -1.5px;
+  fill: var(--iso-map-top);
+  stroke: var(--iso-ink-muted);
+  stroke-width: 1.5px;
+  stroke-dasharray: 4px 3px;
+}

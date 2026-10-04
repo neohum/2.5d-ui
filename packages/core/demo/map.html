@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2.5d-ui · iso-map 데모</title>
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<link rel="stylesheet" href="/packages/core/src/css/edu.css">
+<style>
+  /* 데모 페이지 꾸밈만(grid.html과 같은 방식). */
+  :root { color-scheme: light; --page-bg: #f2f4f7; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { color-scheme: dark; --page-bg: #11151b; }
+  }
+  [data-theme="dark"] { color-scheme: dark; --page-bg: #11151b; }
+  body {
+    margin: 0; padding: 24px; background: var(--page-bg); color: var(--iso-ink);
+    font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  }
+  main { display: grid; gap: 32px; max-width: 1100px; }
+  figure { margin: 0; display: grid; gap: 8px; overflow-x: auto; }
+  figcaption { font-weight: 600; }
+  figcaption small { display: block; font-weight: 400; font-size: 12px; color: var(--iso-ink-muted); }
+  .pair { display: flex; flex-wrap: wrap; gap: 16px; align-items: start; }
+  @media (max-width: 520px) { body { padding: 12px; } }
+</style>
+<script type="module" src="/packages/core/src/edu.ts"></script>
+</head>
+<body>
+<main>
+  <figure id="classroom">
+    <figcaption>3학년 2반 좌석표 · 이번 주 과제 제출 횟수
+      <small>가상 데이터 · 학생은 번호만 · 좌석 24개, 교탁, 결석 2명 · 높이 = 제출 횟수(0–8회)</small></figcaption>
+    <iso-map id="room-css" renderer="css" label="3학년 2반 좌석별 과제 제출 횟수(가상 데이터)" max="8" height-units="3"></iso-map>
+  </figure>
+
+  <figure id="classroom-svg">
+    <figcaption>같은 좌석표, SVG 경로(renderer="svg")</figcaption>
+    <iso-map id="room-svg" renderer="svg" label="3학년 2반 좌석별 과제 제출 횟수(가상 데이터, SVG)" max="8" height-units="3"></iso-map>
+  </figure>
+
+  <figure id="school">
+    <figcaption>학교 1층 평면도 · 교실별 크롬북 사용 시간(분)
+      <small>가상 데이터 · 교실 2×2, 특별실 3×2, 복도, 사용 안 하는 창고</small></figcaption>
+    <iso-map id="floor1" label="학교 1층 교실별 크롬북 사용 시간(가상 데이터)" height-units="4" unit="22"></iso-map>
+  </figure>
+
+  <figure id="states">
+    <figcaption>칸 종류: 값, 결석, 빈자리, 사용 안 함, 구조물</figcaption>
+    <div class="pair">
+      <iso-map renderer="css" label="칸 종류(CSS)" data='{"items":[{"k":"값","x":0,"y":0,"v":4},{"k":"결석","x":1.5,"y":0,"state":"absent"},{"k":"빈자리","x":3,"y":0,"state":"empty"},{"k":"사용 안 함","x":4.5,"y":0,"state":"closed"},{"k":"구조물","x":6,"y":0,"w":2,"d":0.9}]}' height-units="2"></iso-map>
+      <iso-map renderer="svg" label="칸 종류(SVG)" data='{"items":[{"k":"값","x":0,"y":0,"v":4},{"k":"결석","x":1.5,"y":0,"state":"absent"},{"k":"빈자리","x":3,"y":0,"state":"empty"},{"k":"사용 안 함","x":4.5,"y":0,"state":"closed"},{"k":"구조물","x":6,"y":0,"w":2,"d":0.9}]}' height-units="2"></iso-map>
+    </div>
+  </figure>
+
+  <figure id="large">
+    <figcaption>250칸 배치 · 블록 200개를 넘어 SVG 경로로 자동 전환
+      <small>가상 데이터 · 1×1 칸과 2×2 칸이 섞인 배치</small></figcaption>
+    <iso-map id="big" label="250칸 배치(가상 데이터)" unit="14" height-units="3"></iso-map>
+  </figure>
+
+  <figure id="errors">
+    <figcaption>겹치는 칸 / 빈 데이터</figcaption>
+    <iso-map data='{"items":[{"k":"가","x":0,"y":0,"w":2},{"k":"나","x":1,"y":0}]}'></iso-map>
+    <iso-map data='{"items":[]}'></iso-map>
+  </figure>
+</main>
+
+<script type="module">
+  // 교탁은 앞 오른쪽 모서리: 늘 보이는 이름 라벨(바닥 앞)이 좌석에 가리지 않는 자리.
+  // 가상 데이터: 4줄 × 6열 좌석, 이번 주 과제 제출 횟수(0–8). null = 결석.
+  const V = [
+    [6, 7, 3, null, 8, 5],
+    [5, 2, 7, 6, 4, 8],
+    [8, 6, 1, 5, 7, 3],
+    [3, 7, 6, 8, null, 4],
+  ];
+  const items = [{ k: "교탁", x: 7.2, y: 0.4, w: 3, d: 0.9 }];
+  V.forEach((row, r) =>
+    row.forEach((v, c) => {
+      const seat = { k: r * 6 + c + 1 + "번", x: 0.6 + c * 1.7, y: 2.6 + r * 1.7 };
+      items.push(v == null ? { ...seat, state: "absent" } : { ...seat, v });
+    }),
+  );
+  const room = JSON.stringify({ floor: { w: 10.7, d: 9.4 }, items });
+  for (const id of ["room-css", "room-svg"]) document.getElementById(id).setAttribute("data", room);
+
+  // 학교 1층: 교실 2×2, 특별실 3×2, 복도(구조물), 사용 안 하는 창고.
+  document.getElementById("floor1").setAttribute("data", JSON.stringify({
+    floor: { w: 12, d: 8 },
+    items: [
+      { k: "1-1", x: 0.5, y: 0.5, w: 2, d: 2, v: 140 },
+      { k: "1-2", x: 2.7, y: 0.5, w: 2, d: 2, v: 95 },
+      { k: "1-3", x: 4.9, y: 0.5, w: 2, d: 2, v: 180 },
+      { k: "과학실", x: 7.1, y: 0.5, w: 3, d: 2, v: 60, c: "var(--iso-color-3)" },
+      { k: "교무실", x: 10.3, y: 0.5, w: 1.2, d: 2, v: 30, c: "var(--iso-color-4)" },
+      { k: "복도", x: 0.5, y: 3, w: 11, d: 1.4 },
+      { k: "음악실", x: 0.5, y: 4.9, w: 3, d: 2, v: 20, c: "var(--iso-color-3)" },
+      { k: "1-4", x: 3.7, y: 4.9, w: 2, d: 2, v: 120 },
+      { k: "창고", x: 5.9, y: 4.9, w: 2, d: 2, state: "closed" },
+      { k: "컴퓨터실", x: 8.1, y: 4.9, w: 3, d: 2, v: 210, c: "var(--iso-color-3)" },
+    ],
+  }));
+
+  // 250칸: 26열 격자에 2×2 칸 몇 개를 섞는다(결정적인 의사 난수 값).
+  const big = [];
+  const used = new Set();
+  const take = (x, y, s) => {
+    for (let i = 0; i < s; i++) for (let j = 0; j < s; j++) if (used.has(x + i + "," + (y + j))) return false;
+    for (let i = 0; i < s; i++) for (let j = 0; j < s; j++) used.add(x + i + "," + (y + j));
+    return true;
+  };
+  for (let y = 0; big.length < 250; y++)
+    for (let x = 0; x < 26 && big.length < 250; x++) {
+      const s = (x * 7 + y * 5) % 23 == 0 && x < 25 ? 2 : 1;
+      if (!take(x, y, s)) continue;
+      big.push({ k: "칸 " + (big.length + 1), x: x + 0.05, y: y + 0.05, w: s - 0.1, d: s - 0.1, v: (x * 31 + y * 17) % 10, ...(s == 2 ? { c: "var(--iso-color-2)" } : {}) });
+    }
+  document.getElementById("big").setAttribute("data", JSON.stringify({ items: big }));
+
+  // 좁은 화면(휴대폰 390px)에서는 장면이 가로로 잘리지 않게 단위 길이를 줄인다.
+  if (matchMedia("(max-width: 520px)").matches)
+    for (const [id, u] of [["room-css", 15], ["room-svg", 15], ["floor1", 17], ["big", 9]]) document.getElementById(id).setAttribute("unit", u);
+</script>
+</body>
+</html>
