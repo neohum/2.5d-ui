@@ -55,4 +55,6 @@ import { IsoBars, IsoKpi } from "2.5d-ui-react";
 ## 테스트
 
 - `npm test`: React 19(루트 설치)로 `tests/react`를 돌린다.
-- `npm run test:react18`: `tests/react18`에 따로 설치한 React 18.2로 같은 테스트를 돌린다.
+- `npm run test:react18`: `tests/react18`에 따로 설치한 React 18.2로 같은 테스트를 돌리고,
+  `@types/react@18`로 래퍼 소스를 타입 검사한다(`npm run typecheck:react18`).
+- `tests/react/real-elements.test.tsx`는 스텁 대신 실제 `<iso-bars>`, `<iso-stack>`과 함께 돌린다.

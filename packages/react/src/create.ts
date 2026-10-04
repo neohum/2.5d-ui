@@ -7,6 +7,7 @@ import {
   useRef,
   type CSSProperties,
   type ForwardRefExoticComponent,
+  type MutableRefObject,
   type Ref,
   type RefAttributes,
   version,
@@ -51,9 +52,11 @@ function attachRef<T>(ref: Ref<T> | undefined, value: T): () => void {
     return typeof cleanup === "function" ? cleanup : () => ref(null);
   }
   if (ref) {
-    ref.current = value;
+    // @types/react 18의 RefObject.current는 readonly다(19에서 풀림). 소스로 배포하므로 둘 다 통과시킨다.
+    const obj = ref as MutableRefObject<T | null>;
+    obj.current = value;
     return () => {
-      ref.current = null;
+      obj.current = null;
     };
   }
   return () => {};
