@@ -41,9 +41,12 @@ export class IsoStack extends IsoElement<Column[]> {
     cols.forEach((c, i) => {
       const k = "" + c.k;
       const last = c.parts.length - 1;
-      let z = 0;
+      // 조각은 누적합으로 놓는다: 바닥 = s(앞까지 합), 윗면 = s(이 조각까지 합). s()가
+      // [0, max]로 자르므로 기둥 전체가 한 번에 잘리고, max 위의 조각은 높이 0이 된다.
+      let acc = 0;
       c.parts.forEach((p, j) => {
-        const h = s(p.v);
+        const z = s(acc);
+        const h = s((acc += p.v)) - z;
         const name = p.name == null ? "계열 " + (j + 1) : "" + p.name;
         blocks.push({
           key: k + "\u0001" + name,
@@ -60,7 +63,6 @@ export class IsoStack extends IsoElement<Column[]> {
           detail: { index: i, item: c, part: j } as BlockSpec["detail"],
         });
         rows.push([k, name, p.v]);
-        z += h;
       });
     });
     return { floor: floorFor(cols.length), blocks, rows };

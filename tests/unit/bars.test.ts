@@ -380,3 +380,36 @@ describe("재검토 보완", () => {
     expect(Number.isFinite(hOf(blocks(el)[0]))).toBe(true);
   });
 });
+
+describe("iso-stack 누적 클램프", () => {
+  // 조각 윗면의 고도(단위) = 바닥 고도(margin-top / -u) + 높이. 기본 unit 24.
+  const top = (b: HTMLElement) => -parseFloat(b.style.marginTop || "0") / 24 + hOf(b);
+
+  test("max를 넘는 기둥은 합계 전체가 잘려 모두 같은 높이(height-units)", () => {
+    const data = [
+      { k: "a", parts: [{ name: "x", v: 200 }] },
+      { k: "b", parts: [{ name: "x", v: 150 }, { name: "y", v: 50 }] },
+      { k: "c", parts: [{ name: "x", v: 100 }, { name: "y", v: 100 }] },
+    ];
+    const el = mount("iso-stack", { data: JSON.stringify(data), max: "100", "height-units": "5" });
+    const bs = blocks(el);
+    expect(bs).toHaveLength(5);
+    expect([top(bs[0]), top(bs[2]), top(bs[4])]).toEqual([5, 5, 5]);
+    // max 위에 놓인 조각은 높이 0
+    expect(bs.map(hOf)).toEqual([5, 5, 0, 5, 0]);
+  });
+
+  test("max 아래에서는 조각 높이가 값에 비례", () => {
+    const data = [{ k: "a", parts: [{ name: "x", v: 20 }, { name: "y", v: 30 }, { name: "z", v: 10 }] }];
+    const el = mount("iso-stack", { data: JSON.stringify(data), max: "100", "height-units": "5" });
+    const bs = blocks(el);
+    expect(bs.map(hOf)).toEqual([1, 1.5, 0.5]);
+    expect(bs.map((b) => b.style.marginTop)).toEqual(["", "-24px", "-60px"]);
+  });
+
+  test("max 경계를 걸친 조각은 경계까지만", () => {
+    const data = [{ k: "a", parts: [{ name: "x", v: 80 }, { name: "y", v: 40 }] }];
+    const el = mount("iso-stack", { data: JSON.stringify(data), max: "100", "height-units": "5" });
+    expect(blocks(el).map(hOf)).toEqual([4, 1]);
+  });
+});
