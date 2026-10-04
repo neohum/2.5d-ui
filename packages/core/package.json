@@ -1,0 +1,19 @@
+{
+  "name": "2.5d-ui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "CSS-only isometric 2.5D data components",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/iso.min.js",
+  "style": "./dist/iso.min.css",
+  "exports": {
+    ".": "./dist/iso.min.js",
+    "./css": "./dist/iso.min.css"
+  },
+  "files": ["dist"],
+  "sideEffects": true,
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}

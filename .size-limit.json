@@ -1,0 +1,4 @@
+[
+  { "name": "core css", "path": "packages/core/dist/iso.min.css", "limit": "6 KB", "gzip": true },
+  { "name": "core js", "path": "packages/core/dist/iso.min.js", "limit": "4 KB", "gzip": true }
+]
