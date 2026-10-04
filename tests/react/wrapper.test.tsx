@@ -4,11 +4,17 @@ import { createRoot, hydrateRoot, type Root } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import {
   IsoBars,
+  IsoCity,
   IsoHeatmap,
   IsoKpi,
+  IsoLayers,
   IsoLedger,
+  IsoMap,
   IsoStack,
   type IsoBarsDatum,
+  type IsoCityData,
+  type IsoLayer,
+  type IsoMapData,
   type IsoSelectDetail,
 } from "../../packages/react/src/index.ts";
 
@@ -20,12 +26,12 @@ const isReact19 = version.startsWith("19.");
 // 코어 엘리먼트 대신 쓰는 최소 스텁. 속성 쓰기를 세고, 실제 엘리먼트처럼 연결되자마자
 // light DOM에 자식(빈 상태)을 그린다.
 const writes: { tag: string; name: string; value: string }[] = [];
-for (const tag of ["iso-bars", "iso-stack", "iso-heatmap", "iso-ledger", "iso-kpi"]) {
+for (const tag of ["iso-bars", "iso-stack", "iso-heatmap", "iso-ledger", "iso-kpi", "iso-map", "iso-layers", "iso-city"]) {
   if (customElements.get(tag)) continue;
   customElements.define(
     tag,
     class extends HTMLElement {
-      static observedAttributes = ["data", "max", "unit", "height-units", "label", "selected", "value", "suffix"];
+      static observedAttributes = ["data", "max", "unit", "height-units", "label", "selected", "value", "suffix", "open", "renderer"];
       connectedCallback() {
         if (!this.firstChild) {
           const scene = document.createElement("div");
@@ -131,7 +137,63 @@ describe("props → 속성", () => {
     expect(kpi.hasAttribute("data")).toBe(false);
   });
 
-  test("다섯 컴포넌트 모두 renderer를 같은 이름의 속성으로 넘긴다", () => {
+  test("IsoMap은 data, scale 속성, label을 속성으로 넘긴다", () => {
+    const data: IsoMapData = {
+      floor: { w: 9, d: 8 },
+      items: [
+        { k: "교탁", x: 3, y: 0, w: 3, d: 0.9 },
+        { k: "7번", x: 1.7, y: 1.7, v: 6 },
+        { k: "8번", x: 3.4, y: 1.7, state: "absent" },
+      ],
+    };
+    render(<IsoMap data={data} max={10} unit={20} heightUnits={4} label="교실 배치" />);
+    const map = el("iso-map");
+    expect(JSON.parse(map.getAttribute("data")!)).toEqual(data);
+    expect(map.getAttribute("max")).toBe("10");
+    expect(map.getAttribute("unit")).toBe("20");
+    expect(map.getAttribute("height-units")).toBe("4");
+    expect(map.getAttribute("label")).toBe("교실 배치");
+  });
+
+  test("IsoLayers는 data와 open 속성을 넘기고, open 변경 및 제거를 반영한다", () => {
+    const data: IsoLayer[] = [
+      { k: "4학년", items: [{ k: "분수", v: 72 }] },
+      { k: "5학년", items: [{ k: "소수", v: 85 }] },
+    ];
+    render(<IsoLayers data={data} open={0} max={100} label="학년별 성적" />);
+    const layers = el("iso-layers");
+    expect(JSON.parse(layers.getAttribute("data")!)).toEqual(data);
+    expect(layers.getAttribute("open")).toBe("0");
+    expect(layers.getAttribute("max")).toBe("100");
+    expect(layers.getAttribute("label")).toBe("학년별 성적");
+
+    render(<IsoLayers data={data} open={1} max={100} label="학년별 성적" />);
+    expect(layers.getAttribute("open")).toBe("1");
+
+    render(<IsoLayers data={data} max={100} label="학년별 성적" />);
+    expect(layers.hasAttribute("open")).toBe(false);
+  });
+
+  test("IsoCity는 계층 data와 scale 속성을 넘긴다", () => {
+    const data: IsoCityData = {
+      k: "학교",
+      children: [
+        {
+          k: "1학년",
+          children: [{ k: "1반", size: 27, v: 64 }],
+        },
+      ],
+    };
+    render(<IsoCity data={data} max={100} unit={24} heightUnits={5} label="도시 배치" />);
+    const city = el("iso-city");
+    expect(JSON.parse(city.getAttribute("data")!)).toEqual(data);
+    expect(city.getAttribute("max")).toBe("100");
+    expect(city.getAttribute("unit")).toBe("24");
+    expect(city.getAttribute("height-units")).toBe("5");
+    expect(city.getAttribute("label")).toBe("도시 배치");
+  });
+
+  test("모든 컴포넌트가 renderer를 같은 이름의 속성으로 넘긴다", () => {
     render(
       <>
         <IsoBars data={[]} renderer="svg" />
@@ -139,9 +201,14 @@ describe("props → 속성", () => {
         <IsoHeatmap renderer="svg" />
         <IsoLedger data={[]} renderer="svg" />
         <IsoKpi value={1} renderer="svg" />
+        <IsoMap data={{ items: [] }} renderer="svg" />
+        <IsoLayers data={[]} renderer="svg" />
+        <IsoCity data={{ children: [] }} renderer="svg" />
       </>,
     );
-    for (const tag of ["iso-bars", "iso-stack", "iso-heatmap", "iso-ledger", "iso-kpi"]) expect(el(tag).getAttribute("renderer"), tag).toBe("svg");
+    for (const tag of ["iso-bars", "iso-stack", "iso-heatmap", "iso-ledger", "iso-kpi", "iso-map", "iso-layers", "iso-city"]) {
+      expect(el(tag).getAttribute("renderer"), tag).toBe("svg");
+    }
     render(<IsoBars data={[]} />);
     expect(el("iso-bars").hasAttribute("renderer")).toBe(false);
   });
@@ -211,6 +278,19 @@ describe("data 직렬화", () => {
       { k: "b", v: 3 },
     ]);
   });
+
+  test("IsoMap, IsoLayers, IsoCity도 내용이 같은 새 객체면 속성을 다시 쓰지 않는다", () => {
+    const mapData: IsoMapData = { items: [{ k: "1", x: 0, y: 0, v: 10 }] };
+    render(<IsoMap data={mapData} />);
+    const initialMapWrites = writes.filter((w) => w.tag === "iso-map" && w.name === "data").length;
+    expect(initialMapWrites).toBe(1);
+
+    render(<IsoMap data={{ items: [{ k: "1", x: 0, y: 0, v: 10 }] }} />);
+    expect(writes.filter((w) => w.tag === "iso-map" && w.name === "data").length).toBe(1);
+
+    render(<IsoMap data={{ items: [{ k: "1", x: 0, y: 0, v: 20 }] }} />);
+    expect(writes.filter((w) => w.tag === "iso-map" && w.name === "data").length).toBe(2);
+  });
 });
 
 describe("onSelect", () => {
@@ -272,6 +352,33 @@ describe("onSelect", () => {
     fireSelect(kpi, { index: 0, item: null });
     expect(onSelect).not.toHaveBeenCalled();
   });
+
+  test("IsoMap의 iso-select detail을 받는다", () => {
+    const onSelect = vi.fn();
+    const item = { k: "1번", x: 1, y: 1, v: 6 };
+    render(<IsoMap data={{ items: [item] }} onSelect={onSelect} />);
+    fireSelect(el("iso-map"), { index: 0, item });
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect).toHaveBeenCalledWith({ index: 0, item });
+  });
+
+  test("IsoLayers의 iso-select detail을 받는다 (layer, index, item)", () => {
+    const onSelect = vi.fn();
+    const item = { k: "분수", v: 72 };
+    render(<IsoLayers data={[{ k: "4학년", items: [item] }]} onSelect={onSelect} />);
+    fireSelect(el("iso-layers"), { layer: 0, index: 0, item });
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect).toHaveBeenCalledWith({ layer: 0, index: 0, item });
+  });
+
+  test("IsoCity의 iso-select detail을 받는다 (district, index, item)", () => {
+    const onSelect = vi.fn();
+    const item = { k: "1반", size: 27, v: 64 };
+    render(<IsoCity data={{ children: [{ k: "1학년", children: [item] }] }} onSelect={onSelect} />);
+    fireSelect(el("iso-city"), { district: 0, index: 0, item });
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect).toHaveBeenCalledWith({ district: 0, index: 0, item });
+  });
 });
 
 test("서버 렌더링에서도 태그와 class를 낸다", () => {
@@ -304,6 +411,26 @@ describe("ref", () => {
     expect(calls.filter((c) => c === node).length).toBe(calls.filter((c) => c === null).length);
   });
 
+  test("IsoMap, IsoLayers, IsoCity의 객체 ref는 실제 엘리먼트를 가리킨다", () => {
+    const mapRef = createRef<HTMLElement>();
+    const layersRef = createRef<HTMLElement>();
+    const cityRef = createRef<HTMLElement>();
+    render(
+      <>
+        <IsoMap ref={mapRef} data={{ items: [] }} />
+        <IsoLayers ref={layersRef} data={[]} />
+        <IsoCity ref={cityRef} data={{ children: [] }} />
+      </>,
+    );
+    expect(mapRef.current).toBe(el("iso-map"));
+    expect(layersRef.current).toBe(el("iso-layers"));
+    expect(cityRef.current).toBe(el("iso-city"));
+    render(null);
+    expect(mapRef.current).toBeNull();
+    expect(layersRef.current).toBeNull();
+    expect(cityRef.current).toBeNull();
+  });
+
   test.skipIf(!isReact19)("정리 함수를 돌려주는 ref는 null 대신 정리 함수가 불린다", () => {
     const setups: (HTMLElement | null)[] = [];
     const cleanup = vi.fn();
@@ -313,6 +440,24 @@ describe("ref", () => {
     };
     render(<IsoKpi ref={ref} value={1} />);
     const node = el("iso-kpi");
+    expect(setups).not.toContain(null);
+    expect(setups.length - cleanup.mock.calls.length).toBe(1);
+
+    render(null);
+    expect(setups).not.toContain(null);
+    expect(setups.every((s) => s === node)).toBe(true);
+    expect(cleanup).toHaveBeenCalledTimes(setups.length);
+  });
+
+  test.skipIf(!isReact19)("IsoLayers에서 정리 함수를 돌려주는 ref는 null 대신 정리 함수가 불린다", () => {
+    const setups: (HTMLElement | null)[] = [];
+    const cleanup = vi.fn();
+    const ref = (node: HTMLElement | null) => {
+      setups.push(node);
+      return cleanup;
+    };
+    render(<IsoLayers ref={ref} data={[]} />);
+    const node = el("iso-layers");
     expect(setups).not.toContain(null);
     expect(setups.length - cleanup.mock.calls.length).toBe(1);
 

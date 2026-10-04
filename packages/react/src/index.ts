@@ -1,10 +1,29 @@
 import { createIsoComponent, type IsoBaseProps } from "./create.ts";
-import type { IsoBarsDatum, IsoHeatmapData, IsoLedgerDatum, IsoStackDatum } from "./types.ts";
+import type {
+  IsoBarsDatum,
+  IsoCityBuilding,
+  IsoCityData,
+  IsoCityDistrict,
+  IsoHeatmapData,
+  IsoLayer,
+  IsoLayerItem,
+  IsoLedgerDatum,
+  IsoMapData,
+  IsoMapItem,
+  IsoStackDatum,
+} from "./types.ts";
 
 export type {
   IsoBarsDatum,
+  IsoCityBuilding,
+  IsoCityData,
+  IsoCityDistrict,
   IsoHeatmapData,
+  IsoLayer,
+  IsoLayerItem,
   IsoLedgerDatum,
+  IsoMapData,
+  IsoMapItem,
   IsoSelectDetail,
   IsoStackDatum,
   IsoStackPart,
@@ -46,6 +65,20 @@ export interface IsoKpiProps extends IsoBaseProps, IsoScaleProps {
   suffix?: string;
 }
 
+export interface IsoMapProps extends IsoBaseProps<IsoMapItem>, IsoScaleProps {
+  data?: IsoMapData;
+}
+
+export interface IsoLayersProps extends IsoBaseProps<IsoLayerItem | IsoLayer>, IsoScaleProps {
+  data?: IsoLayer[];
+  /** 펼칠 층의 인덱스. */
+  open?: number;
+}
+
+export interface IsoCityProps extends IsoBaseProps<IsoCityBuilding>, IsoScaleProps {
+  data?: IsoCityData;
+}
+
 const scaleAttrs = { label: "label", max: "max", unit: "unit", heightUnits: "height-units", renderer: "renderer" } as const;
 
 export const IsoBars = createIsoComponent<IsoBarsProps>("iso-bars", "IsoBars", scaleAttrs);
@@ -64,3 +97,12 @@ export const IsoKpi = createIsoComponent<IsoKpiProps>("iso-kpi", "IsoKpi", {
   value: "value",
   suffix: "suffix",
 });
+
+export const IsoMap = createIsoComponent<IsoMapProps>("iso-map", "IsoMap", scaleAttrs);
+
+export const IsoLayers = createIsoComponent<IsoLayersProps>("iso-layers", "IsoLayers", {
+  ...scaleAttrs,
+  open: "open",
+});
+
+export const IsoCity = createIsoComponent<IsoCityProps>("iso-city", "IsoCity", scaleAttrs);
