@@ -8,6 +8,10 @@
  *   import { IsoCity } from "./elements/iso-city.ts";     define("iso-city", IsoCity);
  */
 import { IsoElement, define } from "./elements/base.ts";
+import { IsoCity } from "./elements/iso-city.ts";
+
+define("iso-city", IsoCity);
+export { IsoCity };
 
 // 자리 표시: 엘리먼트가 하나도 없는 동안에도 공유 청크가 최종 모양(IsoElement 포함)으로 나와
 // 코어 예산을 실제대로 재게 한다. 첫 엘리먼트의 define 줄이 들어오면 이 export를 지운다.

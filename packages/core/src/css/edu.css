@@ -4,3 +4,65 @@
  * 세 엘리먼트 팀이 함께 쓰는 파일이다: 각 팀은 자기 엘리먼트 이름으로 시작하는 규칙
  * (`iso-map …`, `iso-layers …`, `iso-city …`)만 더한다. 코어 클래스·토큰은 여기서 바꾸지 않는다.
  */
+
+/* iso-city 구역 판: 장식이다(누를 수 없고 호버로 들리지 않는다). 색은 JS 대신 여기서 정한다. */
+iso-city .iso-block[data-district] {
+  --iso-c: color-mix(in oklch, var(--iso-floor), var(--iso-ink) 12%);
+
+  pointer-events: none;
+}
+
+/* 건물 위에 겹쳐 읽히도록 바닥색 바탕(CSS 경로)·테두리(SVG 경로 글자). */
+iso-city .iso-block > .iso-label {
+  padding: 0 3px;
+  border-radius: 3px;
+  background: color-mix(in oklch, var(--iso-floor) 85%, transparent);
+}
+
+iso-city .iso-svg .iso-label {
+  paint-order: stroke;
+  stroke: var(--iso-floor);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+iso-city .iso-label + .iso-label {
+  transform: translate(-50%, calc(-200% - 6px));
+}
+
+iso-city .iso-svg .iso-label + .iso-label {
+  transform: translate(-50%, -32px);
+}
+
+/* iso-city 건물 라벨(값, 그 위 이름)은 호버·포커스 때만. 숨김 표에는 늘 있다. */
+iso-city .iso-block:not(:hover, :focus-visible) > .iso-label {
+  opacity: 0;
+}
+
+/* iso-city 구역 이름 덮개: 원점(.iso-origin과 같은 자리) 기준, 모든 블록 위. 가운데 정렬 알약. */
+iso-city .iso-city-names {
+  position: absolute;
+  left: var(--iso-ox);
+  top: var(--iso-oy);
+  z-index: 100000;
+  pointer-events: none;
+  transition: opacity var(--iso-duration) ease-out;
+}
+
+/* 건물을 가리키거나 포커스하면 구역 이름을 흐리게 해 건물 라벨이 읽히게 한다(덮개가 모든 블록 위라서). */
+iso-city:has(.iso-block:hover, .iso-block:focus-visible) .iso-city-names {
+  opacity: 0.15;
+}
+
+iso-city .iso-city-names > span {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--iso-ink);
+  background: color-mix(in oklch, var(--iso-floor) 80%, transparent);
+}

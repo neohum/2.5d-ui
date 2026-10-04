@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2.5d-ui · iso-city 데모</title>
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<link rel="stylesheet" href="/packages/core/src/css/edu.css">
+<style>
+  /* 데모 페이지 꾸밈만. 다크 테마에서 페이지 배경도 어둡게(grid.html과 같은 방식). */
+  :root { color-scheme: light; --page-bg: #f2f4f7; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { color-scheme: dark; --page-bg: #11151b; }
+  }
+  [data-theme="dark"] { color-scheme: dark; --page-bg: #11151b; }
+  body {
+    margin: 0; padding: 24px; background: var(--page-bg); color: var(--iso-ink);
+    font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  }
+  main { display: grid; gap: 32px; max-width: 960px; }
+  figure { margin: 0; display: grid; gap: 8px; overflow-x: auto; }
+  figcaption { font-weight: 600; }
+  p { margin: 0; font-size: 13px; color: var(--iso-ink-muted); }
+</style>
+<script type="module" src="/packages/core/src/edu.ts"></script>
+</head>
+<body>
+<main>
+  <figure id="school">
+    <figcaption>학교 도시: 학년 구역, 학급 건물</figcaption>
+    <p>가상 데이터. 밑면 = 학생 수, 높이 = 1인당 월 독서량(권). 건물에 마우스를 올리거나 Tab으로 이동하면 반과 독서량이 보입니다.</p>
+    <iso-city id="school-city" label="학교 도시: 학급별 학생 수와 1인당 월 독서량" height-units="4"></iso-city>
+  </figure>
+
+  <figure id="synthetic">
+    <figcaption>합성 도시: 건물 300개 (자동 SVG 경로)</figcaption>
+    <iso-city id="big-city" label="합성 도시 300개" unit="9" height-units="6"></iso-city>
+  </figure>
+
+  <figure id="empty">
+    <figcaption>빈 데이터 / 잘못된 데이터</figcaption>
+    <iso-city data='{"k":"학교","children":[]}'></iso-city>
+    <iso-city data='{"children":[{"k":"1학년","children":[]}]}'></iso-city>
+  </figure>
+</main>
+<script>
+  // 가상 데이터: 6개 학년, 학년마다 3–5개 반. 학생 수 18–28명, 1인당 월 독서량(권).
+  const school = {
+    k: "학교",
+    children: [
+      { k: "1학년", children: [{ k: "1반", size: 24, v: 6.2 }, { k: "2반", size: 22, v: 5.4 }, { k: "3반", size: 25, v: 7.1 }, { k: "4반", size: 23, v: 4.8 }] },
+      { k: "2학년", children: [{ k: "1반", size: 26, v: 5.9 }, { k: "2반", size: 27, v: 3.6 }, { k: "3반", size: 25, v: 6.4 }] },
+      { k: "3학년", children: [{ k: "1반", size: 28, v: 4.2 }, { k: "2반", size: 26, v: 5.1 }, { k: "3반", size: 27, v: 2.9 }, { k: "4반", size: 24, v: 4.6 }, { k: "5반", size: 25, v: 3.8 }] },
+      { k: "4학년", children: [{ k: "1반", size: 21, v: 3.2 }, { k: "2반", size: 19, v: 4.4 }, { k: "3반", size: 22, v: 2.5 }] },
+      { k: "5학년", children: [{ k: "1반", size: 27, v: 2.1 }, { k: "2반", size: 28, v: 3.4 }, { k: "3반", size: 26, v: 1.8 }, { k: "4반", size: 25, v: 2.7 }] },
+      { k: "6학년", children: [{ k: "1반", size: 18, v: 1.6 }, { k: "2반", size: 20, v: 2.3 }, { k: "3반", size: 19, v: 1.2 }, { k: "4반", size: 22, v: 2.0 }] },
+    ],
+  };
+  document.getElementById("school-city").setAttribute("data", JSON.stringify(school));
+
+  // 합성 도시: 12개 구역 × 25개 건물 = 300개(+ 구역 판 12개 → 200블록 초과라 SVG 경로). 결정적 의사 난수.
+  const big = { k: "도시", children: [] };
+  for (let d = 0, n = 0; d < 12; d++) {
+    const children = [];
+    for (let b = 0; b < 25; b++, n++) children.push({ k: "건물 " + (b + 1), size: 1 + ((n * 37) % 9), v: (n * 53) % 41 });
+    big.children.push({ k: "구역 " + (d + 1), children });
+  }
+  document.getElementById("big-city").setAttribute("data", JSON.stringify(big));
+</script>
+</body>
+</html>
