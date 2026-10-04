@@ -66,3 +66,58 @@ iso-city .iso-city-names > span {
   color: var(--iso-ink);
   background: color-mix(in oklch, var(--iso-floor) 80%, transparent);
 }
+
+/* ---------- iso-map ---------- */
+
+/* 구조물(교탁, 복도): 바닥보다 진한 회색, 고를 수 없다. 이름 라벨은 늘 보인다. */
+iso-map [data-fixture] {
+  --iso-c: color-mix(in oklch, var(--iso-floor), var(--iso-ink) 35%);
+
+  pointer-events: none;
+}
+
+/* 라벨이 칸 면 위에 겹쳐도 읽히게 바닥색 테두리(HTML은 text-shadow, SVG <text>는 stroke). */
+iso-map .iso-scene .iso-block > .iso-label {
+  color: var(--iso-ink);
+  text-shadow: 0 0 2px var(--iso-floor), 0 0 2px var(--iso-floor), 0 0 3px var(--iso-floor);
+  paint-order: stroke;
+  stroke: var(--iso-floor);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+/* 값·상태 칸의 라벨(이름, 값)은 호버·포커스 때만. 숨김 표에는 늘 있다. */
+iso-map .iso-block:not([data-fixture], :hover, :focus-visible) > .iso-label {
+  opacity: 0;
+}
+
+/* CSS 경로: 호버·포커스한 칸을 맨 앞에 그려(들림과 함께 집어 든 모양) 이름·값 라벨이 앞 칸에
+   가리지 않게 한다. 블록마다 z-index 쌓임 맥락이라 라벨만 올릴 수는 없다. SVG 경로에는
+   z-index가 없어 그리는 순서 그대로다. */
+iso-map .iso-block:is(:hover, :focus-visible) {
+  z-index: 99999;
+}
+
+/* 상태 칸(높이 0): 윗면 색 + 1.5px 점선 윤곽. CSS 경로는 background·outline, SVG 경로는
+   fill·stroke(svg.css가 SVG 다각형의 outline을 끈다). 키보드 포커스 윤곽이 이긴다. */
+iso-map [data-state="absent"] > .iso-top {
+  --iso-map-top: color-mix(in oklch, var(--iso-c) 25%, var(--iso-floor));
+}
+
+iso-map [data-state="empty"] > .iso-top {
+  --iso-map-top: var(--iso-floor);
+}
+
+iso-map [data-state="closed"] > .iso-top {
+  --iso-map-top: color-mix(in oklch, var(--iso-floor) 65%, var(--iso-ink-muted));
+}
+
+iso-map [data-state] > .iso-top {
+  background: var(--iso-map-top);
+  outline: 1.5px dashed var(--iso-ink-muted);
+  outline-offset: -1.5px;
+  fill: var(--iso-map-top);
+  stroke: var(--iso-ink-muted);
+  stroke-width: 1.5px;
+  stroke-dasharray: 4px 3px;
+}
