@@ -22,4 +22,5 @@ await build({
   minify: true,
   format: "esm",
   target: "chrome111",
+  charset: "utf8",
 });
