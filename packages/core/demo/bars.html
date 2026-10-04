@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2.5d-ui · iso-bars / iso-stack 데모</title>
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<style>
+  /* 데모 페이지 꾸밈만. 다크 테마에서 페이지 배경도 어둡게(primitives.html과 같은 방식). */
+  :root { color-scheme: light; --page-bg: #f2f4f7; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { color-scheme: dark; --page-bg: #11151b; }
+  }
+  [data-theme="dark"] { color-scheme: dark; --page-bg: #11151b; }
+  body {
+    margin: 0; padding: 24px; background: var(--page-bg); color: var(--iso-ink);
+    font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  }
+  main { display: grid; gap: 32px; max-width: 960px; }
+  figure { margin: 0; display: grid; gap: 8px; overflow-x: auto; }
+  figcaption { font-weight: 600; }
+</style>
+<script type="module" src="/packages/core/src/index.ts"></script>
+</head>
+<body>
+<main>
+  <figure id="bars">
+    <figcaption>앱별 메모리 사용량 (MB)</figcaption>
+    <iso-bars label="앱별 메모리 사용량 (MB)" data='[{"k":"문서","v":180},{"k":"시트","v":240},{"k":"화상회의","v":410,"c":"#e0a800"},{"k":"클래스","v":150},{"k":"동영상","v":320},{"k":"그림판","v":90}]'></iso-bars>
+  </figure>
+
+  <figure id="bars-max">
+    <figcaption>max=500, height-units=4, unit=20</figcaption>
+    <iso-bars max="500" height-units="4" unit="20" label="축척 고정" data='[{"k":"A","v":100},{"k":"B","v":250},{"k":"C","v":500}]'></iso-bars>
+  </figure>
+
+  <figure id="stack">
+    <figcaption>월별 자원 사용 (적층)</figcaption>
+    <iso-stack label="월별 자원 사용" data='[{"k":"1월","parts":[{"name":"CPU","v":30},{"name":"메모리","v":20},{"name":"디스크","v":10}]},{"k":"2월","parts":[{"name":"CPU","v":45},{"name":"메모리","v":25},{"name":"디스크","v":15}]},{"k":"3월","parts":[{"name":"CPU","v":20},{"name":"메모리","v":40},{"name":"디스크","v":5}]}]'></iso-stack>
+  </figure>
+
+  <figure id="empty">
+    <figcaption>빈 데이터 / 잘못된 데이터</figcaption>
+    <iso-bars data="[]"></iso-bars>
+    <iso-bars data='[{"k":"음수","v":-1}]'></iso-bars>
+  </figure>
+</main>
+</body>
+</html>
