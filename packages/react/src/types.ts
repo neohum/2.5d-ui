@@ -28,8 +28,54 @@ export interface IsoLedgerDatum {
   note?: string;
 }
 
+export interface IsoMapItem {
+  k: string | number;
+  x: number;
+  y: number;
+  w?: number;
+  d?: number;
+  v?: number;
+  c?: string;
+  state?: "absent" | "empty" | "closed";
+}
+
+export interface IsoMapData {
+  floor?: { w: number; d: number };
+  items: IsoMapItem[];
+}
+
+export interface IsoLayerItem {
+  k: string | number;
+  v: number;
+  c?: string;
+}
+
+export interface IsoLayer {
+  k: string | number;
+  items: IsoLayerItem[];
+}
+
+export interface IsoCityBuilding {
+  k: string;
+  size: number;
+  v: number;
+  c?: string;
+}
+
+export interface IsoCityDistrict {
+  k: string;
+  children: IsoCityBuilding[];
+}
+
+export interface IsoCityData {
+  k?: string;
+  children: IsoCityDistrict[];
+}
+
 /** `iso-select` CustomEvent의 detail. */
 export interface IsoSelectDetail<Item = unknown> {
   index: number;
   item: Item;
+  layer?: number;
+  district?: number;
 }
