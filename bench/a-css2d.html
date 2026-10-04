@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>A · CSS 2D matrix() 면</title>
+<style>
+html, body { margin: 0; background: #f6f5f1; overflow: hidden; }
+.scene { position: relative; width: 1366px; height: 768px; }
+.origin { position: absolute; }
+.blk {
+  --h: 1; --x: 0; --y: 0; --i: 0; --c: #4e79a7;
+  position: absolute;
+  left: calc((var(--x) - var(--y)) * 0.866 * var(--u));
+  top: calc((var(--x) + var(--y)) * 0.5 * var(--u));
+  z-index: var(--i);
+  transition: transform 0.18s ease-out;
+}
+.blk > i { position: absolute; left: 0; top: 0; display: block; transform-origin: 0 0; }
+.blk .t {
+  width: var(--u); height: var(--u);
+  background: var(--c);
+  transform: translateY(calc(var(--h) * var(--u) * -1)) matrix(0.866, 0.5, -0.866, 0.5, 0, 0);
+}
+.blk .l {
+  width: var(--u); height: calc(var(--h) * var(--u));
+  background: color-mix(in oklch, var(--c), black 18%);
+  transform: translate(calc(var(--u) * -0.866), calc((0.5 - var(--h)) * var(--u))) matrix(0.866, 0.5, 0, 1, 0, 0);
+}
+.blk .r {
+  width: var(--u); height: calc(var(--h) * var(--u));
+  background: color-mix(in oklch, var(--c), black 34%);
+  transform: translate(calc(var(--u) * 0.866), calc((0.5 - var(--h)) * var(--u))) matrix(-0.866, 0.5, 0, 1, 0, 0);
+}
+.blk:hover { transform: translateY(-6px); }
+</style>
+</head>
+<body>
+<div class="scene"><div class="origin" id="origin"></div></div>
+<script type="module">
+import { readN, layout, markRendered } from './common.js';
+const L = layout(readN());
+const o = document.getElementById('origin');
+o.style.cssText = `left:${L.ox}px;top:${L.oy}px;--u:${L.u}px`;
+let html = '';
+for (const b of L.blocks) {
+  html += `<div class="blk" style="--x:${b.x};--y:${b.y};--h:${b.h};--i:${b.z};--c:${b.c}"><i class="l"></i><i class="r"></i><i class="t"></i></div>`;
+}
+o.innerHTML = html;
+markRendered(L);
+</script>
+</body>
+</html>

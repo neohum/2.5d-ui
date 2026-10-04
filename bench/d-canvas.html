@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>D · Canvas 2D 일괄 그리기</title>
+<style>
+html, body { margin: 0; background: #f6f5f1; overflow: hidden; }
+canvas { display: block; width: 1366px; height: 768px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+import { readN, layout, faces, shade, markRendered, VIEW_W, VIEW_H, LIFT } from './common.js';
+const L = layout(readN());
+const cv = document.getElementById('c');
+const dpr = window.devicePixelRatio || 1;
+cv.width = VIEW_W * dpr;
+cv.height = VIEW_H * dpr;
+const ctx = cv.getContext('2d');
+const lift = new Float32Array(L.n);
+const shades = L.blocks.map((b) => [shade(b.c, 0.18), shade(b.c, 0.34), b.c]);
+
+function poly(pts) {
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
+  ctx.closePath();
+}
+function draw() {
+  ctx.setTransform(dpr, 0, 0, dpr, L.ox * dpr, L.oy * dpr);
+  ctx.clearRect(-L.ox, -L.oy, VIEW_W, VIEW_H);
+  for (const b of L.order) {
+    const f = faces(b, L.u, lift[b.i]);
+    const s = shades[b.i];
+    ctx.beginPath(); poly(f.left); ctx.fillStyle = s[0]; ctx.fill();
+    ctx.beginPath(); poly(f.right); ctx.fillStyle = s[1]; ctx.fill();
+    ctx.beginPath(); poly(f.top); ctx.fillStyle = s[2]; ctx.fill();
+  }
+}
+
+// 호버: 앞에서부터 실루엣(육각형) 안에 든 첫 블록. 들림은 180ms 동안만 rAF로 그린다.
+function inside(pts, x, y) {
+  let hit = false;
+  for (let a = 0, b = pts.length - 1; a < pts.length; b = a++) {
+    const [xa, ya] = pts[a], [xb, yb] = pts[b];
+    if (ya > y !== yb > y && x < ((xb - xa) * (y - ya)) / (yb - ya) + xa) hit = !hit;
+  }
+  return hit;
+}
+function pick(mx, my) {
+  const x = mx - L.ox, y = my - L.oy;
+  for (let k = L.order.length - 1; k >= 0; k--) {
+    const b = L.order[k];
+    const f = faces(b, L.u, lift[b.i]);
+    const hull = [f.top[0], f.top[1], f.right[0], f.right[1], f.left[0], f.top[3]];
+    if (inside(hull, x, y)) return b.i;
+  }
+  return -1;
+}
+let hovered = -1, prev = -1, start = 0, raf = 0;
+const ease = (t) => 1 - (1 - t) ** 3;
+function tick(now) {
+  const t = Math.min(1, (now - start) / 180);
+  if (hovered >= 0) lift[hovered] = Math.max(lift[hovered], LIFT * ease(t));
+  if (prev >= 0 && prev !== hovered) lift[prev] = Math.min(lift[prev], LIFT * (1 - ease(t)));
+  draw();
+  raf = t < 1 ? requestAnimationFrame(tick) : 0;
+}
+cv.addEventListener('mousemove', (e) => {
+  const hit = pick(e.offsetX, e.offsetY);
+  if (hit === hovered) return;
+  for (let k = 0; k < lift.length; k++) if (k !== hovered && k !== hit) lift[k] = 0;
+  prev = hovered; hovered = hit; start = performance.now();
+  if (!raf) raf = requestAnimationFrame(tick);
+});
+cv.addEventListener('mouseleave', () => {
+  prev = hovered; hovered = -1; start = performance.now();
+  if (!raf) raf = requestAnimationFrame(tick);
+});
+
+draw();
+markRendered(L);
+</script>
+</body>
+</html>

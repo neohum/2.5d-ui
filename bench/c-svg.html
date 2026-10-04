@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>C · SVG polygon</title>
+<style>
+html, body { margin: 0; background: #f6f5f1; overflow: hidden; }
+svg { display: block; }
+.b { transition: transform 0.18s ease-out; }
+.b:hover { transform: translateY(-6px); }
+</style>
+</head>
+<body>
+<svg id="s" width="1366" height="768" xmlns="http://www.w3.org/2000/svg"></svg>
+<script type="module">
+import { readN, layout, faces, shade, markRendered } from './common.js';
+const L = layout(readN());
+const pts = (a) => a.map(([x, y]) => `${(L.ox + x).toFixed(1)},${(L.oy + y).toFixed(1)}`).join(' ');
+let html = '';
+for (const b of L.order) {
+  const f = faces(b, L.u);
+  html += `<g class="b"><polygon points="${pts(f.left)}" fill="${shade(b.c, 0.18)}"/><polygon points="${pts(f.right)}" fill="${shade(b.c, 0.34)}"/><polygon points="${pts(f.top)}" fill="${b.c}"/></g>`;
+}
+document.getElementById('s').innerHTML = html;
+markRendered(L);
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>B · CSS 3D preserve-3d 큐브</title>
+<style>
+html, body { margin: 0; background: #f6f5f1; overflow: hidden; }
+.scene { position: relative; width: 1366px; height: 768px; }
+/* 바닥 평면을 rotateZ(45°)·rotateX(54.7356°)로 눕힌 뒤 1.2247배 키우면
+   API.md의 X 0.866·u, Y 0.5·u, 높이 1·u 등각 투영과 같아진다. */
+.plane {
+  position: absolute; width: 0; height: 0;
+  transform-style: preserve-3d; transform-origin: 0 0;
+  transform: scale(1.2247) rotateX(54.7356deg) rotateZ(45deg);
+}
+.cube {
+  --x: 0; --y: 0; --h: 1; --c: #4e79a7;
+  --hz: calc(var(--h) * var(--u));
+  position: absolute; left: 0; top: 0;
+  transform-style: preserve-3d;
+  transform: translate3d(calc(var(--x) * var(--u)), calc(var(--y) * var(--u)), 0);
+  transition: transform 0.18s ease-out;
+}
+.cube:hover { transform: translate3d(calc(var(--x) * var(--u)), calc(var(--y) * var(--u)), 6px); }
+.cube > i { position: absolute; left: 0; top: 0; display: block; transform-origin: 0 0 0; }
+.cube .t { width: var(--u); height: var(--u); background: var(--c); transform: translateZ(var(--hz)); }
+.cube .l {
+  width: var(--u); height: var(--hz);
+  background: color-mix(in oklch, var(--c), black 18%);
+  transform: translateY(var(--u)) rotateX(90deg);
+}
+.cube .r {
+  width: var(--hz); height: var(--u);
+  background: color-mix(in oklch, var(--c), black 34%);
+  transform: translateX(var(--u)) rotateY(-90deg);
+}
+</style>
+</head>
+<body>
+<div class="scene"><div class="plane" id="plane"></div></div>
+<script type="module">
+import { readN, layout, markRendered } from './common.js';
+const L = layout(readN());
+const p = document.getElementById('plane');
+p.style.left = `${L.ox}px`;
+p.style.top = `${L.oy}px`;
+p.style.setProperty('--u', `${L.u}px`);
+let html = '';
+for (const b of L.blocks) {
+  html += `<div class="cube" style="--x:${b.x};--y:${b.y};--h:${b.h};--c:${b.c}"><i class="l"></i><i class="r"></i><i class="t"></i></div>`;
+}
+p.innerHTML = html;
+markRendered(L);
+</script>
+</body>
+</html>
