@@ -4,5 +4,6 @@
   { "name": "edu css (iso-edu.min.css, all edu elements)", "path": "packages/core/dist/iso-edu.min.css", "limit": "2 KB", "gzip": true },
   { "name": "edu all js, report only (iso-edu.min.js + every edu file, beyond iso-base.min.js)", "path": ["packages/core/dist/iso-edu*.min.js"], "gzip": true },
   { "name": "edu/city js (iso-edu-city.min.js + iso-edu-order.min.js, beyond iso-base.min.js)", "path": ["packages/core/dist/iso-edu-city.min.js", "packages/core/dist/iso-edu-order.min.js"], "limit": "2 KB", "gzip": true },
+  { "name": "edu/layers js (iso-edu-layers.min.js, beyond iso-base.min.js)", "path": "packages/core/dist/iso-edu-layers.min.js", "limit": "2 KB", "gzip": true },
   { "name": "edu/map js (iso-edu-map.min.js + iso-edu-order.min.js, beyond iso-base.min.js)", "path": ["packages/core/dist/iso-edu-map.min.js", "packages/core/dist/iso-edu-order.min.js"], "limit": "2 KB", "gzip": true }
 ]

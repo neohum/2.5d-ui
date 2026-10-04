@@ -5,7 +5,8 @@
  * (`iso-map …`, `iso-layers …`, `iso-city …`)만 더한다. 코어 클래스·토큰은 여기서 바꾸지 않는다.
  */
 
-<<<<<<< HEAD
+/* ---------- iso-city ---------- */
+
 /* iso-city 구역 판: 장식이다(누를 수 없고 호버로 들리지 않는다). 색은 JS 대신 여기서 정한다. */
 iso-city .iso-block[data-district] {
   --iso-c: color-mix(in oklch, var(--iso-floor), var(--iso-ink) 12%);
@@ -130,6 +131,7 @@ iso-map [data-state] > .iso-top {
 }
 
 /* ---------- iso-layers ---------- */
+
 /* iso-layers: 펼침은 transform만 움직인다(API.md 알려진 한계 — 값 변경 애니메이션은 컴포지터 밖).
    펼친 층보다 위 블록(data-up)을 --iso-up(px, 엘리먼트가 쓴다)만큼 올린다. 블록 자체의 translate라
    면의 호버 들림(면 translate)과 겹치지 않는다. 항목 높이(--iso-h)는 트랜지션 없이 바로 바뀌고, 위 판이
@@ -167,7 +169,7 @@ iso-layers .iso-svg .iso-label--side {
   translate: calc(1.732 * var(--iso-u) + 8px) calc(-1.1 * var(--iso-u) - 6px);
 }
 
-iso-layers [aria-expanded="true"] > .iso-label {
+iso-layers .iso-scene .iso-block[aria-expanded="true"] > .iso-label {
   font-weight: 600;
   color: var(--iso-ink);
 }
@@ -191,6 +193,6 @@ iso-layers .iso-svg .iso-label--ground:not(.iso-label--side) {
 }
 
 /* 펼친 층이 아닌 항목의 값·이름 라벨은 호버·포커스 때만(숨김 표에는 늘 있다). */
-iso-layers .iso-block:not([data-open], [aria-expanded], :hover, :focus-visible) > .iso-label {
+iso-layers .iso-scene .iso-block:not([data-open], [aria-expanded], :hover, :focus-visible) > .iso-label {
   opacity: 0;
 }

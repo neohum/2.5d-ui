@@ -151,8 +151,9 @@ SVG 경로에서 다른 것:
 | 파일 | 원본 | 패키지 경로 | 내용 |
 | --- | --- | --- | --- |
 | `iso.min.js` | `src/index.ts` | `2.5d-ui` | 코어 엘리먼트 다섯 개 등록 |
-| `iso-edu-map.min.js` | `src/edu/map.ts` | `2.5d-ui/edu/map` | `iso-map`만 등록 |
 | `iso-edu-city.min.js` | `src/edu/city.ts` | `2.5d-ui/edu/city` | `iso-city`만 등록 |
+| `iso-edu-layers.min.js` | `src/edu/layers.ts` | `2.5d-ui/edu/layers` | `iso-layers`만 등록 |
+| `iso-edu-map.min.js` | `src/edu/map.ts` | `2.5d-ui/edu/map` | `iso-map`만 등록 |
 | `iso-edu.min.js` | `src/edu.ts` | `2.5d-ui/edu` | 교육용 전부: 위 엘리먼트별 파일을 다시 내보내는 한 줄짜리 |
 | `iso-base.min.js` | `base.ts`, `geometry.ts` | (직접 쓰지 않음) | 공유 청크: 모든 JS 엔트리가 쓴다 |
 | `iso-edu-order.min.js` | `layout/order.ts` | (직접 쓰지 않음) | 공유 청크: 깊이 정렬을 쓰는 교육용 엔트리(map, city)가 쓴다 |
@@ -184,12 +185,13 @@ SVG 경로에서 다른 것:
 
 | 항목 | 재는 파일 | 한도 | 2026-10-05 |
 | --- | --- | --- | --- |
-| core js | `iso.min.js` + `iso-base.min.js` (코어만 쓰는 페이지가 받는 JS 전부) | 5 KB (5000 B) | 4962 B |
+| core js | `iso.min.js` + `iso-base.min.js` (코어만 쓰는 페이지가 받는 JS 전부) | 5 KB (5000 B) | 4966 B |
 | edu/map js | `iso-edu-map.min.js` + `iso-edu-order.min.js` (map만 쓰는 페이지가 더 받는 전부) | 2 KB | 1458 B |
 | edu/city js | `iso-edu-city.min.js` + `iso-edu-order.min.js` | 2 KB | 1992 B |
-| edu all js | `iso-edu*.min.js` 전부(전체 엔트리 + 엘리먼트별 파일 + 교육용 공유 청크) | 없음(보고만) | 2988 B |
+| edu/layers js | `iso-edu-layers.min.js` (layers만 쓰는 페이지가 더 받는 전부) | 2 KB | 1272 B |
+| edu all js | `iso-edu*.min.js` 전부(전체 엔트리 + 엘리먼트별 파일 + 교육용 공유 청크) | 없음(보고만) | 4270 B |
 | core css | `iso.min.css` | 6 KB | 1770 B |
-| edu css | `iso-edu.min.css` | 2 KB | 668 B |
+| edu css | `iso-edu.min.css` | 2 KB | 886 B |
 
 - **엘리먼트별 한도**는 그 엘리먼트 하나만 쓰는 페이지가 `iso-base.min.js` 위에 받는 파일 전부다: 엔트리 파일과
   그 엔트리가 불러오는 교육용 공유 청크(지금은 `iso-edu-order.min.js`)를 더한다. 여러 엘리먼트가 같이 쓰는
@@ -394,8 +396,11 @@ d = 1`, 높이는 제각각)의 그리는 순서(뒤 → 앞 인덱스).
 - 판: `x 0, y 0`, `w = 1.5 · max(1, 가장 많은 항목 수) + 0.5`, `d = 2`, `h = 0.2`. 모든 판이 같은 크기.
 - 항목: 판 위(`z = 판 z + 0.2`), `x = 0.5 + 1.5 · j`, `y = 0.5`, `w = d = 1`.
 - 접힌 층: 층 간격 1(판 0.2 + 여유 0.8). 항목 높이 = `0.7 · v / max`(여유 안에 들어간다).
-- 펼친 층 `o`: 그 층 항목 높이 = `scale(v)`(`height-units` H). `o`보다 위 층은 모두 `H − 0.7`만큼 들려 올라간다.
-  즉 층 L의 판 z = `L + (o 있음 && L > o ? H − 0.7 : 0)`.
+- 펼친 층 `o`: 그 층 항목 높이 = `scale(v)`(`height-units` H). 레이아웃 z를 바꾸지 않고 transform만 움직인다:
+  펼친 층보다 위 블록(`data-up`)을 `--iso-up`만큼 들린다(트랜지션이 컴포지터에서 돎).
+  들림 거리는 `H + 0.7 + 24px / u`다(API.md 초안의 `H − 0.7`로는 위 판이 가장 높은 항목의 윗면과 값 라벨을
+  덮으므로, 값 라벨과 호버 들림 여유를 포함해 `H + 0.7 + 24px / u`로 수정; 세부 계산은 `iso-layers.ts` 주석).
+  숨긴 바닥판이 가장 높이 들린 자리를 미리 차지해 펼치거나 접어도 장면 크기·원점·다른 블록 자리가 바뀌지 않는다.
 - 그리는 순서: 아래 층부터, 한 층 안에서는 판 → 항목(x 순). 위 층의 모든 점은 아래 층의 모든 점보다 앞이므로
   (수평면으로 갈리고 시선 (1, 1, 1)은 위로 갈수록 앞이다) 이 순서로 충분하다.
 
