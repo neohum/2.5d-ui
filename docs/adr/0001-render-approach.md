@@ -87,4 +87,29 @@ D는 히트 테스트 후 180ms 동안만 rAF로 전체를 다시 그림).
 
 ## 부록: 선행 사례 확인
 
-별도 조사 결과로 채운다
+확인일 2026-10-04. 웹 검색, GitHub API, `npm view`로 확인했다. 계획 단계에서 참고한 대화의 주장을 하나씩 검증한 결과다.
+
+| # | 주장 | 판정 |
+| --- | --- | --- |
+| 1 | PolyCSS는 OBJ/glTF/VOX를 div + `matrix3d`로 그리는 오픈소스다 | 사실 |
+| 2 | City4Age는 소프트웨어 시티 시각화다 / Wettel의 CodeCity가 있다 | City4Age는 사실 아님 / CodeCity는 사실 |
+| 3 | WebGL 컨텍스트 하나가 80–200MB를 쓴다 | 확인 불가 |
+| 4 | Isomer, Obelisk.js | 존재하나 사실상 유지보수 중단 |
+| 5 | WebGL 없이 데이터를 바인딩하는 등각 2.5D 컴포넌트 라이브러리가 이미 있다 | 부분적 사실(유지보수되는 완성형은 찾지 못함) |
+| 6 | Tailwind CSS v4에 3D 변환 유틸리티가 있다 | 사실 |
+| 7 | @react-three/uikit은 three.js 안에서 Yoga 레이아웃으로 UI를 그린다 | 사실 |
+
+1. **PolyCSS**: `layoutit/polycss`. MIT, 마지막 커밋 2026-08-22, npm `@layoutit/polycss` 0.2.11. 각 폴리곤을 `matrix3d` DOM 요소로 만드는 메시 렌더러다. 차트나 데이터 컴포넌트는 아니다. https://github.com/layoutit/polycss
+2. **City4Age**는 노인의 경도인지장애와 노쇠를 조기에 발견하는 EU Horizon 2020 연구 프로젝트로, 코드 시각화와 관계없다. **CodeCity**(Wettel, Lanza)는 클래스를 건물로, 패키지를 구역으로 나타내는 3D 시각화 도구다. https://www.inf.usi.ch/lanza/PUBS/P/Wett2008a.pdf
+3. 근거를 찾지 못했다. WebGL Fundamentals는 Chrome에서 컨텍스트 자체의 고정 오버헤드를 2–4MB로 설명하고, 나머지는 캔버스 크기와 버퍼 설정에 비례한다고 한다. 이 ADR의 논거에 쓰지 않는다. https://webglfundamentals.org/webgl/lessons/webgl-qna-why-does-webgl-take-more-memory-than-canvas-2d.html
+4. **Isomer**(`jdan/isomer`)는 마지막 커밋이 2017-07이다. **Obelisk.js**(`nosir/obelisk.js`)는 마지막 커밋이 2019-06이다. 둘 다 Canvas 2D 도형 엔진이고 데이터 바인딩이 없다.
+5. 가장 가까운 사례는 다음과 같다.
+   - `isometric-css`, `@elchininet/isometric`: 유지보수 중이지만 투영을 도와주는 도구다.
+   - PolyCSS: 메시 렌더러다.
+   - ECharts-GL: WebGL 기반이다.
+   - Recharts, Nivo, visx: 2D만 지원한다.
+   검색 범위가 키워드 검색이라 "없다"를 증명한 것은 아니다.
+6. Tailwind 공식 문서에 `transform-3d`, `rotate-x-*`, `rotate-y-*`, `translate-z-*`, `perspective-*`, `backface-hidden`이 있다. 모두 `preserve-3d` 계열이라 이 ADR이 기각한 B안에 해당한다. https://tailwindcss.com/docs/perspective
+7. `pmndrs/uikit`의 코어 `@pmndrs/uikit`이 `yoga-layout`에 의존한다. WebGL 기반이라 비교 대상일 뿐 선행 사례는 아니다. https://github.com/pmndrs/uikit
+
+**결론:** 데이터를 바인딩하고 WebGL을 쓰지 않는 2.5D 컴포넌트 라이브러리는 이번 검색 범위에서는 찾지 못했다. 따라서 전제는 유지한다. City4Age 사례와 "WebGL 80–200MB" 수치는 근거로 쓰지 않는다.
