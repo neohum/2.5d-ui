@@ -1,4 +1,4 @@
-# 2.5d-ui API 규격 (v0.1)
+# 2.5d-ui API 규격 (v0.1 · v0.2 교육용)
 
 이 문서는 코어 CSS, Web Components, React 래퍼가 함께 지키는 계약이다. 여러 작업을
 동시에 진행하기 위해 구현보다 먼저 고정한다. 바꾸려면 이 문서를 먼저 고치고 영향을
@@ -51,7 +51,8 @@
 ## Web Components
 
 `packages/core/src/index.ts`를 불러오면 모두 등록된다. 공통 기반은
-`packages/core/src/elements/base.ts`의 `IsoElement`다.
+`packages/core/src/elements/base.ts`의 `IsoElement`다. 교육용 엘리먼트 셋은 따로
+`packages/core/src/edu.ts`(`2.5d-ui/edu`)에서 등록한다(아래 "교육용 엘리먼트").
 
 공통 속성:
 
@@ -106,9 +107,11 @@ SVG 경로에서 다른 것:
 
 - **좌표는 JS가 쓴다.** 블록에 `--iso-x`·`--iso-y`·`--iso-w`·`--iso-d`·`--iso-h`·`--iso-z`를 두지 않고
   다각형 `points`(0.1px)로 쓴다. 이 변수를 CSS로 덮어써도 SVG 블록에는 효과가 없다. `--iso-c`는 같다.
-- **그리는 순서 = 데이터 순서(= 탭 순서).** SVG에는 `z-index`가 없어 블록의 `zi`는 쓰지 않는다. 엘리먼트는
-  데이터 순서가 뒤 → 앞이 되게 블록을 낸다(다섯 엘리먼트 모두 그렇다: 히트맵 행 우선 순서는 겹치는
-  셀끼리 늘 뒤 → 앞이다). 그래서 탭 순서가 CSS 경로와 같다.
+- **그리는 순서 = `layout()`이 낸 `blocks` 배열 순서(= DOM 순서 = 탭 순서).** SVG에는 `z-index`가 없어 블록의
+  `zi`는 쓰지 않는다. 엘리먼트는 `blocks`를 뒤 → 앞 순서로 내고 `zi`도 그 순서대로 커지게 둔다(아래 "그리는
+  순서 계약"). 코어 다섯 엘리먼트는 데이터 순서가 곧 뒤 → 앞이다(히트맵 행 우선 순서는 겹치는 셀끼리 늘
+  뒤 → 앞이다). 교육용 엘리먼트는 `layout/order.ts`로 순서를 구해 그 순서로 낸다. 그래서 탭 순서가 CSS
+  경로와 같다.
 - **호버 영역.** CSS 경로의 `::before` 패드 대신, 가리킨 블록 안으로 들리지 않는 실루엣 다각형
   `.iso-hit` 하나를 옮긴다(`pointerover`). 블록마다 노드를 더하지 않는다.
 - **윤곽.** 강조·포커스 윤곽은 `outline` 대신 면 `stroke`다(Chrome은 SVG의 outline을 경계 상자로 그린다).
@@ -139,6 +142,288 @@ SVG 경로에서 다른 것:
 `IsoBars`, `IsoStack`, `IsoHeatmap`, `IsoLedger`, `IsoKpi`. props는 위 속성의 camelCase
 (`heightUnits`), `data`는 객체로 받아 `JSON.stringify`해 속성으로 넘긴다. `onSelect`는
 `iso-select` 이벤트를 받는다. 코어 패키지는 React에 의존하지 않는다.
+
+## 빌드 산출물과 크기 예산
+
+`npm run build`(`packages/core/build.mjs`)는 `packages/core/dist/`를 비우고 다음을 만든다.
+
+| 파일 | 원본 | 패키지 경로 | 내용 |
+| --- | --- | --- | --- |
+| `iso.min.js` | `src/index.ts` | `2.5d-ui` | 코어 엘리먼트 다섯 개 등록. `iso-base.min.js`를 불러온다 |
+| `iso-edu.min.js` | `src/edu.ts` | `2.5d-ui/edu` | 교육용 엘리먼트 셋 등록. `iso-base.min.js`를 불러온다 |
+| `iso-base.min.js` | 두 엔트리가 함께 쓰는 코드(`base.ts`, `geometry.ts`) | (직접 쓰지 않음) | esbuild 코드 분할의 공유 청크. 이름은 해시 없이 고정 |
+| `iso.min.css` | `src/css/index.css` | `2.5d-ui/css` | 코어 CSS |
+| `iso-edu.min.css` | `src/css/edu.css` | `2.5d-ui/edu/css` | 교육용 CSS. 코어 CSS 다음에 불러온다 |
+
+- 두 엔트리는 ES 모듈이고 같은 폴더의 `./iso-base.min.js`를 상대 경로로 불러온다. 빌드 파일을 복사해 쓸 때는
+  JS 파일 셋을 한 폴더에 둔다. 한 페이지에서 두 엔트리를 함께 불러와도 기반 코드는 한 번만 받는다.
+- 교육용 엔트리는 코어 엘리먼트를 등록하지 않는다. 둘 다 쓰려면 두 엔트리를 모두 불러온다.
+- JS 산출물이 이 셋과 다르면(공유 청크가 둘 이상 생기거나 이름이 바뀌면) 빌드가 실패한다.
+- 엘리먼트와 `base.ts` 사이에서만 쓰는 속성 이름(`busy sty fire draw aria labels attrs zi mr scene blocks validate
+  layout source scale sel`)은 빌드에서 짧은 이름으로 바뀐다(`mangleProps`). 이 이름들은 점 표기로만 쓴다
+  (`s.zi`는 되고 `s["zi"]`는 바뀌지 않아 빌드본에서 깨진다). 목록에 이름을 더할 때는 DOM·데이터 JSON·이벤트에
+  같은 이름이 없는지 확인한다(`key`, `detail`, `value`, `name`, `rows`, `floor`는 그래서 뺐다).
+- 그래서 `IsoElement`는 공개 확장 API가 아니다. 빌드본(`dist`)의 `IsoElement`를 상속해 `validate`·`layout`
+  등을 구현해도 이름이 줄어든 쪽만 호출되므로 동작하지 않는다. 새 엘리먼트는 이 저장소 안에서 소스로
+  만들어 같은 빌드에 넣는다. `edu.ts`가 임시로 내보내는 `IsoElement`·`define`은 공유 청크 모양을 맞추기 위한
+  자리 표시이며 첫 교육용 엘리먼트가 들어오면 지운다.
+
+크기 예산(`.size-limit.json`, `npm run size`). gzip 레벨 9로 **파일마다 따로** 압축해 더한다 — 브라우저가 받는 그대로다.
+
+| 항목 | 재는 파일 | 한도 |
+| --- | --- | --- |
+| core js | `iso.min.js` + `iso-base.min.js` (코어만 쓰는 페이지가 받는 JS 전부) | 5 KB (5000 B) |
+| edu js | `iso-edu.min.js` 하나 (공유 청크 위에 교육용이 더하는 바이트) | 3 KB (3000 B) |
+| core css | `iso.min.css` | 6 KB |
+| edu css | `iso-edu.min.css` | 2 KB |
+
+교육용만 쓰는 페이지가 받는 JS는 `iso-edu.min.js` + `iso-base.min.js`(edu js + 약 3.1 KB)다. 공유 청크에는 두
+엔트리가 **함께** 쓰는 코드만 들어간다: 교육용 엘리먼트만 쓰는 `base.ts` 도우미는 `iso-edu.min.js`에 들어가
+edu 예산으로 잡힌다. 공유 청크로 나누면 gzip 사전이 두 파일로 갈려 한 파일일 때보다 약 350 B 커지고, 이를
+`mangleProps`로 일부 되찾아 core js는 한도에 가깝다(2026-10-05 기준 4958 B, 남은 42 B). `base.ts`를 바꾸는
+카드는 `npm run size`로 core js를 확인한다.
+
+## 교육용 엘리먼트 (2.5d-ui/edu)
+
+`<iso-map>`, `<iso-layers>`, `<iso-city>`. 계획: `docs/plan-edu.html`(v0.2, 2026-10-05 승인). 바닥의 위치나
+위아래 순서 자체가 데이터인 경우만 다룬다. 세 팀이 이 절을 기준으로 병렬로 만든다. 바꾸려면 이 절을 먼저
+고친다.
+
+```html
+<link rel="stylesheet" href="iso.min.css">
+<link rel="stylesheet" href="iso-edu.min.css">
+<script type="module" src="iso-edu.min.js"></script>   <!-- 같은 폴더에 iso-base.min.js -->
+```
+
+개발 중(데모·사이트)에는 소스를 그대로 쓴다: `/packages/core/src/css/index.css`, `/packages/core/src/css/edu.css`,
+`/packages/core/src/edu.ts`.
+
+### 공통 규칙
+
+- **기반은 같다.** 세 엘리먼트 모두 `IsoElement`를 상속하고 위 "Web Components"의 공통 속성(`data`, `max`, `unit`,
+  `height-units`, `label`, `renderer`)과 공통 동작(빈·오류 상태, `console.error`, 숨김 표, 키별 노드 재사용,
+  포커스 유지, 색 검사, 클릭·Enter·Space → `iso-select`)을 그대로 따른다. `renderer` 자동 전환(200블록)도 같다.
+  검증 실패는 모두 **오류 상태**("데이터를 표시할 수 없습니다" + `console.error`)이고, 그릴 블록이 없으면 **빈
+  상태**("표시할 데이터가 없습니다")다. 검증에는 base의 `num`·`str`·`list`·`bad`를 쓴다.
+- **상태는 클래스가 아니라 속성으로.** 블록의 상태·종류는 `attrs`로 `data-*`·`aria-*` 속성을 달아 내고(base는
+  사용자가 단 클래스를 건드리지 않는다), `edu.css`가 그 속성으로 모양을 정한다. CSS 경로(`div.iso-block > i`)와
+  SVG 경로(`g.iso-block > polygon`) 둘 다에 맞는 선택자를 쓴다(예: `iso-map .iso-block[data-state] > .iso-top`).
+- **라벨.** 값 라벨은 `value`, 이름 라벨은 `name`(바닥 앞 `.iso-label--ground`)이다. "호버·포커스 때만" 보이는
+  라벨은 `edu.css`에서 블록이 `:not(:hover, :focus-visible)`일 때 `opacity: 0`으로 숨긴다(숨김 표에는 늘 있다).
+  터치 기기에서는 누르면 포커스가 가서 보인다.
+- **개인정보.** 라이브러리는 받은 데이터를 화면과 숨김 표에 그리기만 하고 어디에도 보내지 않는다. 숨김 표에는
+  화면과 같은 내용만 넣는다(이름을 넣으면 스크린 리더가 읽는다).
+- 숫자 표기는 `fmt`(ko-KR), 범주색은 `color(i)`(`--iso-color-1…6`)를 쓴다.
+
+### 그리는 순서 계약 (base.ts)
+
+`layout()`이 돌려준 `blocks` **배열 순서가 곧 그리는 순서(뒤 → 앞)**다.
+
+- CSS 경로: 블록 `zi`가 `--iso-z`(z-index)가 된다. `zi`는 배열 순서대로 **엄격히 커져야** 한다(권장: `zi = 위치 + 1`;
+  바닥판은 0).
+- SVG 경로: `zi`는 쓰지 않고 배열 순서가 DOM 순서이자 그리는 순서다.
+- 두 경로 모두 DOM 순서 = 배열 순서 = **탭 순서**다. 키가 같은 블록은 순서가 바뀌어도 같은 노드를 옮겨 쓴다
+  (`tests/unit/paint-order.test.ts`가 두 경로에서 확인한다).
+
+base.ts에 따로 순서 훅을 두지 않는다(코어 예산). 엘리먼트가 `order()`로 구한 순서대로 `blocks`를 만든다:
+
+```ts
+const ord = order(boxes); // 뒤 → 앞 인덱스
+const blocks = ord.map((i, p) => ({ ...spec(i), zi: p + 1 }));
+```
+
+### 배치 도우미 (`src/layout/`)
+
+순수 함수다. DOM을 쓰지 않으며 `tests/unit/{order,treemap}.test.ts`로 검증한다. 교육용 엔트리에만 들어간다
+(둘을 합쳐 gzip 약 0.97 KB — edu 예산 3 KB 중 세 엘리먼트 몫은 약 2 KB다).
+
+**`order(boxes: Box[]): number[]`** — 바닥(z = 0)에 선, 밑면이 서로 겹치지 않는 축 정렬 직육면체(`x, y, w = 1,
+d = 1`, 높이는 제각각)의 그리는 순서(뒤 → 앞 인덱스).
+
+- 관계: c = y − x 범위(화면 가로 범위)가 열린 구간으로 겹치는 두 블록 A, B 중 `A.x + A.w ≤ B.x` 또는
+  `A.y + A.d ≤ B.y`이면 A가 먼저다. c가 겹치지 않는 쌍은 화면에서 만날 수 없어 순서를 매기지 않는다(예: (0,0)과
+  (5,0)은 x로 앞뒤지만 화면 가로가 갈려 입력 순서를 지킨다). 근거와 순환이 없다는 증명은 `order.ts` 주석.
+- 위 관계를 지키는 순서 중 **사전순으로 가장 작은 것**을 돌려준다: 입력 순서가 이미 맞으면(예: 행 우선 좌석)
+  그대로이므로 탭 순서가 데이터 순서를 따른다.
+- 1e-9 단위보다 얕은 겹침은 맞닿음으로 본다(트리맵 이웃의 부동소수 끝자리).
+- 결정적이다. 밑면이 겹치면 결과가 정해지지 않으므로 먼저 `overlaps()`로 거른다(순환을 만나면 던진다).
+- 성능(개발 기기, 감속 없음): 무작위 배치 1000개 약 0.6–1 ms. 모든 쌍이 한 시선 위인 최악(간선 약 50만 개)
+  1000개 약 7–11 ms.
+
+**`overlaps(boxes: Box[]): [i, j] | null`** — 밑면이 겹치는 첫 쌍(i < j, j가 가장 작은 것). 변·꼭짓점만 닿는
+것은 겹침이 아니다.
+
+**`treemap(weights: number[], r: Rect): Rect[]`** — squarified 트리맵(Bruls 외 2000). `Rect = { x, y, w, d }`.
+가중치에 비례하는 넓이로 `r`을 남김없이 나누고 입력 순서대로 돌려준다. 가중치는 유한한 양수만(0·음수·NaN·
+무한대는 `bad weight`를 던진다). 큰 칸부터 x·y가 작은 쪽(뒤)에 놓는다. 같은 가중치는 인덱스 순(결정적).
+무작위 500건 검증: 넓이 상대 오차 최대 4e-11, 평균 종횡비 1.39(고른 가중치 입력별 평균의 최댓값 2.15).
+
+**`nest(groups: number[][], r: Rect, pad: number, gap: number): { districts: Rect[]; items: Rect[][] }`** — 2단
+위계. 구역은 항목 가중치 합으로 나누고, 구역 사이에 `pad`(바깥 가장자리 pad/2), 구역 안 항목 사이에 `gap`(구역
+가장자리 gap/2)을 둔다. 여백은 `inset(rect, e)`로 줄이며 한 변에서 그 방향 길이의 1/4을 넘게 줄이지 않는다.
+빈 구역은 `bad weight`를 던진다. 결과 사각형은 모두 서로 겹치지 않는다.
+
+### `<iso-map>` 평면 배치
+
+바닥 위에 위치·크기가 제각각인 칸을 놓고 값을 높이로 보여 준다(교실 좌석표, 학교 평면도).
+
+`data`:
+
+```json
+{
+  "floor": { "w": 9, "d": 8 },
+  "items": [
+    { "k": "교탁", "x": 3, "y": 0, "w": 3, "d": 0.9 },
+    { "k": "7번", "x": 1.7, "y": 1.7, "v": 6 },
+    { "k": "8번", "x": 3.4, "y": 1.7, "state": "absent" }
+  ]
+}
+```
+
+| 필드 | 형식 | 규칙 |
+| --- | --- | --- |
+| `floor` | `{ w, d }` | 선택. 둘 다 양수. 있으면 바닥판을 (0, 0)–(w, d)에 그리고, 칸이 하나라도 바닥 밖으로 나가면 오류. 없으면 칸 전체를 감싼 사각형을 사방 0.5씩 넓혀 그린다 |
+| `items` | 배열 | 필수(없거나 빈 배열이면 빈 상태) |
+| `items[].k` | 문자열·숫자 | 필수. 칸 이름(라벨, `aria-label`, 숨김 표) |
+| `items[].x`, `y` | 0 이상 | 필수. 밑면의 뒤 꼭짓점 |
+| `items[].w`, `d` | 양수 | 선택, 기본 1 |
+| `items[].v` | 0 이상 | 선택. 높이 = `scale(데이터 최댓값)(v)`(`max`, `height-units` 적용) |
+| `items[].state` | `"absent"` \| `"empty"` \| `"closed"` | 선택. 그 밖의 값은 오류 |
+| `items[].c` | 색 문자열 | 선택. 값 칸의 색. 없으면 `color(0)` |
+
+**겹침은 오류.** `overlaps(items)`가 쌍을 돌려주면 오류 상태다(`console.error`에 두 칸의 `k`). 변이 닿는 것은 된다.
+
+칸의 종류는 셋이다.
+
+| 종류 | 조건 | 높이 | 색 | 포커스·이벤트 | `attrs` |
+| --- | --- | --- | --- | --- | --- |
+| 값 칸 | `v`가 있고 `state` 없음 | `scale(v)` | `c` 또는 `color(0)` | 탭, `iso-select` | — |
+| 상태 칸 | `state` 있음(`v`는 높이에 쓰지 않음) | 0 | 아래 표 | 탭, `iso-select` | `data-state` |
+| 구조물 | `v`·`state` 둘 다 없음(교탁, 복도) | 0.5 | `color-mix(in oklch, var(--iso-floor), var(--iso-ink) 35%)` | 없음(`pointer-events: none`) | `aria-hidden="true"`, `tabindex` 없음, `data-fixture` |
+
+| `state` | 뜻(숨김 표·`aria-label` 낱말) | 모양(CSS·SVG 공통, `edu.css`) |
+| --- | --- | --- |
+| `absent` | 결석 | 윗면을 `--iso-c`와 `--iso-floor` 25:75로 섞고 1.5px 점선 윤곽(`--iso-ink-muted`) |
+| `empty` | 빈자리 | 윗면을 `--iso-floor`로 칠하고 1.5px 점선 윤곽 |
+| `closed` | 사용 안 함 | 윗면을 `--iso-floor`와 `--iso-ink-muted` 65:35로 섞고 1.5px 점선 윤곽 |
+
+점선은 CSS 경로에서 `.iso-top`의 `outline: 1.5px dashed`(`outline-offset: -1.5px`), SVG 경로에서
+`stroke-dasharray`다. 색만으로 구분하지 않는다(점선 + 낱말).
+
+- 그리는 순서: 바닥판, 그다음 `order(items)` 순서. 탭 순서도 같다(행 우선으로 준 좌석은 데이터 순서 그대로).
+- 라벨: 이름(`name` = `k`)과 값(`value` = `fmt(v)`, 상태 칸은 상태 낱말)은 **호버·포커스 때만** 보인다. 구조물은
+  이름만, 늘 보인다.
+- `aria-label`: 값 칸 `"7번: 6"`, 상태 칸 `"8번: 결석"`.
+- `iso-select` `detail`: **`{ index, item }`** — `index`는 `items` 배열의 인덱스(그리는 순서가 아니다).
+- 숨김 표 열: **이름 | 값 | 행 | 열**. 데이터 순서로 칸마다 한 줄. 값은 `fmt(v)`, 상태 낱말, 구조물은 빈 칸.
+  행 = 서로 다른 `y` 값의 오름차순 순위(1부터), 열 = 서로 다른 `x` 값의 순위.
+- 학교 평면도의 층은 엘리먼트 밖(템플릿의 탭)에서 `data`를 바꿔 전환한다. 층을 쌓은 단면도는 v0.2 범위가 아니다.
+
+### `<iso-layers>` 층 구조
+
+판을 위아래로 쌓고 판마다 항목 블록을 올린다(학년 판 위 단원 블록, 높이 = 평균 성취도).
+
+`data`: `[{ "k": "4학년", "items": [{ "k": "분수", "v": 72, "c"?: "#hex" }] }]` — **`data[0]`이 맨 아래 층**.
+
+| 필드 | 규칙 |
+| --- | --- |
+| 층 `k` | 필수, 문자열·숫자 |
+| 층 `items` | 배열(없거나 비면 빈 층: 판만 그린다) |
+| 항목 `k` | 필수, 문자열·숫자 |
+| 항목 `v` | 필수, 0 이상. 축척은 모든 층 항목의 최댓값(또는 `max`) |
+| 항목 `c` | 선택. 없으면 `color(층 인덱스)` |
+
+층이 하나도 없으면 빈 상태다.
+
+추가 속성 **`open`**: 펼칠 층의 인덱스(0 이상 정수). 없거나 범위 밖이거나 정수가 아니면 펼친 층이 없다.
+`observedAttributes`에 `open`을 더한다.
+
+배치(세계 단위. 템플릿과 화면 기준 이미지가 이 값을 따른다):
+
+- 판: `x 0, y 0`, `w = 1.5 · max(1, 가장 많은 항목 수) + 0.5`, `d = 2`, `h = 0.2`. 모든 판이 같은 크기.
+- 항목: 판 위(`z = 판 z + 0.2`), `x = 0.5 + 1.5 · j`, `y = 0.5`, `w = d = 1`.
+- 접힌 층: 층 간격 1(판 0.2 + 여유 0.8). 항목 높이 = `0.7 · v / max`(여유 안에 들어간다).
+- 펼친 층 `o`: 그 층 항목 높이 = `scale(v)`(`height-units` H). `o`보다 위 층은 모두 `H − 0.7`만큼 들려 올라간다.
+  즉 층 L의 판 z = `L + (o 있음 && L > o ? H − 0.7 : 0)`.
+- 그리는 순서: 아래 층부터, 한 층 안에서는 판 → 항목(x 순). 위 층의 모든 점은 아래 층의 모든 점보다 앞이므로
+  (수평면으로 갈리고 시선 (1, 1, 1)은 위로 갈수록 앞이다) 이 순서로 충분하다.
+
+판(층 블록):
+
+- `role="button"`, `tabindex="-1"`(탭 순서에서 빠짐), `aria-label` `"4학년, 항목 5개"`, `aria-expanded` `"true"|"false"`.
+- 층 이름 라벨은 늘 보인다(`iso-label--ground iso-label--side`, iso-ledger와 같은 옆 라벨).
+- 클릭하면 `iso-select`(`detail: { layer, index: -1, item: 층 객체 }`)를 내고, 엘리먼트가 그 이벤트를 받아 `open`을
+  그 층으로 바꾼다(이미 펼친 층이면 `open`을 지운다). iso-ledger의 `selected`와 같은 방식.
+
+항목:
+
+- `iso-select` `detail`: **`{ layer, index, item }`** — `layer`는 층 인덱스, `index`는 층 안 항목 인덱스.
+- 라벨: 펼친 층의 항목은 값(`fmt(v)`)과 이름이 늘 보이고, 나머지 층의 항목은 호버·포커스 때만.
+- `aria-label`: `"4학년 분수: 72"`.
+
+키보드(로빙 탭인덱스 — 항목 중 하나만 `tabindex="0"`, 나머지 `-1`):
+
+| 키 | 동작 |
+| --- | --- |
+| Tab | 엘리먼트로 들어오면 마지막으로 포커스했던 항목(처음엔 펼친 층, 없으면 맨 아래 층의 첫 항목) |
+| ↑ / ↓ | 위·아래 층으로. 같은 항목 인덱스(그 층 항목 수 − 1을 넘지 않게). 빈 층은 건너뛴다. 끝에서 멈춘다 |
+| ← / → | 같은 층의 앞·뒤 항목으로. 끝에서 멈춘다(감싸 돌지 않음) |
+| Enter / Space | `iso-select`(base) |
+
+- 화살표 키는 `preventDefault`(페이지 스크롤을 막는다).
+- 항목이 포커스를 받으면(`focusin`, 키보드·마우스 모두) 그 층이 펼친 층이 아니면 `open`을 그 층으로 바꾼다 —
+  가려진 항목이 보이게 한다. 다시 그려도 포커스는 같은 키의 블록에 남는다(base).
+- 숨김 표 열: **층 | 항목 | 값**. 아래 층부터 항목마다 한 줄(빈 층은 항목·값이 빈 한 줄).
+
+### `<iso-city>` 위계를 건물로
+
+트리맵으로 바닥을 구역으로 나누고 그 위에 건물을 세운다. 밑면 넓이 = `size`, 높이 = `v`.
+
+`data`:
+
+```json
+{ "k": "학교", "children": [
+  { "k": "1학년", "children": [ { "k": "1반", "size": 27, "v": 64 } ] }
+] }
+```
+
+| 노드 | 규칙 |
+| --- | --- |
+| 뿌리 | 객체. `k` 선택(v0.2에서는 그리지 않음). `children`: 구역 배열(없거나 비면 빈 상태) |
+| 구역 | `k` 필수. `children`: 건물 배열, **비어 있으면 오류**. `size`가 있으면 오류 |
+| 건물 | `k` 필수. `size` 유한한 양수(0·음수 오류). `v` 0 이상 필수. `c` 선택. `children`이 있으면 오류(v0.2 최대 깊이 2) |
+
+배치:
+
+- 건물 수 N, 한 변 `L = 2·√N`인 정사각형을 `nest(구역별 size 배열, { x: 0, y: 0, w: L, d: L }, 0.6, 0.3)`으로 나눈다.
+- 바닥판: `{ x: −0.5, y: −0.5, w: L + 1, d: L + 1 }`.
+- 구역 판: 구역 사각형에 `z 0`, `h 0.1`, 색 `color-mix(in oklch, var(--iso-floor), var(--iso-ink) 12%)`. `attrs`:
+  `aria-hidden="true"`, `tabindex` 없음, `data-district`. `pointer-events: none`이라 `iso-select`를 내지 않는다.
+  이름 라벨(구역 `k`)은 **늘** 보인다.
+- 건물: 항목 사각형에 `z 0.1`, `h = scale(v)`, 색 `c` 또는 `color(구역 인덱스)`. 이름(`k`)·값 라벨은
+  **호버·포커스 때만** 보인다.
+- 그리는 순서: 구역 판 전부(`order(판)`) 다음 건물 전부(`order(건물)`, 인덱스는 데이터를 펼친 순서). 판 윗면(z 0.1)이
+  건물 바닥과 같거나 낮아서 앞 판이 뒤 건물을 가릴 수 없으므로(시선 (1, 1, 1)을 따라 앞으로 가면 z가 커진다) 이
+  순서로 맞다. 탭 순서는 건물 순서다.
+- 건물 300개 + 구역 판이면 200블록을 넘어 SVG 경로로 그린다. 목표: 첫 렌더 ≤ 100 ms(CPU 6배 감속).
+- `iso-select` `detail`: **`{ district, index, item }`** — `district`는 구역 인덱스, `index`는 구역 안 건물 인덱스,
+  `item`은 건물 객체.
+- `aria-label`: `"1학년 1반: 64 (크기 27)"`.
+- 숨김 표 열: **구역 | 이름 | 크기 | 값**. 데이터 순서로 건물마다 한 줄.
+
+### 파일 소유 (v0.2 교육용)
+
+| 경로 | 담당 카드 |
+| --- | --- |
+| `packages/core/build.mjs`, `.size-limit.json`, `packages/core/package.json`의 `exports`, `packages/core/src/layout/`, `tests/unit/{order,treemap,paint-order}.test.ts`, `tests/visual/dist.spec.ts`(빌드본 = 소스 검사), 이 절 | iso-edu-foundation |
+| `packages/core/src/elements/iso-map.ts`, `packages/core/demo/map.html`, `tests/unit/map.test.ts`, `tests/visual/map.spec.ts`(+ 기준 이미지) | iso-map |
+| `packages/core/src/elements/iso-layers.ts`, `packages/core/demo/layers.html`, `tests/unit/layers.test.ts`, `tests/visual/layers.spec.ts`(+ 기준 이미지) | iso-layers |
+| `packages/core/src/elements/iso-city.ts`, `packages/core/demo/city.html`, `tests/unit/city.test.ts`, `tests/visual/city.spec.ts`(+ 기준 이미지) | iso-city |
+| `packages/core/src/edu.ts` | 각 팀이 자기 import·`define`·export 한 줄씩만 추가(먼저 들어오는 팀이 자리 표시 export를 지운다) |
+| `packages/core/src/css/edu.css` | 공유. 각 팀은 자기 엘리먼트 이름으로 시작하는 규칙(`iso-map …`)만 추가 |
+
+세 팀은 `base.ts`, `geometry.ts`, `layout/`, 코어 CSS를 고치지 않는다. 필요하면 이 절을 고치는 별도 카드로
+올린다(core js 여유 42 B).
 
 ## 파일 소유
 

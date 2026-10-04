@@ -1,4 +1,6 @@
 [
   { "name": "core css", "path": "packages/core/dist/iso.min.css", "limit": "6 KB", "gzip": true },
-  { "name": "core js", "path": "packages/core/dist/iso.min.js", "limit": "5 KB", "gzip": true }
+  { "name": "core js (iso.min.js + iso-base.min.js)", "path": ["packages/core/dist/iso.min.js", "packages/core/dist/iso-base.min.js"], "limit": "5 KB", "gzip": true },
+  { "name": "edu js (iso-edu.min.js only, on top of iso-base.min.js)", "path": "packages/core/dist/iso-edu.min.js", "limit": "3 KB", "gzip": true },
+  { "name": "edu css", "path": "packages/core/dist/iso-edu.min.css", "limit": "2 KB", "gzip": true }
 ]

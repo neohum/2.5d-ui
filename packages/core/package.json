@@ -9,7 +9,9 @@
   "style": "./dist/iso.min.css",
   "exports": {
     ".": "./dist/iso.min.js",
-    "./css": "./dist/iso.min.css"
+    "./css": "./dist/iso.min.css",
+    "./edu": "./dist/iso-edu.min.js",
+    "./edu/css": "./dist/iso-edu.min.css"
   },
   "files": ["dist"],
   "sideEffects": true,
