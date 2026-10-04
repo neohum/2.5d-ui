@@ -62,7 +62,7 @@
     <thead><tr><th>경로</th><th>언제</th><th>그리는 법</th></tr></thead>
     <tbody>
       <tr><td>CSS 면</td><td><code>auto</code>에서 블록 200개(<code>SVG_THRESHOLD</code>) 이하, 또는 <code>renderer="css"</code></td><td>블록마다 <code>div</code>와 면 세 개, 2D <code>matrix()</code>. <a href="primitives.html">CSS 프리미티브</a>와 같은 구조</td></tr>
-      <tr><td>SVG</td><td><code>auto</code>에서 200개 초과, 또는 <code>renderer="svg"</code></td><td>장면 하나에 인라인 <code>&lt;svg&gt;</code> 한 장, 블록마다 다각형 세 개. 블록 1000개까지 첫 렌더·호버 예산을 지키며, 그 이상도 그리지만 예산은 보장하지 않습니다</td></tr>
+      <tr><td>SVG</td><td><code>auto</code>에서 200개 초과, 또는 <code>renderer="svg"</code></td><td>장면 하나에 인라인 <code>&lt;svg&gt;</code> 한 장, 블록마다 다각형 세 개. 호버는 블록 1000개까지 예산 안입니다. 첫 렌더는 500개에서 예산 안이고, 1000개에서는 측정 방법에 따라 90–106ms로 예산(100ms) 경계에 걸립니다. 1000개를 넘어도 그리지만 예산은 보장하지 않습니다</td></tr>
     </tbody>
   </table></div>
   <p><b>두 경로에서 같은 것:</b> <code>iso-select</code> 이벤트(클릭·Enter·Space), 키보드 탭 순서와 포커스 유지, 블록의 <code>role</code>·<code>aria-label</code>, 숨김 접근성 표, 색 검사와 빈·오류 상태, 다크 테마·팔레트 토큰, 호버·포커스 들림과 동작 줄이기.</p>
