@@ -44,7 +44,8 @@ const SAMPLES: Record<Tag, Sample> = {
   "iso-kpi": { label: "배터리 평균 잔량", max: "100", data: { value: 72, suffix: "%" } },
 };
 
-const ATTRS = ["max", "unit", "height-units", "label"] as const;
+// renderer는 select(빈 값 = auto, 속성 없음). 엘리먼트 종류를 바꿔도 고른 값을 유지한다.
+const ATTRS = ["max", "unit", "height-units", "label", "renderer"] as const;
 const KPI_KEYS = ["value", "suffix"] as const;
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -53,7 +54,7 @@ const ta = $<HTMLTextAreaElement>("pg-data");
 const statusEl = $<HTMLParagraphElement>("pg-status");
 const stage = $<HTMLDivElement>("pg-stage");
 const code = $<HTMLElement>("pg-code");
-const input = (a: string) => $<HTMLInputElement>("pg-" + a);
+const input = (a: string) => $<HTMLInputElement | HTMLSelectElement>("pg-" + a);
 
 let el: HTMLElement;
 
@@ -99,7 +100,9 @@ const update = () => {
     const o = ok && parsed && typeof parsed == "object" && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : null;
     if (o) for (const k of KPI_KEYS) attr(k, o[k] == null ? null : String(o[k]));
     const v = o?.value;
-    const good = typeof v == "number" ? isFinite(v) && v >= 0 : typeof v == "string" && v.trim() != "" && +v >= 0;
+    // 엘리먼트와 같은 기준: 문자열도 숫자로 바꿔 유한한 0 이상이어야 한다("Infinity"는 오류).
+    const n = typeof v == "number" ? v : typeof v == "string" && v.trim() != "" ? +v : NaN;
+    const good = isFinite(n) && n >= 0;
     fail = !o || (v != null && !good);
     msg = !ok
       ? `JSON 오류: ${err} — iso-kpi는 이전 값을 그대로 보입니다.`

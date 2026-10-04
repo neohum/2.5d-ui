@@ -96,6 +96,9 @@ section { display: grid; gap: 14px; min-width: 0; }
 :is(iso-bars, iso-stack, iso-heatmap, iso-ledger, iso-kpi) { display: block; }
 
 
+/* 칸이 작아 화면 라벨이 겹치는 큰 예시: 라벨만 숨긴다(aria-label·숨김 표는 남는다). */
+.dense .iso-label { display: none; }
+
 .log { font-size: 0.82rem; color: var(--iso-ink-muted); min-height: 1.7em; overflow-wrap: anywhere; }
 
 /* ---------- 코드 ---------- */

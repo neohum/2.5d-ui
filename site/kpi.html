@@ -56,12 +56,13 @@
   <div class="table"><table>
     <thead><tr><th>속성</th><th>형식</th><th>의미</th></tr></thead>
     <tbody>
-      <tr><td><code>value</code></td><td>숫자</td><td>지표 값. 없으면 빈 상태, 숫자가 아니거나 음수면 <code>console.error</code> 후 오류 상태</td></tr>
-      <tr><td><code>max</code></td><td>숫자</td><td>상자를 가득 채우는 값. 없으면 <code>value</code>(늘 가득). 넘는 값은 가득으로 잘린다</td></tr>
+      <tr><td><code>value</code></td><td>숫자</td><td>지표 값. 없으면 빈 상태, 유한한 수가 아니거나(<code>Infinity</code> 포함) 음수면 <code>console.error</code> 후 오류 상태</td></tr>
+      <tr><td><code>max</code></td><td>숫자</td><td>상자를 가득 채우는 값. 없으면 <code>value</code>와 같아 가득 찬다 — 단 <code>value="0"</code>이면 채움 높이 0. 넘는 값은 가득으로 잘린다</td></tr>
       <tr><td><code>label</code></td><td>문자열</td><td>상자 아래 이름 라벨이자 접근 가능한 이름의 앞부분</td></tr>
       <tr><td><code>suffix</code></td><td>문자열</td><td>값 바로 뒤에 붙는 단위. 띄어 쓰려면 앞에 공백을 넣는다(예: <code>" GB"</code>)</td></tr>
       <tr><td><code>unit</code></td><td>숫자(px)</td><td><code>--iso-u</code> 값. 기본 24</td></tr>
       <tr><td><code>height-units</code></td><td>숫자</td><td>상자 높이(블록 단위). 기본 5</td></tr>
+      <tr><td><code>renderer</code></td><td><code>css</code> | <code>svg</code> | <code>auto</code></td><td>그리는 방식. 기본 <code>auto</code>(그 밖의 값도 같음): 블록 200개 이하면 CSS 면, 넘으면 SVG. <code>css</code>·<code>svg</code>는 블록 수와 무관하게 고정. <a href="index.html#render">렌더링 방식</a></td></tr>
     </tbody>
   </table></div>
 </section>

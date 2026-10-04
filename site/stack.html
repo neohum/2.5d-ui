@@ -64,6 +64,7 @@
       <tr><td><code>unit</code></td><td>숫자(px)</td><td><code>--iso-u</code> 값. 기본 24</td></tr>
       <tr><td><code>height-units</code></td><td>숫자</td><td>최댓값이 차지하는 블록 높이. 기본 5</td></tr>
       <tr><td><code>label</code></td><td>문자열</td><td>접근성 캡션(<code>aria-label</code>과 숨김 표 <code>caption</code>)</td></tr>
+      <tr><td><code>renderer</code></td><td><code>css</code> | <code>svg</code> | <code>auto</code></td><td>그리는 방식. 기본 <code>auto</code>(그 밖의 값도 같음): 블록 200개 이하면 CSS 면, 넘으면 SVG. <code>css</code>·<code>svg</code>는 블록 수와 무관하게 고정. <a href="index.html#render">렌더링 방식</a></td></tr>
     </tbody>
   </table></div>
   <h3>data 항목</h3>
@@ -74,7 +75,7 @@
       <tr><td><code>parts</code></td><td>배열 · 필수</td><td>아래에서 위로 쌓을 조각</td></tr>
       <tr><td><code>parts[].name</code></td><td>문자열 · 선택</td><td>계열 이름. 없으면 "계열 n"</td></tr>
       <tr><td><code>parts[].v</code></td><td>0 이상 숫자 · 필수</td><td>조각 값</td></tr>
-      <tr><td><code>parts[].c</code></td><td>CSS 색 · 선택</td><td>조각 색. 없거나 문자열이 아니면 조각 순서의 범주 팔레트. <a href="bars.html#colors">색 규칙</a>을 따르며, 거부되는 색이 있으면 오류 상태</td></tr>
+      <tr><td><code>parts[].c</code></td><td>CSS 색 · 선택</td><td>조각 색. 없거나 문자열이 아니면 조각 순서의 범주 팔레트. <a href="bars.html#colors">색 규칙</a>을 따르며, 그려지는 조각에 거부되는 색이 있으면 오류 상태. <code>max</code>에 잘려 그리지 않는 조각의 색은 검사하지 않는다</td></tr>
     </tbody>
   </table></div>
 </section>

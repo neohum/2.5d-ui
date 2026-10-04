@@ -171,6 +171,31 @@ test.describe("플레이그라운드", () => {
     await expect(page.locator("#pg-status")).not.toHaveClass(/bad/);
   });
 
+  test("renderer 선택이 엘리먼트의 그리는 경로를 바꾼다", async ({ page }) => {
+    await open(page, "playground");
+    const el = page.locator("#pg-stage iso-bars");
+    await expect(el.locator(".iso-svg")).toHaveCount(0);
+    await page.locator("#pg-renderer").selectOption("svg");
+    await expect(el).toHaveAttribute("renderer", "svg");
+    await expect(el.locator(".iso-scene > svg.iso-svg .iso-block")).toHaveCount(4);
+    await expect(page.locator("#pg-code")).toContainText('renderer="svg"');
+    // 종류를 바꿔도 고른 경로를 유지한다.
+    await page.locator("#pg-type").selectOption("iso-heatmap");
+    await expect(page.locator("#pg-stage iso-heatmap .iso-svg .iso-block")).toHaveCount(9);
+    await page.locator("#pg-renderer").selectOption("");
+    await expect(page.locator("#pg-stage iso-heatmap")).not.toHaveAttribute("renderer");
+    await expect(page.locator("#pg-stage iso-heatmap .iso-svg")).toHaveCount(0);
+  });
+
+  test('iso-kpi: {"value":"Infinity"}는 성공이 아니라 오류 상태로 알린다', async ({ page }) => {
+    await open(page, "playground");
+    await page.locator("#pg-type").selectOption("iso-kpi");
+    await page.locator("#pg-data").fill('{"value": "Infinity"}');
+    await expect(page.locator("#pg-stage iso-kpi .iso-empty")).toHaveText("데이터를 표시할 수 없습니다");
+    await expect(page.locator("#pg-status")).toContainText("오류 상태");
+    await expect(page.locator("#pg-status")).toHaveClass(/bad/);
+  });
+
   test("height-units는 0보다 큰 값만 받는다", async ({ page }) => {
     await open(page, "playground");
     await expect(page.locator("#pg-height-units")).toHaveAttribute("min", "0.5");
@@ -245,6 +270,47 @@ test.describe("엘리먼트 페이지가 실제로 그린다", () => {
     for (const c of accepted) expect(await renders(c), c).toBe(true);
     for (const c of rejected) expect(await renders(c), c).toBe(false);
   });
+
+  test("색 규칙의 예외: 빈 문자열은 기본색, stack에서 잘린 조각의 색은 검사하지 않는다", async ({ page }) => {
+    await open(page, "bars");
+    const res = await page.evaluate(() => {
+      const b = document.createElement("iso-bars");
+      b.setAttribute("data", JSON.stringify([{ k: "a", v: 1 }, { k: "b", v: 2, c: "" }]));
+      document.body.append(b);
+      const top = b.querySelectorAll(".iso-block")[1].querySelector(".iso-top")!;
+      const s = document.createElement("iso-stack");
+      s.setAttribute("max", "10");
+      s.setAttribute("data", JSON.stringify([{ k: "a", parts: [{ v: 10 }, { v: 5, c: "url(x)" }] }]));
+      document.body.append(s);
+      const root = getComputedStyle(document.documentElement).getPropertyValue("--iso-color-1").trim();
+      const probe = document.createElement("i");
+      probe.style.background = root;
+      document.body.append(probe);
+      return {
+        emptyIsDefault: getComputedStyle(top).backgroundColor == getComputedStyle(probe).backgroundColor,
+        stackBlocks: s.querySelectorAll(".iso-block").length,
+        stackError: !!s.querySelector(".iso-empty"),
+      };
+    });
+    expect(res).toEqual({ emptyIsDefault: true, stackBlocks: 1, stackError: false });
+  });
+
+  test("heatmap: 500칸 예시는 자동으로 SVG 경로, 작은 예시는 CSS 면", async ({ page }) => {
+    await open(page, "heatmap");
+    const big = page.locator("#big");
+    await expect(big.locator(".iso-scene > svg.iso-svg")).toHaveCount(1);
+    await expect(big.locator(".iso-svg .iso-block")).toHaveCount(500);
+    await expect(big.locator("table.iso-sr-only tr")).toHaveCount(21);
+    await expect(page.locator("#big-path")).toHaveText("블록 500개 → SVG 경로로 그림");
+    await expect(page.locator(".example iso-heatmap .iso-svg")).toHaveCount(0);
+  });
+
+  for (const p of ["bars", "stack", "heatmap", "ledger", "kpi"]) {
+    test(`${p}: 속성 표에 renderer가 있다`, async ({ page }) => {
+      await open(page, p);
+      await expect(page.locator("#attrs").locator("xpath=..").locator("tbody tr", { hasText: "renderer" })).toHaveCount(1);
+    });
+  }
 
   test("kpi: 그릇 블록 하나만 포커스되고 이름은 label: 값suffix", async ({ page }) => {
     await open(page, "kpi");

@@ -44,6 +44,17 @@
   </div>
 </section>
 
+<section aria-labelledby="ex-big">
+  <h2 id="ex-big">큰 격자 — 자동 SVG</h2>
+  <p class="muted">20행 × 25열 = 500칸(예시 데이터). 블록이 200개를 넘어 <code>renderer</code>를 따로 주지 않아도 SVG 경로로 그립니다. 이벤트·키보드·숨김 표는 위 예시와 같습니다. 칸 한 변이 12px이라 행·열 이름이 서로 겹치므로, 이 예시는 페이지 CSS로 화면 라벨만 숨겼습니다(<code>.dense .iso-label { display: none }</code>). 이름은 각 칸의 <code>aria-label</code>과 숨김 표에 그대로 남습니다.</p>
+  <div class="card">
+    <div class="preview dense">
+      <iso-heatmap id="big" unit="12" height-units="3" label="20일 × 25구역 접속 지수"></iso-heatmap>
+    </div>
+    <p class="log" id="big-path" aria-live="polite"></p>
+  </div>
+</section>
+
 <section aria-labelledby="attrs">
   <h2 id="attrs">속성</h2>
   <div class="table"><table>
@@ -54,6 +65,7 @@
       <tr><td><code>unit</code></td><td>숫자(px)</td><td><code>--iso-u</code> 값(칸 한 변). 기본 24</td></tr>
       <tr><td><code>height-units</code></td><td>숫자</td><td>최댓값이 차지하는 블록 높이. 기본 5. 칸이 많으면 3 안팎이 읽기 좋다</td></tr>
       <tr><td><code>label</code></td><td>문자열</td><td>접근성 캡션(<code>aria-label</code>과 숨김 표 <code>caption</code>)</td></tr>
+      <tr><td><code>renderer</code></td><td><code>css</code> | <code>svg</code> | <code>auto</code></td><td>그리는 방식. 기본 <code>auto</code>(그 밖의 값도 같음): 블록 200개 이하면 CSS 면, 넘으면 SVG. <code>css</code>·<code>svg</code>는 블록 수와 무관하게 고정. <a href="index.html#render">렌더링 방식</a></td></tr>
     </tbody>
   </table></div>
   <h3>data 형식</h3>
@@ -85,6 +97,18 @@
     <li>칸이 많으면 Tab 이동이 길어집니다. 행·열을 꼭 필요한 만큼으로 줄이고 <code>label</code>로 무엇을 세었는지 밝히세요.</li>
   </ul>
 </section>
+
+<script type="module">
+  // 500칸 예시 데이터: 결정적인 물결 모양(새로 고쳐도 같은 그림).
+  const rows = Array.from({ length: 20 }, (_, i) => i + 1 + "일");
+  const cols = Array.from({ length: 25 }, (_, j) => "구역 " + (j + 1));
+  const values = rows.map((_, i) => cols.map((_, j) => Math.round(50 + 40 * Math.sin(i / 3) * Math.cos(j / 4))));
+  const big = document.getElementById("big");
+  big.setAttribute("data", JSON.stringify({ rows, cols, values }));
+  const svg = big.querySelector(".iso-svg");
+  document.getElementById("big-path").textContent =
+    `블록 ${big.querySelectorAll(".iso-block").length}개 → ${svg ? "SVG" : "CSS 면"} 경로로 그림`;
+</script>
 </main>
 <footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
 </body>

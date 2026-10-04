@@ -53,6 +53,7 @@
       <tr><td><code>selected</code></td><td>정수(인덱스)</td><td>빼낼 장. 없으면 아무 장도 빼지 않는다. 엘리먼트가 클릭·Enter에 맞춰 스스로 바꾸며, 그 장 블록에 <code>aria-pressed="true"</code>를 단다</td></tr>
       <tr><td><code>unit</code></td><td>숫자(px)</td><td><code>--iso-u</code> 값. 기본 24</td></tr>
       <tr><td><code>label</code></td><td>문자열</td><td>접근성 캡션(<code>aria-label</code>과 숨김 표 <code>caption</code>)</td></tr>
+      <tr><td><code>renderer</code></td><td><code>css</code> | <code>svg</code> | <code>auto</code></td><td>그리는 방식. 기본 <code>auto</code>(그 밖의 값도 같음): 블록 200개 이하면 CSS 면, 넘으면 SVG. <code>css</code>·<code>svg</code>는 블록 수와 무관하게 고정. <a href="index.html#render">렌더링 방식</a></td></tr>
     </tbody>
   </table></div>
   <p class="muted">장 두께는 값이 아니라 고정이므로 <code>max</code>와 <code>height-units</code>는 장부 모양에 영향을 주지 않습니다.</p>
@@ -79,7 +80,7 @@ ledger.addEventListener("iso-select", () => {
 <section aria-labelledby="a11y">
   <h2 id="a11y">접근성</h2>
   <ul>
-    <li>장마다 포커스를 받고, 선택 여부를 <code>aria-pressed</code>로 알립니다. 화면의 선택 강조도 같은 <code>aria-pressed="true"</code>에서 나옵니다 — 오른쪽으로 빠지고, 살짝 들리고(<code>--iso-lift</code>, 동작 줄이기에서는 들리지 않음), 실선 윤곽이 생깁니다. 그 장에 키보드 포커스가 있으면 포커스의 점선 윤곽이 대신 보입니다.</li>
+    <li>장마다 포커스를 받고, 선택 여부를 <code>aria-pressed</code>로 알립니다. 화면의 선택 강조도 같은 <code>aria-pressed="true"</code>에서 나옵니다 — 오른쪽으로 빠지고(CSS 경로에서는 미끄러지듯, SVG 경로에서는 바로), 살짝 들리고(<code>--iso-lift</code>, 동작 줄이기에서는 들리지 않음), 실선 윤곽이 생깁니다. 그 장에 키보드 포커스가 있으면 포커스의 점선 윤곽이 대신 보입니다.</li>
     <li>숨김 표가 모든 장의 이름과 설명을 담습니다.</li>
     <li>선택은 위치(빠져나옴)로 보입니다. 고른 장의 내용은 화면의 글로도 함께 보여 주세요 — <a href="tpl-versions.html">버전 기록 뷰어</a>가 그 예입니다.</li>
   </ul>

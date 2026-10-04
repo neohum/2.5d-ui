@@ -31,7 +31,7 @@
 <section class="head">
   <span class="eyebrow">v0.1 준비 중 · MIT</span>
   <h1>CSS만으로 그리는 등각 2.5D 데이터 컴포넌트</h1>
-  <p class="lede">WebGL도 캔버스도 없이, 블록의 면 세 개를 2D <code>matrix()</code> 하나씩으로 그립니다. 크롬북처럼 GPU가 약한 기기에서도 가볍게 돌고, 값이 바뀔 때가 아니면 CPU를 쓰지 않습니다.</p>
+  <p class="lede">WebGL도 캔버스도 없이, 블록 200개까지는 면 세 개를 2D <code>matrix()</code> 하나씩으로, 그보다 많으면 인라인 SVG 한 장으로 그립니다. 크롬북처럼 GPU가 약한 기기에서도 가볍게 돌고, 값이 바뀔 때가 아니면 CPU를 쓰지 않습니다.</p>
 </section>
 
 <section aria-labelledby="hero-title">
@@ -53,6 +53,30 @@
     <li><b>텍스트는 DOM.</b> 값과 이름은 일반 텍스트라 선택·복사·번역·스크린 리더가 그대로 동작합니다. 모든 값을 담은 숨김 표도 함께 만듭니다.</li>
     <li><b>테마와 동작 줄이기.</b> 다크 모드(<code>prefers-color-scheme</code>, <code>data-theme</code>)와 <code>prefers-reduced-motion</code>을 토큰 단계에서 따릅니다.</li>
   </ul>
+</section>
+
+<section aria-labelledby="render">
+  <h2 id="render">렌더링 방식</h2>
+  <p>엘리먼트는 두 경로 중 하나로 그립니다. 고르는 것은 <code>renderer</code> 속성(React는 <code>renderer</code> prop)이고, 기본값 <code>auto</code>는 블록 수로 고릅니다. 기준은 측정으로 정했습니다(<code>docs/adr/0001-render-approach.md</code>).</p>
+  <div class="table"><table>
+    <thead><tr><th>경로</th><th>언제</th><th>그리는 법</th></tr></thead>
+    <tbody>
+      <tr><td>CSS 면</td><td><code>auto</code>에서 블록 200개(<code>SVG_THRESHOLD</code>) 이하, 또는 <code>renderer="css"</code></td><td>블록마다 <code>div</code>와 면 세 개, 2D <code>matrix()</code>. <a href="primitives.html">CSS 프리미티브</a>와 같은 구조</td></tr>
+      <tr><td>SVG</td><td><code>auto</code>에서 200개 초과, 또는 <code>renderer="svg"</code></td><td>장면 하나에 인라인 <code>&lt;svg&gt;</code> 한 장, 블록마다 다각형 세 개. 블록 1000개까지 첫 렌더·호버 예산을 지키며, 그 이상도 그리지만 예산은 보장하지 않습니다</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>두 경로에서 같은 것:</b> <code>iso-select</code> 이벤트(클릭·Enter·Space), 키보드 탭 순서와 포커스 유지, 블록의 <code>role</code>·<code>aria-label</code>, 숨김 접근성 표, 색 검사와 빈·오류 상태, 다크 테마·팔레트 토큰, 호버·포커스 들림과 동작 줄이기.</p>
+  <p><b>알려진 한계 (v0.1)</b></p>
+  <ul>
+    <li>값이 바뀔 때의 높이 애니메이션은 두 경로 모두 프레임 예산(표시 프레임 드롭 ≤ 5%)을 지키지 못합니다. 개선은 v0.2로 미뤘습니다.</li>
+    <li>SVG 경로는 값 변경을 움직이지 않고 새 높이로 바로 바꿉니다(<code>iso-ledger</code>의 빼냄도 바로 옮깁니다).</li>
+    <li>블록마다 <code>--iso-x</code>·<code>-y</code>·<code>-w</code>·<code>-d</code>·<code>-h</code>·<code>-z</code>를 CSS로 덮어쓰는 것은 CSS 경로에서만 듣습니다. SVG 경로는 좌표를 JS가 다각형에 직접 씁니다. 색 <code>--iso-c</code>는 두 경로 모두 듣습니다.</li>
+  </ul>
+  <pre data-copy><code>&lt;!-- 블록 수와 무관하게 SVG로 --&gt;
+&lt;iso-heatmap renderer="svg" data='…'&gt;&lt;/iso-heatmap&gt;
+
+// React
+&lt;IsoHeatmap renderer="svg" data={data} /&gt;</code></pre>
 </section>
 
 <section aria-labelledby="install">
