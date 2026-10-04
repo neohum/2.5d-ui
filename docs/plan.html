@@ -245,7 +245,7 @@ pre { margin: 0; background: var(--surface); border: 1px solid var(--line); bord
         <tr><td>선택형 JS(Web Components)</td><td class="num">≤ 4 KB gzip</td><td><code>size-limit</code></td><td>P3에서 측정</td></tr>
         <tr><td>유휴 상태 CPU</td><td class="num">0 %</td><td>Performance 트레이스 10초, 스크립트·페인트 0건</td><td>충족(모든 안, rAF 0·Paint 0)</td></tr>
         <tr><td>호버 애니메이션 (블록 1000개 이하)</td><td class="num">60 fps</td><td>CPU 6× 스로틀, 표시 프레임 드롭 ≤ 5%(cc <code>PipelineReporter</code>, 프레임 단위 합침) 그리고 메인 스레드 rAF 누락 ≤ 5%</td><td>1000개 이하 충족(표시 드롭 최대 0.8%, 메인 스레드 누락 0.0%). 2000개는 C안 메인 스레드 누락 10.4%로 범위 밖</td></tr>
-        <tr><td>값 변경 애니메이션</td><td class="num">60 fps</td><td>CPU 6× 스로틀, 모든 블록 높이를 바꾸고 되돌리는 동안 표시 프레임 드롭 ≤ 5%</td><td><b>미달.</b> A′안 50개 8.3%, 200개 66.7%. C안 200개 7.1%, 500개 14.3%. 처리는 ADR 0001에서 소유자 결정 대기</td></tr>
+        <tr><td>값 변경 애니메이션</td><td class="num">60 fps</td><td>CPU 6× 스로틀, 모든 블록 높이를 바꾸고 되돌리는 동안 표시 프레임 드롭 ≤ 5%</td><td><b>미달.</b> A′안 50개 8.3%, 200개 66.7%. C안 200개 7.1%, 500개 14.3%. v0.1의 알려진 한계로 문서화하고 v0.2에서 개선(ADR 0001)</td></tr>
         <tr><td>블록 500개 첫 렌더</td><td class="num">≤ 100 ms</td><td>Playwright, 내비게이션 시작부터 double rAF 뒤 <code>performance.mark</code>까지(블록 50개에서도 59.7–67.7ms인 고정 몫 포함)</td><td>충족(C안 86.9ms). A′안이었다면 132.5ms로 미달</td></tr>
         <tr><td>추가 메모리</td><td class="num">≤ 5 MB</td><td>블록 500개 페이지의 JS 힙 + DOM 비교</td><td>JS 힙만 충족(1.22MB). DOM 네이티브 메모리는 미측정</td></tr>
       </tbody>
