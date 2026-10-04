@@ -82,9 +82,22 @@ el.setAttribute("data", JSON.stringify([{ k: "1반", v: 88 }, { k: "2반", v: 91
     <tbody>
       <tr><td><code>k</code></td><td>문자열 · 필수</td><td>항목 이름(바닥 라벨)</td></tr>
       <tr><td><code>v</code></td><td>0 이상 숫자 · 필수</td><td>값. 음수면 그래프 전체를 그리지 않는다</td></tr>
-      <tr><td><code>c</code></td><td>CSS 색 · 선택</td><td>이 막대의 색. 없으면 범주 팔레트 순서</td></tr>
+      <tr><td><code>c</code></td><td>CSS 색 · 선택</td><td>이 막대의 색. 없거나 문자열이 아니면 범주 팔레트 순서. 아래 <a href="#colors">색 규칙</a>을 따른다</td></tr>
     </tbody>
   </table></div>
+</section>
+
+<section aria-labelledby="colors">
+  <h2 id="colors">색 규칙 (<code>c</code>)</h2>
+  <p>막대와 <a href="stack.html">적층 조각</a>의 <code>c</code>는 블록의 <code>--iso-c</code>로 들어갑니다. 브라우저가 CSS 색으로 받아들이는 값(<code>CSS.supports("color", c)</code>)이면 됩니다.</p>
+  <div class="table"><table>
+    <thead><tr><th>구분</th><th>예</th></tr></thead>
+    <tbody>
+      <tr><td>받음</td><td><code>#e0a800</code>, <code>rgb(46 158 106)</code>, <code>tomato</code>, <code>oklch(70% 0.15 250)</code>, <code>color-mix(in oklch, red, blue)</code>, <code>var(--iso-color-3)</code>(변수가 든 값은 그대로 통과)</td></tr>
+      <tr><td>거부</td><td>색이 아닌 값(<code>12px</code>, <code>"red"</code>), 선언을 끝내거나 빠져나갈 수 있는 글자·토큰이 든 값 — <code>;</code> <code>{</code> <code>}</code> <code>!</code> <code>\</code>, 따옴표, 주석 <code>/*</code>, <code>url(</code>, <code>image-set(</code>, 짝이 맞지 않는 괄호</td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted">거부되는 색이 하나라도 있으면 그래프 전체를 그리지 않고 <code>console.error</code> 후 오류 문구("데이터를 표시할 수 없습니다")를 보입니다. 잘못된 값이 조용히 기본색으로 바뀌지 않게 하려는 것입니다.</p>
 </section>
 
 <section aria-labelledby="events">

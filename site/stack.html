@@ -74,7 +74,7 @@
       <tr><td><code>parts</code></td><td>배열 · 필수</td><td>아래에서 위로 쌓을 조각</td></tr>
       <tr><td><code>parts[].name</code></td><td>문자열 · 선택</td><td>계열 이름. 없으면 "계열 n"</td></tr>
       <tr><td><code>parts[].v</code></td><td>0 이상 숫자 · 필수</td><td>조각 값</td></tr>
-      <tr><td><code>parts[].c</code></td><td>CSS 색 · 선택</td><td>조각 색. 없으면 조각 순서의 범주 팔레트</td></tr>
+      <tr><td><code>parts[].c</code></td><td>CSS 색 · 선택</td><td>조각 색. 없거나 문자열이 아니면 조각 순서의 범주 팔레트. <a href="bars.html#colors">색 규칙</a>을 따르며, 거부되는 색이 있으면 오류 상태</td></tr>
     </tbody>
   </table></div>
 </section>

@@ -219,14 +219,31 @@ test.describe("엘리먼트 페이지가 실제로 그린다", () => {
     const blocks = el.locator(".iso-block");
     await expect(blocks).toHaveCount(5);
     await expect(blocks.nth(2)).toHaveAttribute("aria-pressed", "true");
-    await expect(el.locator(".iso-is-active")).toHaveCount(1);
+    await expect(el.locator('.iso-block[aria-pressed="true"]')).toHaveCount(1);
     await blocks.nth(2).focus();
     await page.keyboard.press("Enter");
     await expect(el).not.toHaveAttribute("selected");
-    await expect(el.locator(".iso-is-active")).toHaveCount(0);
+    await expect(el.locator('.iso-block[aria-pressed="true"]')).toHaveCount(0);
     await blocks.nth(4).focus();
     await page.keyboard.press("Enter");
     await expect(el).toHaveAttribute("selected", "4");
+  });
+
+  test("bars 색 규칙 표가 실제 검사와 맞는다", async ({ page }) => {
+    await open(page, "bars");
+    const accepted = ["#e0a800", "rgb(46 158 106)", "tomato", "oklch(70% 0.15 250)", "color-mix(in oklch, red, blue)", "var(--iso-color-3)"];
+    const rejected = ["12px", '"red"', "red;x:1", "red}", "red!important", "\\72 ed", "red/*x*/", "url(a.png)", "image-set(a.png 1x)", "rgb(1 2 3))"];
+    const renders = (c: string) =>
+      page.evaluate((c) => {
+        const el = document.createElement("iso-bars");
+        el.setAttribute("data", JSON.stringify([{ k: "a", v: 1, c }]));
+        document.body.append(el);
+        const drawn = !!el.querySelector(".iso-block");
+        el.remove();
+        return drawn;
+      }, c);
+    for (const c of accepted) expect(await renders(c), c).toBe(true);
+    for (const c of rejected) expect(await renders(c), c).toBe(false);
   });
 
   test("kpi: 그릇 블록 하나만 포커스되고 이름은 label: 값suffix", async ({ page }) => {
