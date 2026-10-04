@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2.5d-ui · CSS 경로 / SVG 경로 비교</title>
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<style>
+  /* 데모 페이지 꾸밈만(grid.html과 같은 방식). */
+  :root { color-scheme: light; --page-bg: #f2f4f7; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { color-scheme: dark; --page-bg: #11151b; }
+  }
+  [data-theme="dark"] { color-scheme: dark; --page-bg: #11151b; }
+  body {
+    margin: 0; padding: 24px; background: var(--page-bg); color: var(--iso-ink);
+    font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  }
+  main { display: grid; gap: 24px; }
+  section { display: grid; gap: 8px; }
+  h2 { margin: 0; font-size: 15px; }
+  .pair { display: flex; flex-wrap: wrap; gap: 16px; align-items: start; }
+  figure { margin: 0; display: grid; gap: 4px; overflow-x: auto; }
+  figcaption { font-size: 12px; color: var(--iso-ink-muted); }
+</style>
+<script type="module" src="/packages/core/src/index.ts"></script>
+</head>
+<body>
+<main>
+  <!-- 같은 데이터를 renderer="css"와 renderer="svg"로 나란히 그린다. 두 그림이 같아야 한다. -->
+  <section id="bars">
+    <h2>iso-bars</h2>
+    <div class="pair">
+      <figure><figcaption>css</figcaption><iso-bars renderer="css" label="문서 종류별 수" data='[{"k":"문서","v":180},{"k":"사진","v":95},{"k":"영상","v":40,"c":"#d24c6a"},{"k":"기타","v":0}]'></iso-bars></figure>
+      <figure><figcaption>svg</figcaption><iso-bars renderer="svg" label="문서 종류별 수" data='[{"k":"문서","v":180},{"k":"사진","v":95},{"k":"영상","v":40,"c":"#d24c6a"},{"k":"기타","v":0}]'></iso-bars></figure>
+    </div>
+  </section>
+
+  <section id="stack">
+    <h2>iso-stack</h2>
+    <div class="pair">
+      <figure><figcaption>css</figcaption><iso-stack renderer="css" height-units="4" data='[{"k":"1월","parts":[{"name":"CPU","v":30},{"name":"메모리","v":20}]},{"k":"2월","parts":[{"name":"CPU","v":45},{"name":"메모리","v":10},{"name":"디스크","v":15}]}]'></iso-stack></figure>
+      <figure><figcaption>svg</figcaption><iso-stack renderer="svg" height-units="4" data='[{"k":"1월","parts":[{"name":"CPU","v":30},{"name":"메모리","v":20}]},{"k":"2월","parts":[{"name":"CPU","v":45},{"name":"메모리","v":10},{"name":"디스크","v":15}]}]'></iso-stack></figure>
+    </div>
+  </section>
+
+  <section id="heatmap">
+    <h2>iso-heatmap</h2>
+    <div class="pair">
+      <figure><figcaption>css</figcaption><iso-heatmap renderer="css" height-units="3" data='{"rows":["월","화","수","목","금"],"cols":["8시","10시","12시","14시","16시","18시"],"values":[[3,8,12,9,6,2],[4,9,14,11,7,3],[2,7,10,13,8,4],[5,10,15,12,9,5],[1,6,9,8,5,0]]}'></iso-heatmap></figure>
+      <figure><figcaption>svg</figcaption><iso-heatmap renderer="svg" height-units="3" data='{"rows":["월","화","수","목","금"],"cols":["8시","10시","12시","14시","16시","18시"],"values":[[3,8,12,9,6,2],[4,9,14,11,7,3],[2,7,10,13,8,4],[5,10,15,12,9,5],[1,6,9,8,5,0]]}'></iso-heatmap></figure>
+    </div>
+  </section>
+
+  <section id="ledger">
+    <h2>iso-ledger · iso-kpi</h2>
+    <div class="pair">
+      <figure><figcaption>css</figcaption><iso-ledger renderer="css" label="배포 장부" selected="1" data='[{"k":"v1.0","note":"첫 배포"},{"k":"v1.1","note":"오프라인 모드"},{"k":"v1.2"}]'></iso-ledger></figure>
+      <figure><figcaption>svg</figcaption><iso-ledger renderer="svg" label="배포 장부" selected="1" data='[{"k":"v1.0","note":"첫 배포"},{"k":"v1.1","note":"오프라인 모드"},{"k":"v1.2"}]'></iso-ledger></figure>
+      <figure><figcaption>css</figcaption><iso-kpi renderer="css" label="출석률" value="87" max="100" suffix="%"></iso-kpi></figure>
+      <figure><figcaption>svg</figcaption><iso-kpi renderer="svg" label="출석률" value="87" max="100" suffix="%"></iso-kpi></figure>
+    </div>
+  </section>
+
+  <section id="auto">
+    <h2>자동 전환: 15×14 히트맵(210블록 → SVG)</h2>
+    <figure><iso-heatmap id="big" unit="12" height-units="3" label="큰 히트맵"></iso-heatmap></figure>
+  </section>
+</main>
+<script>
+  const R = 15, C = 14;
+  document.getElementById("big").setAttribute("data", JSON.stringify({
+    rows: Array.from({ length: R }, (_, r) => "r" + r),
+    cols: Array.from({ length: C }, (_, c) => "c" + c),
+    values: Array.from({ length: R }, (_, r) => Array.from({ length: C }, (_, c) => ((r * 31 + c * 17) % 97) * 1.37)),
+  }));
+</script>
+</body>
+</html>

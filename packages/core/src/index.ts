@@ -14,3 +14,4 @@ define("iso-ledger", IsoLedger);
 define("iso-kpi", IsoKpi);
 
 export { IsoBars, IsoStack, IsoHeatmap, IsoLedger, IsoKpi };
+export { SVG_THRESHOLD } from "./elements/base.ts";

@@ -1,0 +1,76 @@
+/* SVG 경로(블록 200개 초과 또는 renderer="svg", ADR 0001). 블록은 g.iso-block, 면은
+   polygon.iso-left/.iso-right/.iso-top, 라벨은 text.iso-label. 좌표는 JS가 points로 쓰고,
+   색·들림·윤곽·라벨 모양은 CSS 경로와 같은 토큰과 클래스를 쓴다. */
+.iso-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* CSS 경로의 면 배치(transform)를 끈다. 다각형은 이미 제자리에 있다. */
+.iso-svg :is(.iso-top, .iso-left, .iso-right) {
+  transform: none;
+  fill: var(--iso-c);
+}
+
+/* Chrome은 SVG 요소의 outline을 경계 상자(사각형)로 그린다. CSS 경로의 강조·포커스·
+   iso-ledger 선택 윤곽 규칙(가장 높은 것이 0,3,1)보다 뒤에서 이겨야 한다. */
+.iso-svg .iso-block > polygon:is(.iso-top, .iso-left, .iso-right) {
+  outline: none;
+}
+
+.iso-svg .iso-left {
+  fill: color-mix(in oklch, var(--iso-c), black var(--iso-shade-left));
+}
+
+.iso-svg .iso-right {
+  fill: color-mix(in oklch, var(--iso-c), black var(--iso-shade-right));
+}
+
+/* 고정 히트 영역: 그리지 않고 클릭·호버만 받는다. 들리지 않으므로(면만 들린다) 블록 아래
+   가장자리에서 호버가 깜빡이지 않는다. 들린 면 자체도 히트 영역이라 위쪽도 이어진다. */
+.iso-svg .iso-block > .iso-hit:not(.iso-label--ground) {
+  translate: none;
+  fill: none;
+  pointer-events: fill;
+}
+
+/* 강조·포커스 윤곽: outline 대신 면 테두리(실선 강조, 점선 키보드 포커스). */
+.iso-svg .iso-block.iso-is-active > :is(.iso-top, .iso-left, .iso-right),
+iso-ledger .iso-svg [aria-pressed="true"] > :is(.iso-top, .iso-left, .iso-right) {
+  stroke: var(--iso-ink);
+  stroke-width: 2px;
+  stroke-linejoin: round;
+}
+
+.iso-svg .iso-block:focus-visible > :is(.iso-top, .iso-left, .iso-right) {
+  stroke: var(--iso-ink);
+  stroke-width: 2px;
+  stroke-dasharray: 4px 2px;
+  stroke-linejoin: round;
+}
+
+/* 라벨: x·y는 CSS 경로 라벨 줄 상자(12px)의 가운데. SVG 글자 상자(fill-box)는 줄 상자보다
+   높아 세로 %가 어긋나므로 세로 이동은 px로 옮겨 쓴다. 가로 %는 .iso-label 규칙 그대로. */
+.iso-svg .iso-label {
+  transform-box: fill-box;
+  dominant-baseline: central;
+  fill: currentcolor;
+}
+
+.iso-svg .iso-label:not(.iso-label--ground) {
+  transform: translate(-50%, -16px);
+}
+
+/* iso-ledger 옆 라벨(elements.css의 left·top, translateY(-50%))을 바닥 라벨 자리에서 옮긴 거리로. */
+.iso-svg .iso-label--side {
+  transform: none;
+  translate: calc(3.464 * var(--iso-u) + 8px) calc(-1.075 * var(--iso-u) - 6px);
+}
+
+.iso-svg [aria-pressed="true"] > .iso-label--side {
+  translate: calc(1.732 * var(--iso-u) + 8px) calc(-1.075 * var(--iso-u) - 6px);
+}
