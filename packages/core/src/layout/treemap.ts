@@ -69,8 +69,9 @@ export const inset = ({ x, y, w, d }: Rect, e: number): Rect => {
  * 모두 여백을 뺀 만큼 어긋난다(여백 0이면 treemap과 같다). 결과의 모든 사각형은 서로 겹치지 않는다.
  */
 export function nest(groups: readonly (readonly number[])[], r: Rect, pad: number, gap: number): { districts: Rect[]; items: Rect[][] } {
+  // 합만 구한다: 빈 구역(합 0)·NaN·무한대는 구역 treemap이, 그 밖의 잘못된 가중치는 항목 treemap이 거부한다.
   const districts = treemap(
-    groups.map((g) => g.reduce((s, v) => s + (v > 0 && v < 1 / 0 ? v : bad(v)), 0)),
+    groups.map((g) => g.reduce((s, v) => s + v, 0)),
     r,
   ).map((c) => inset(c, pad / 2));
   return { districts, items: groups.map((g, i) => treemap(g, districts[i]).map((c) => inset(c, gap / 2))) };

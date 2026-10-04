@@ -11,7 +11,9 @@
     ".": "./dist/iso.min.js",
     "./css": "./dist/iso.min.css",
     "./edu": "./dist/iso-edu.min.js",
-    "./edu/css": "./dist/iso-edu.min.css"
+    "./edu/css": "./dist/iso-edu.min.css",
+    "./edu/city": "./dist/iso-edu-city.min.js",
+    "./edu/map": "./dist/iso-edu-map.min.js"
   },
   "files": ["dist"],
   "sideEffects": true,
