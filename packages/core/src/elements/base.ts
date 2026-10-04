@@ -49,12 +49,13 @@ const detail = new WeakMap<Element, unknown>();
 
 /**
  * 색(`--iso-c`) 검사. 문법 목록(대소문자·중첩 calc()에서 올바른 색을 놓침) 대신 구조로 막는다:
- * 선언을 끝내거나 빠져나갈 수 있는 글자·토큰 — `; { } ! \`, 따옴표, 줄바꿈, 주석 `/*`,
- * `url(`·`image-set(`(대소문자 무관), 짝이 안 맞는 괄호 — 을 거부한다. 브라우저에서는
+ * 선언을 끝내거나 빠져나갈 수 있는 글자·토큰 — `; { } ! \`, 따옴표, 주석 `/*`,
+ * `url(`·`image-set(`(대소문자 무관), 짝이 안 맞는 괄호 — 을 거부한다. 줄바꿈은 CSS 공백이라
+ * 선언을 끝내지 못하므로 허용한다. 브라우저에서는
  * `CSS.supports("color", c)`도 통과해야 한다(`var()`가 든 값은 파싱 시점이라 통과).
  */
 const isColor = (c: string): boolean => {
-  if (/[;{}!\\'"\n\r\f]|\/\*|url\(|image-set\(/i.test(c)) return false;
+  if (/[;{}!\\'"]|\/\*|url\(|image-set\(/i.test(c)) return false;
   let d = 0;
   for (const ch of c) if ((d += ch == "(" ? 1 : ch == ")" ? -1 : 0) < 0) return false;
   return !d && (typeof CSS == "undefined" || !CSS.supports || CSS.supports("color", c));

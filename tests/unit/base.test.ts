@@ -36,7 +36,6 @@ describe("색 검증", () => {
     "red'",
     "URL(x)",
     "Image-Set(x)",
-    "red\nblue",
     "rgb(1 2 3))",
     "rgb((1 2 3)",
     ")(",
@@ -74,7 +73,7 @@ describe("색 검증", () => {
   });
 
   // 리뷰 회귀: 대소문자 함수 이름, 중첩 calc()는 올바른 색이다.
-  test.each([["RGB(255 0 0)"], ["HSL(120deg 50% 40%)"], ["rgb(calc(255 - 1) 0 0)"], ["oklch(from red l c calc(h + 10))"]])(
+  test.each([["RGB(255 0 0)"], ["HSL(120deg 50% 40%)"], ["rgb(calc(255 - 1) 0 0)"], ["oklch(from red l c calc(h + 10))"], ["rgb(\n255 0 0\f\r\n)"]])(
     "iso-bars·iso-stack: 올바른 색 '%s'로 두 블록을 그린다",
     (c) => {
       const bars = mount("iso-bars", { data: JSON.stringify(D.map((d) => ({ ...d, c }))) });
