@@ -1,0 +1,13 @@
+{
+  "name": "2.5d-ui-react",
+  "version": "0.0.0",
+  "private": true,
+  "description": "React wrappers for 2.5d-ui elements",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "peerDependencies": {
+    "2.5d-ui": "0.0.0",
+    "react": "^18.2.0 || ^19.0.0"
+  }
+}
