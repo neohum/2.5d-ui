@@ -40,30 +40,37 @@ export class IsoStack extends IsoElement<Column[]> {
     const rows: (string | number)[][] = [["항목", "계열", "값"]];
     cols.forEach((c, i) => {
       const k = "" + c.k;
-      const last = c.parts.length - 1;
       // 조각은 누적합으로 놓는다: 바닥 = s(앞까지 합), 윗면 = s(이 조각까지 합). s()가
       // [0, max]로 자르므로 기둥 전체가 한 번에 잘리고, max 위의 조각은 높이 0이 된다.
+      // 높이 0인 조각은 블록을 만들지 않는다(빈 윗면이 아래 조각을 덮고 클릭을 가로채므로).
+      // 표에는 남기며, 키는 이름 기준이라 다시 보이면 새 블록으로 깨끗이 생긴다.
       let acc = 0;
+      const col: BlockSpec[] = [];
       c.parts.forEach((p, j) => {
         const z = s(acc);
         const h = s((acc += p.v)) - z;
         const name = p.name == null ? "계열 " + (j + 1) : "" + p.name;
-        blocks.push({
-          key: k + "\u0001" + name,
-          x: 0,
-          y: i * GAP,
-          z,
-          h,
-          c: typeof p.c == "string" ? p.c : color(j),
-          // 같은 기둥 안에서는 위 조각이 아래 조각의 윗면을 덮어야 하므로 j만큼 더한다.
-          zi: 1 + i * per + j,
-          aria: `${k} ${name}: ${fmt(p.v)}`,
-          value: j == last ? fmt(sum(c)) : undefined,
-          name: j ? undefined : k,
-          detail: { index: i, item: c, part: j } as BlockSpec["detail"],
-        });
         rows.push([k, name, p.v]);
+        // 모두 0인 기둥은 이름·합계를 보이도록 바닥 조각 하나만 남긴다.
+        if (h > 0 || (!j && !s(sum(c))))
+          col.push({
+            key: k + "\u0001" + name,
+            x: 0,
+            y: i * GAP,
+            z,
+            h,
+            c: typeof p.c == "string" ? p.c : color(j),
+            // 같은 기둥 안에서는 위 조각이 아래 조각의 윗면을 덮어야 하므로 j만큼 더한다.
+            zi: 1 + i * per + j,
+            aria: `${k} ${name}: ${fmt(p.v)}`,
+            detail: { index: i, item: c, part: j } as BlockSpec["detail"],
+          });
       });
+      if (col.length) {
+        col[0].name = k;
+        col[col.length - 1].value = fmt(sum(c));
+      }
+      blocks.push(...col);
     });
     return { floor: floorFor(cols.length), blocks, rows };
   }

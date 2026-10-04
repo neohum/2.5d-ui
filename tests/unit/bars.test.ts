@@ -393,10 +393,46 @@ describe("iso-stack 누적 클램프", () => {
     ];
     const el = mount("iso-stack", { data: JSON.stringify(data), max: "100", "height-units": "5" });
     const bs = blocks(el);
-    expect(bs).toHaveLength(5);
-    expect([top(bs[0]), top(bs[2]), top(bs[4])]).toEqual([5, 5, 5]);
-    // max 위에 놓인 조각은 높이 0
-    expect(bs.map(hOf)).toEqual([5, 5, 0, 5, 0]);
+    // max 위에 놓여 높이가 0인 조각은 블록을 만들지 않는다.
+    expect(bs).toHaveLength(3);
+    expect(bs.map(top)).toEqual([5, 5, 5]);
+  });
+
+  test("완전히 잘린 조각: 블록 없음, 합계 라벨은 보이는 맨 위 조각, 클릭은 그 조각, max를 되돌리면 복원", () => {
+    const data = [{ k: "a", parts: [{ name: "CPU", v: 150 }, { name: "GPU", v: 50 }] }];
+    const el = mount("iso-stack", { data: JSON.stringify(data), max: "100", "height-units": "5" });
+    let bs = blocks(el);
+    expect(bs).toHaveLength(1);
+    expect(hOf(bs[0])).toBe(5);
+    expect(bs[0].querySelector(".iso-label:not(.iso-label--ground)")!.textContent).toBe("200");
+    expect(bs[0].querySelector(".iso-label--ground")!.textContent).toBe("a");
+    // 접근성 표에는 잘린 조각도 남는다.
+    expect(el.querySelector("table")!.textContent).toContain("GPU");
+    const fn = vi.fn();
+    el.addEventListener("iso-select", (e) => fn((e as CustomEvent).detail.part));
+    bs[0].click();
+    expect(fn).toHaveBeenLastCalledWith(0);
+
+    const cpu = bs[0];
+    el.setAttribute("max", "300");
+    bs = blocks(el);
+    expect(bs).toHaveLength(2);
+    expect(bs[0]).toBe(cpu);
+    expect(bs.map(hOf)).toEqual([2.5, 0.833]);
+    expect(bs[0].querySelector(".iso-label:not(.iso-label--ground)")).toBeNull();
+    expect(bs[1].querySelector(".iso-label")!.textContent).toBe("200");
+    bs[1].click();
+    expect(fn).toHaveBeenLastCalledWith(1);
+  });
+
+  test("모든 조각이 0인 기둥도 바닥 조각 하나는 남겨 이름·합계를 보인다", () => {
+    const data = [{ k: "a", parts: [{ name: "x", v: 0 }, { name: "y", v: 0 }] }, { k: "b", parts: [{ name: "x", v: 0 }] }];
+    const el = mount("iso-stack", { data: JSON.stringify(data) });
+    const bs = blocks(el);
+    expect(bs).toHaveLength(2);
+    expect(bs.map((b) => b.querySelector(".iso-label--ground")!.textContent)).toEqual(["a", "b"]);
+    expect(bs[0].querySelector(".iso-label:not(.iso-label--ground)")!.textContent).toBe("0");
+    expect(el.querySelector(".iso-empty")).toBeNull();
   });
 
   test("max 아래에서는 조각 높이가 값에 비례", () => {
