@@ -116,15 +116,15 @@ export abstract class IsoElement<T = unknown> extends HTMLElement {
 
   /**
    * 값 → 블록 높이 함수. `max` 속성이 없으면 데이터 최댓값을 `height-units` 높이로.
-   * 배율(hu / max)을 먼저 구하면 아주 작은 max에서 Infinity가 되므로 v / max를 먼저
-   * 나눈다. max ≤ 0(모두 0)이거나 결과가 유한하지 않으면 0.
+   * 비율 v / max를 [0, 1]로 자른 뒤(max를 넘는 값은 꽉 찬 높이) height-units를 곱한다.
+   * 아주 작은 max에서 v / max가 넘치면(Infinity) 비율 1, max ≤ 0(모두 0)이면 0.
    */
   protected scale(dataMax: number): (v: number) => number {
     const m = this.n("max", dataMax);
     const hu = this.n("height-units", 5);
     return (v) => {
-      const h = m > 0 ? (v / m) * hu : 0;
-      return isFinite(h) ? h : 0;
+      const q = m > 0 ? v / m : 0;
+      return (isFinite(q) ? Math.min(1, Math.max(0, q)) : v > 0 ? 1 : 0) * hu;
     };
   }
 
@@ -136,7 +136,29 @@ export abstract class IsoElement<T = unknown> extends HTMLElement {
     if (this.isConnected) this.render();
   }
 
+  /** 0 쉼, 1 그리는 중, 2 그리는 중에 다시 요청됨. */
+  private busy = 0;
+
+  /**
+   * 그리는 도중의 재요청(예: 포커스 복원이 부른 focus 핸들러가 속성을 바꿈)은 바로
+   * 들어가지 않고, 지금 그리기를 끝까지 커밋한 뒤 한 번 더 그린다.
+   */
   render(): void {
+    if (this.busy) {
+      this.busy = 2;
+      return;
+    }
+    try {
+      do {
+        this.busy = 1;
+        this.paint();
+      } while (this.busy == 2);
+    } finally {
+      this.busy = 0;
+    }
+  }
+
+  private paint(): void {
     let lay: Layout | undefined;
     let msg = EMPTY;
     try {
@@ -211,14 +233,15 @@ export abstract class IsoElement<T = unknown> extends HTMLElement {
     }
     for (const [k, el] of old) if (!next.has(k)) el.remove();
     // DOM 순서 = 데이터 순서(탭 순서). 이미 제자리인 노드는 옮기지 않는다.
-    // 노드를 옮기면 브라우저가 포커스를 잃으므로, 포커스가 있던 블록은 되돌려 준다.
-    const act = document.activeElement as HTMLElement | null;
+    // 노드를 옮기면 브라우저가 포커스를 잃으므로, 포커스가 있던 블록은 맨 끝에(내부
+    // 상태를 모두 커밋한 뒤) 되돌려 준다. ShadowRoot 안이면 그 루트의 activeElement.
+    const root = this.getRootNode() as Document | ShadowRoot;
+    const act = root.activeElement as HTMLElement | null;
     let i = this.floor ? 1 : 0;
     for (const el of next.values()) {
       const at = origin.children[i++];
       if (at !== el) origin.insertBefore(el, at ?? null);
     }
-    if (act && act !== document.activeElement && origin.contains(act)) act.focus({ preventScroll: true });
     this.blocks = next;
 
     table.replaceChildren(
@@ -229,6 +252,7 @@ export abstract class IsoElement<T = unknown> extends HTMLElement {
         return tr;
       }),
     );
+    if (act && act !== root.activeElement && origin.contains(act)) act.focus({ preventScroll: true });
   }
 
   /**

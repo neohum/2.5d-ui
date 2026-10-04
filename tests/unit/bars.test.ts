@@ -332,3 +332,51 @@ describe("리뷰 보완", () => {
     expect((el.blocks as Map<string, Element>).size).toBe(0);
   });
 });
+
+describe("재검토 보완", () => {
+  const keys = (el: Element) => blocks(el).map((b) => b.querySelector(".iso-label--ground")!.textContent);
+
+  test("포커스 복원 중 focus 핸들러가 다시 렌더해도 DOM이 데이터와 일치한다", () => {
+    const el = mount("iso-bars", { data: JSON.stringify([{ k: "a", v: 1 }, { k: "b", v: 2 }]) });
+    const b = blocks(el)[1];
+    b.focus();
+    let n = 0;
+    b.addEventListener("focus", () => el.setAttribute("label", "다시 " + ++n));
+    el.setAttribute("data", JSON.stringify([{ k: "b", v: 2 }, { k: "c", v: 3 }, { k: "a", v: 1 }]));
+    expect(keys(el)).toEqual(["b", "c", "a"]);
+    expect(blocks(el)).toHaveLength(3);
+    expect(document.activeElement).toBe(b);
+    expect(el.querySelector("caption")?.textContent).toBe("다시 " + n);
+    expect(((el as unknown as { blocks: Map<string, Element> }).blocks).size).toBe(3);
+  });
+
+  test("ShadowRoot 안에서도 재정렬 후 포커스를 유지한다", () => {
+    const outer = document.createElement("div");
+    document.body.append(outer);
+    const root = outer.attachShadow({ mode: "open" });
+    const el = document.createElement("iso-bars");
+    el.setAttribute("data", JSON.stringify([{ k: "a", v: 1 }, { k: "b", v: 2 }]));
+    root.append(el);
+    const b = blocks(el)[1];
+    b.focus();
+    expect(root.activeElement).toBe(b);
+    el.setAttribute("data", JSON.stringify([{ k: "b", v: 2 }, { k: "a", v: 1 }]));
+    expect(blocks(el)[0]).toBe(b);
+    expect(root.activeElement).toBe(b);
+  });
+
+  test.each([
+    // [v, max, height-units, 기대 높이]
+    [1, "1e-309", "1e-309", 1e-309],
+    [1, "1e-309", "1", 1],
+    [50, "100", "4", 2],
+    [100, "100", "4", 4],
+    [250, "100", "4", 4], // max 초과는 꽉 찬 높이
+    [0, "100", "4", 0],
+  ])("v=%s max=%s height-units=%s → 높이 %s", (v, max, hu, want) => {
+    const el = mount("iso-bars", { data: JSON.stringify([{ k: "a", v }]), max, "height-units": hu });
+    const hs = (el as unknown as { scale(m: number): (v: number) => number }).scale(v);
+    expect(hs(v)).toBe(want);
+    expect(Number.isFinite(hOf(blocks(el)[0]))).toBe(true);
+  });
+});
