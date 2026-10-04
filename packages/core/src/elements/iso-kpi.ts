@@ -26,12 +26,14 @@ export class IsoKpi extends IsoElement<number | undefined> {
     return {
       floor: { x: -0.5, y: -0.5, w: 3, d: 3 },
       blocks: [
-        { ...box, key: "f", h: this.scale(v)(v), c: color(0), zi: 1, aria: "" },
+        // 장식: 접근성 트리·탭 순서에서 뺀다(이름과 값은 그릇이 가진다).
+        { ...box, key: "f", h: this.scale(v)(v), c: color(0), zi: 1, aria: "", attrs: { "aria-hidden": "true", tabindex: null } },
         {
           ...box,
           key: "b",
           h: this.n("height-units", 5),
-          c: "color-mix(in oklch,var(--iso-ink) 12%,transparent)",
+          // 반투명 그릇 색은 elements.css(iso-kpi).
+          c: "",
           zi: 2,
           aria: (name ? name + ": " : "") + t,
           value: t,
@@ -42,10 +44,4 @@ export class IsoKpi extends IsoElement<number | undefined> {
     };
   }
 
-  render(): void {
-    super.render();
-    const f = this.blocks.get("f");
-    f?.setAttribute("aria-hidden", "true");
-    f?.removeAttribute("tabindex");
-  }
 }

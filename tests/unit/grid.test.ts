@@ -67,13 +67,14 @@ describe("<iso-heatmap>", () => {
 
   test("높이는 최댓값 기준 축척, max 속성이면 그 값 기준(넘으면 꽉 참)", () => {
     expect(blocks(mk()).map(hOf)).toEqual([0, 1.25, 2.5, 0.5, 1, 5]);
-    expect(blocks(mk({ max: "10", "height-units": "2" })).map(hOf)).toEqual([0, 1, 2, 0.4, 0.8, 2]);
+    // 높이는 1px(1/unit) 단위로 맞춘다: 0.4·24 = 9.6px → 10px.
+    expect(blocks(mk({ max: "10", "height-units": "2" })).map(hOf)).toEqual([0, 1, 2, 10 / 24, 19 / 24, 2].map((x) => Math.round(x * 1e3) / 1e3));
   });
 
   test("라벨은 앞쪽 모서리 셀에만: 행 이름은 마지막 열, 열 이름은 마지막 행", () => {
     const bs = blocks(mk());
-    const ground = bs.map((b) => b.querySelector(".iso-label--ground:not(.iso-hc)")?.textContent ?? null);
-    const col = bs.map((b) => b.querySelector(".iso-hc")?.textContent ?? null);
+    const ground = bs.map((b) => b.querySelector(".iso-label--ground:not(.iso-label--col)")?.textContent ?? null);
+    const col = bs.map((b) => b.querySelector(".iso-label--col")?.textContent ?? null);
     expect(ground).toEqual([null, null, "월", null, null, "화"]);
     expect(col).toEqual([null, null, null, "0시", "6시", "12시"]);
     // 값 라벨은 없다(500셀에서 읽을 수 없으므로 숨김 표와 aria로).
@@ -87,8 +88,8 @@ describe("<iso-heatmap>", () => {
     el.setAttribute("data", JSON.stringify({ rows: ["월"], cols: ["0시"], values: [[3]] }));
     const [b] = blocks(el);
     expect(b).toBe(first);
-    expect(b.querySelector(".iso-hc")!.textContent).toBe("0시");
-    expect(b.querySelector(".iso-label--ground:not(.iso-hc)")!.textContent).toBe("월");
+    expect(b.querySelector(".iso-label--col")!.textContent).toBe("0시");
+    expect(b.querySelector(".iso-label--ground:not(.iso-label--col)")!.textContent).toBe("월");
     expect(b.querySelectorAll(".iso-label")).toHaveLength(2);
   });
 
@@ -155,7 +156,7 @@ describe("<iso-ledger>", () => {
     expect(tops[1]).toBeLessThan(tops[0]);
     expect(tops[2]).toBeLessThan(tops[1]);
     expect(bs.map((b) => +v(b, "--iso-z"))).toEqual([1, 2, 3]);
-    expect(bs.map((b) => b.querySelector(".iso-lk")!.textContent)).toEqual(["v1.0 · 첫 배포", "v1.1", "v1.2 · 표"]);
+    expect(bs.map((b) => b.querySelector(".iso-label--ground")!.textContent)).toEqual(["v1.0 · 첫 배포", "v1.1", "v1.2 · 표"]);
   });
 
   test("selected 장은 (x + 1, y − 1)로 빠지고, 바꿔도 노드를 다시 만들지 않는다", () => {
@@ -180,10 +181,14 @@ describe("<iso-ledger>", () => {
     blocks(el).forEach((b, i) => expect(b).toBe(before[i]));
   });
 
-  // 라벨이 한 열에 있는지는 calc()를 계산하는 실제 브라우저에서 본다(tests/visual/grid.spec.ts).
-  test("빼냄은 블록 left 트랜지션(모션 감소에서는 토큰이 0ms)", () => {
-    const el = mk({ selected: "0" });
-    for (const b of blocks(el)) expect(b.style.transition).toContain("left");
+  test("오른쪽 라벨 열 너비만큼 장면을 넓힌다(Layout.mr), 노드는 그대로", () => {
+    const el = mount("iso-ledger", { data: JSON.stringify([{ k: "a" }]) });
+    const scene = el.querySelector<HTMLElement>(".iso-scene")!;
+    const w0 = parseFloat(scene.style.width);
+    const b = blocks(el)[0];
+    el.setAttribute("data", JSON.stringify([{ k: "a", note: "아주 긴 설명이 붙은 배포 기록" }]));
+    expect(parseFloat(scene.style.width)).toBeGreaterThan(w0 + 100);
+    expect(blocks(el)[0]).toBe(b);
   });
 
   test.each([["abc"], ["9"], ["-1"], [""]])("범위 밖·잘못된 selected(%s)는 선택 없음", (s) => {
@@ -223,7 +228,8 @@ describe("<iso-kpi>", () => {
     const [fill, box] = blocks(el);
     expect(hOf(box)).toBe(5);
     expect(hOf(fill)).toBe(1.25);
-    expect(v(box, "--iso-c")).toContain("transparent");
+    // 반투명 그릇 색은 CSS(elements.css)가 준다: 인라인 --iso-c 없음.
+    expect(v(box, "--iso-c")).toBe("");
     expect(+v(box, "--iso-z")).toBeGreaterThan(+v(fill, "--iso-z"));
     expect(box.querySelector(".iso-label:not(.iso-label--ground)")!.textContent).toBe("30%");
     expect(box.querySelector(".iso-label--ground")!.textContent).toBe("출석");

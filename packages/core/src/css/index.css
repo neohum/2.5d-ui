@@ -1,3 +1,4 @@
 /* 2.5d-ui core CSS. 규격은 packages/core/API.md를 따른다. */
 @import url("./tokens.css");
 @import url("./primitives.css");
+@import url("./elements.css");

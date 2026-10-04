@@ -23,8 +23,8 @@ export class IsoStack extends IsoElement<Column[]> {
     const cols = list(json) as unknown as Column[];
     for (const c of cols) {
       str(c.k);
-      if (!Array.isArray(c.parts)) throw Error("parts must be an array");
-      for (const p of list(c.parts)) {
+      // parts는 필수: 없거나 null이면 list(0)이 던진다.
+      for (const p of list(c.parts || 0)) {
         if (p.name != null) str(p.name);
         num(p.v);
       }

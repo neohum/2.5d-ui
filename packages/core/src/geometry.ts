@@ -35,16 +35,15 @@ export const project = (x: number, y: number, z: number, u = 1): Point => ({
  * 가장 위는 윗면 뒤 꼭짓점 (x, y, z+h), 가장 아래는 앞 바닥 꼭짓점 (x+w, y+d, z).
  */
 export function blockBounds(blocks: readonly Box[], u = 1): Bounds {
-  if (!blocks.length) return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
   for (const { x, y, z = 0, w = 1, d = 1, h = 1 } of blocks) {
-    minX = Math.min(minX, project(x, y + d, 0, u).x);
-    maxX = Math.max(maxX, project(x + w, y, 0, u).x);
-    minY = Math.min(minY, project(x, y, z + h, u).y);
-    maxY = Math.max(maxY, project(x + w, y + d, z, u).y);
+    minX = Math.min(minX, (x - y - d) * 0.866 * u);
+    maxX = Math.max(maxX, (x + w - y) * 0.866 * u);
+    minY = Math.min(minY, ((x + y) * 0.5 - z - h) * u);
+    maxY = Math.max(maxY, ((x + w + y + d) * 0.5 - z) * u);
   }
-  return { minX, minY, maxX, maxY };
+  return blocks.length ? { minX, minY, maxX, maxY } : { minX: 0, minY: 0, maxX: 0, maxY: 0 };
 }

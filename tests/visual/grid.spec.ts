@@ -4,11 +4,10 @@ import { expect, test } from "@playwright/test";
 const PAGE = "/packages/core/demo/grid.html";
 
 /**
- * 500블록(25×20) 히트맵 첫 렌더 예산(ms), CPU 6배 감속. 측정 구간은 엘리먼트 생성부터
- * 강제 레이아웃(getBoundingClientRect)까지 — JS·스타일·레이아웃을 포함하고 페인트는 뺀다.
- * 판정은 새 엘리먼트 5개의 중앙값이다. 주의: 페이지에서 처음 그리는 1회(JIT·스타일 캐시가
- * 차가운 상태)는 이 예산을 넘는다 — 2026-10 맥 측정 약 190–200 ms(중앙값 약 80 ms).
- * 그 값은 로그(`[perf]`)와 annotation으로 남기고, 예산을 느슨하게 하지 않는다.
+ * 500블록(25×20) 히트맵 **첫 렌더** 예산(ms), CPU 6배 감속(저사양 크롬북 대용).
+ * 측정 구간: 엘리먼트 생성 → 연결 → 강제 레이아웃(getBoundingClientRect)까지 — JS·스타일·
+ * 레이아웃을 포함하고 페인트는 뺀다. 페이지를 새로 열어 그 페이지의 첫 500블록 렌더만
+ * 잰다(같은 데이터 반복 렌더는 Blink 스타일 캐시가 데워져 실제보다 빠르게 나온다).
  */
 const RENDER_BUDGET_MS = 100;
 
@@ -51,45 +50,47 @@ test.describe("화면", () => {
   });
 
   test("장부: 라벨은 선택과 무관하게 한 열(같은 x)", async ({ page }) => {
-    const xs = await page.$$eval("#ledger .iso-lk", (ls) => ls.map((l) => Math.round(l.getBoundingClientRect().left)));
+    const xs = await page.$$eval("#ledger .iso-label--ground", (ls) => ls.map((l) => Math.round(l.getBoundingClientRect().left)));
     expect(xs).toHaveLength(4);
     expect(new Set(xs).size).toBe(1);
   });
 });
 
-test("성능: 25×20 히트맵 첫 렌더 (CPU 6배 감속)", async ({ page }, info) => {
+test("성능: 25×20 히트맵 첫 렌더 (CPU 6배 감속)", async ({ browser }, info) => {
   test.skip(info.project.name != "light", "한 프로젝트에서만 측정");
-  await page.goto(PAGE);
-  await page.waitForFunction(() => !!customElements.get("iso-heatmap"));
-  const cdp = await page.context().newCDPSession(page);
-  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 6 });
   const runs: number[] = [];
-  for (let i = 0; i < 5; i++) {
+  // 새 페이지 3번, 각 페이지의 첫 렌더만(모두 진짜 첫 렌더). 판정은 중앙값 — 전체 스위트를
+  // 병렬로 돌리면 다른 워커와 CPU를 다퉈 한 번씩 튀므로. 세 값은 모두 로그에 남긴다.
+  for (let i = 0; i < 3; i++) {
+    const page = await browser.newPage();
+    await page.goto(new URL(PAGE, info.project.use.baseURL).href);
+    await page.waitForFunction(() => !!customElements.get("iso-heatmap"));
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 6 });
     runs.push(
-      await page.evaluate(() => {
+      await page.evaluate((seed) => {
         const R = 25;
         const C = 20;
+        // 실제 데이터처럼 셀마다 다른 실수 값.
         const json = JSON.stringify({
           rows: Array.from({ length: R }, (_, r) => "r" + r),
           cols: Array.from({ length: C }, (_, c) => "c" + c),
-          values: Array.from({ length: R }, (_, r) => Array.from({ length: C }, (_, c) => (r * 7 + c * 13) % 50)),
+          values: Array.from({ length: R }, (_, r) => Array.from({ length: C }, (_, c) => ((r * 31 + c * 17 + seed) % 97) * 1.37)),
         });
-        document.querySelector("#perf")?.remove();
         const t0 = performance.now();
         const el = document.createElement("iso-heatmap");
-        el.id = "perf";
         el.setAttribute("data", json);
         document.body.append(el);
         el.querySelector(".iso-block:last-child > .iso-top")!.getBoundingClientRect();
         const t = performance.now() - t0;
         if (el.querySelectorAll(".iso-block").length != 500) throw Error("expected 500 blocks");
         return t;
-      }),
+      }, i),
     );
+    await page.close();
   }
-  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
-  const median = [...runs].sort((a, b) => a - b)[2];
-  console.log(`[perf] 500블록 첫 렌더(6× 감속) ms: ${runs.map((t) => t.toFixed(1)).join(", ")} / 중앙값 ${median.toFixed(1)}`);
-  info.annotations.push({ type: "perf", description: `cold ${runs[0].toFixed(1)} ms, median ${median.toFixed(1)} ms` });
+  const median = [...runs].sort((a, b) => a - b)[1];
+  console.log(`[perf] 500블록 첫 렌더(6× 감속, 새 페이지) ms: ${runs.map((t) => t.toFixed(1)).join(", ")} / 중앙값 ${median.toFixed(1)}`);
+  info.annotations.push({ type: "perf", description: `first render ${runs.map((t) => t.toFixed(1)).join(", ")} ms` });
   expect(median).toBeLessThanOrEqual(RENDER_BUDGET_MS);
 });

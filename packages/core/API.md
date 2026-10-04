@@ -39,6 +39,10 @@
 | `--iso-c` | `var(--iso-color-1)` | 기본색. 왼쪽 면은 `--iso-shade-left`(18%), 오른쪽 면은 `--iso-shade-right`(34%)만큼 `color-mix(in oklch, …, black)` |
 | `--iso-z` | `0` | `z-index`(정수). 격자 배치에서는 `x + y` 순서로 증가시킨다 |
 
+`--iso-x`, `--iso-y`, `--iso-z`는 `@property`로 `<number>`, **상속 안 함**으로 등록한다
+(`css/elements.css`). 블록 자신만 쓰는 값이라 의미는 같고, 면 요소가 블록마다 다른 값을
+물려받지 않아 Blink가 계산 스타일을 공유한다(500블록 첫 렌더 스타일 계산 약 2.5배 차이).
+
 토큰: `--iso-color-1` … `--iso-color-6`(범주 팔레트), `--iso-floor`, `--iso-grid-line`,
 `--iso-ink`, `--iso-ink-muted`, `--iso-lift`(기본 `6px`), `--iso-duration`(기본 `180ms`).
 다크 테마는 `prefers-color-scheme: dark`와 `[data-theme="dark"]` 둘 다에서 토큰만 바꾼다.
@@ -90,7 +94,7 @@
 | `bench/`, `docs/adr/0001-*` | iso-render-spike |
 | `packages/core/src/css/`, `packages/core/demo/primitives.html`, `tests/visual/primitives.spec.ts` | iso-core-primitives |
 | `packages/core/src/geometry.ts`, `packages/core/src/elements/{base,iso-bars,iso-stack}.ts`, `tests/unit/{geometry,bars}.test.ts`, `tests/visual/bars.spec.ts` | iso-elements-bars |
-| `packages/core/src/elements/{iso-heatmap,iso-ledger,iso-kpi}.ts`, `tests/unit/grid.test.ts`, `tests/visual/grid.spec.ts` | iso-elements-grid |
+| `packages/core/src/elements/{iso-heatmap,iso-ledger,iso-kpi}.ts`, `packages/core/src/css/elements.css`, `packages/core/demo/grid.html`, `tests/unit/grid.test.ts`, `tests/visual/grid.spec.ts` | iso-elements-grid |
 | `packages/react/`, `tests/react/` | iso-react-wrapper |
 | `site/`, `tests/visual/site.spec.ts` | iso-docs-site |
 | `packages/core/src/index.ts` | 각 엘리먼트 카드가 자기 등록 한 줄만 추가 |
