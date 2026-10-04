@@ -133,3 +133,17 @@ describe("IsoStack + <iso-stack>", () => {
     expect(onSelect.mock.calls[0]![0]).toMatchObject({ index: 1, item: data[1] });
   });
 });
+
+describe("renderer prop", () => {
+  test("renderer=\"svg\"가 호스트 속성으로 가고 실제 iso-bars가 SVG 경로로 그린다", () => {
+    render(<IsoBars data={[{ k: "a", v: 1 }, { k: "b", v: 2 }]} renderer="svg" />);
+    const bars = host("iso-bars");
+    expect(bars.getAttribute("renderer")).toBe("svg");
+    expect(bars.querySelector(".iso-scene > svg.iso-svg")).not.toBeNull();
+    expect([...bars.querySelectorAll(".iso-block")].map((b) => b.tagName)).toEqual(["g", "g"]);
+    render(<IsoBars data={[{ k: "a", v: 1 }, { k: "b", v: 2 }]} renderer="css" />);
+    expect(bars.getAttribute("renderer")).toBe("css");
+    expect(bars.querySelector("svg")).toBeNull();
+    expect(blocks(bars)).toHaveLength(2);
+  });
+});

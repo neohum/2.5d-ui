@@ -11,7 +11,7 @@ export type {
 } from "./types.ts";
 export type { IsoBaseProps } from "./create.ts";
 
-/** 공통 축척 속성: `max`, `unit`, `height-units`. */
+/** 공통 속성: 축척(`max`, `unit`, `height-units`)과 `renderer`. */
 export interface IsoScaleProps {
   /** 축척 최댓값. 없으면 데이터 최댓값. */
   max?: number;
@@ -19,6 +19,8 @@ export interface IsoScaleProps {
   unit?: number;
   /** 최댓값이 차지하는 블록 높이(`height-units` 속성). */
   heightUnits?: number;
+  /** 그리는 방식(`renderer` 속성). 기본 `auto`: 블록 200개 이하 CSS 면, 넘으면 SVG. */
+  renderer?: "css" | "svg" | "auto";
 }
 
 export interface IsoBarsProps extends IsoBaseProps<IsoBarsDatum>, IsoScaleProps {
@@ -44,7 +46,7 @@ export interface IsoKpiProps extends IsoBaseProps, IsoScaleProps {
   suffix?: string;
 }
 
-const scaleAttrs = { label: "label", max: "max", unit: "unit", heightUnits: "height-units" } as const;
+const scaleAttrs = { label: "label", max: "max", unit: "unit", heightUnits: "height-units", renderer: "renderer" } as const;
 
 export const IsoBars = createIsoComponent<IsoBarsProps>("iso-bars", "IsoBars", scaleAttrs);
 

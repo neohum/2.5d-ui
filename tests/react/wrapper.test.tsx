@@ -130,6 +130,21 @@ describe("props → 속성", () => {
     expect(kpi.getAttribute("suffix")).toBe("%");
     expect(kpi.hasAttribute("data")).toBe(false);
   });
+
+  test("다섯 컴포넌트 모두 renderer를 같은 이름의 속성으로 넘긴다", () => {
+    render(
+      <>
+        <IsoBars data={[]} renderer="svg" />
+        <IsoStack data={[]} renderer="svg" />
+        <IsoHeatmap renderer="svg" />
+        <IsoLedger data={[]} renderer="svg" />
+        <IsoKpi value={1} renderer="svg" />
+      </>,
+    );
+    for (const tag of ["iso-bars", "iso-stack", "iso-heatmap", "iso-ledger", "iso-kpi"]) expect(el(tag).getAttribute("renderer"), tag).toBe("svg");
+    render(<IsoBars data={[]} />);
+    expect(el("iso-bars").hasAttribute("renderer")).toBe(false);
+  });
 });
 
 describe("엘리먼트의 자식", () => {
