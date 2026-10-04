@@ -41,7 +41,7 @@ export class IsoMap extends IsoElement<MapData> {
     const { floor: f, items } = (json ?? {}) as Rec;
     const it = list(items) as unknown as MapItem[];
     const fl = f as { w: number; d: number } | undefined;
-    // 생략(undefined)만 기본값이다. null 등은 오류(그대로 두면 폭 0 면이 되고 overlaps()가 놓친다).
+    // 생략(키 없음)만 기본값이다. null 등은 오류(그대로 두면 폭 0 면이 되고 overlaps()가 놓친다).
     if (fl !== undefined) pos(fl.w), pos(fl.d);
     let x0 = 1 / 0;
     let y0 = x0;
@@ -49,13 +49,13 @@ export class IsoMap extends IsoElement<MapData> {
     let y1 = x1;
     for (const o of it) {
       str(o.k);
-      if (o.v !== undefined) num(o.v);
-      if (o.state !== undefined && STATES.indexOf(o.state) < 0) bad("bad state " + o.state);
+      if ("v" in o) num(o.v);
+      if ("state" in o && STATES.indexOf(o.state!) < 0) bad("bad state");
       // w·d를 숫자로 채워 둔다: 아래(overlaps, order, 블록)는 null을 보지 않는다.
       x0 = Math.min(x0, num(o.x));
       y0 = Math.min(y0, num(o.y));
-      x1 = Math.max(x1, o.x + (o.w = o.w === undefined ? 1 : pos(o.w)));
-      y1 = Math.max(y1, o.y + (o.d = o.d === undefined ? 1 : pos(o.d)));
+      x1 = Math.max(x1, o.x + (o.w = "w" in o ? pos(o.w) : 1));
+      y1 = Math.max(y1, o.y + (o.d = "d" in o ? pos(o.d) : 1));
     }
     if (fl && (x1 > fl.w + 1e-9 || y1 > fl.d + 1e-9)) bad("outside floor");
     const p = overlaps(it);
