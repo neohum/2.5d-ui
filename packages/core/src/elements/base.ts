@@ -61,6 +61,12 @@ export const num = (v: unknown): number => {
   return v;
 };
 
+/** 필수 이름 필드(k 등): 문자열·숫자만 통과, 문자열로 바꾼다. */
+export const str = (v: unknown): string => {
+  if (typeof v != "string" && typeof v != "number") throw Error("bad key " + v);
+  return "" + v;
+};
+
 /** 객체 배열만 통과. null/undefined는 빈 배열. */
 export const list = (v: unknown): Rec[] => {
   if (v == null) return [];
@@ -102,16 +108,24 @@ export abstract class IsoElement<T = unknown> extends HTMLElement {
     return raw == null ? undefined : JSON.parse(raw);
   }
 
-  /** 양수 숫자 속성. 없거나 잘못되면 `def`. */
+  /** 유한한 양수 숫자 속성. 없거나 잘못되면(Infinity 포함) `def`. */
   protected n(name: string, def: number): number {
     const v = parseFloat(this.getAttribute(name)!);
-    return v > 0 ? v : def;
+    return isFinite(v) && v > 0 ? v : def;
   }
 
-  /** 값 → 블록 높이 배율. `max` 속성이 없으면 데이터 최댓값을 `height-units` 높이로. */
-  protected scale(dataMax: number): number {
+  /**
+   * 값 → 블록 높이 함수. `max` 속성이 없으면 데이터 최댓값을 `height-units` 높이로.
+   * 배율(hu / max)을 먼저 구하면 아주 작은 max에서 Infinity가 되므로 v / max를 먼저
+   * 나눈다. max ≤ 0(모두 0)이거나 결과가 유한하지 않으면 0.
+   */
+  protected scale(dataMax: number): (v: number) => number {
     const m = this.n("max", dataMax);
-    return m > 0 ? this.n("height-units", 5) / m : 0;
+    const hu = this.n("height-units", 5);
+    return (v) => {
+      const h = m > 0 ? (v / m) * hu : 0;
+      return isFinite(h) ? h : 0;
+    };
   }
 
   connectedCallback(): void {
@@ -133,7 +147,8 @@ export abstract class IsoElement<T = unknown> extends HTMLElement {
     }
     if (!lay?.blocks.length) {
       this.replaceChildren(h("p", "iso-empty", msg));
-      this.scene = undefined;
+      // 떼어 낸 장면을 붙잡고 있지 않게 한다(블록이 GC되면 WeakMap의 detail도 풀린다).
+      this.scene = this.origin = this.floor = this.table = undefined;
       this.blocks = new Map();
       return;
     }
@@ -196,11 +211,14 @@ export abstract class IsoElement<T = unknown> extends HTMLElement {
     }
     for (const [k, el] of old) if (!next.has(k)) el.remove();
     // DOM 순서 = 데이터 순서(탭 순서). 이미 제자리인 노드는 옮기지 않는다.
+    // 노드를 옮기면 브라우저가 포커스를 잃으므로, 포커스가 있던 블록은 되돌려 준다.
+    const act = document.activeElement as HTMLElement | null;
     let i = this.floor ? 1 : 0;
     for (const el of next.values()) {
       const at = origin.children[i++];
       if (at !== el) origin.insertBefore(el, at ?? null);
     }
+    if (act && act !== document.activeElement && origin.contains(act)) act.focus({ preventScroll: true });
     this.blocks = next;
 
     table.replaceChildren(

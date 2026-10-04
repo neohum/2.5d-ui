@@ -1,8 +1,9 @@
-import { IsoElement, color, fmt, list, num, type BlockSpec, type Layout } from "./base.ts";
+import { IsoElement, color, fmt, list, num, str, type BlockSpec, type Layout } from "./base.ts";
 import { GAP, floorFor } from "./iso-bars.ts";
 
 export interface Part {
-  name: string;
+  /** 없으면 "계열 n"(n = 조각 순번). */
+  name?: string;
   v: number;
   c?: string;
 }
@@ -20,25 +21,32 @@ export interface Column {
 export class IsoStack extends IsoElement<Column[]> {
   protected validate(json: unknown): Column[] {
     const cols = list(json) as unknown as Column[];
-    for (const c of cols) for (const p of list(c.parts)) num(p.v);
+    for (const c of cols) {
+      str(c.k);
+      if (!Array.isArray(c.parts)) throw Error("parts must be an array");
+      for (const p of list(c.parts)) {
+        if (p.name != null) str(p.name);
+        num(p.v);
+      }
+    }
     return cols;
   }
 
   protected layout(cols: Column[]): Layout {
-    const parts = (c: Column): Part[] => c.parts ?? [];
-    const sum = (c: Column): number => parts(c).reduce((a, p) => a + p.v, 0);
+    const sum = (c: Column): number => c.parts.reduce((a, p) => a + p.v, 0);
     const s = this.scale(Math.max(0, ...cols.map(sum)));
-    const per = Math.max(1, ...cols.map((c) => parts(c).length));
+    const per = Math.max(1, ...cols.map((c) => c.parts.length));
     const blocks: BlockSpec[] = [];
     const rows: (string | number)[][] = [["항목", "계열", "값"]];
     cols.forEach((c, i) => {
       const k = "" + c.k;
-      const last = parts(c).length - 1;
+      const last = c.parts.length - 1;
       let z = 0;
-      parts(c).forEach((p, j) => {
-        const h = p.v * s;
+      c.parts.forEach((p, j) => {
+        const h = s(p.v);
+        const name = p.name == null ? "계열 " + (j + 1) : "" + p.name;
         blocks.push({
-          key: k + "\u0001" + p.name,
+          key: k + "\u0001" + name,
           x: 0,
           y: i * GAP,
           z,
@@ -46,12 +54,12 @@ export class IsoStack extends IsoElement<Column[]> {
           c: typeof p.c == "string" ? p.c : color(j),
           // 같은 기둥 안에서는 위 조각이 아래 조각의 윗면을 덮어야 하므로 j만큼 더한다.
           zi: 1 + i * per + j,
-          aria: `${k} ${p.name}: ${fmt(p.v)}`,
+          aria: `${k} ${name}: ${fmt(p.v)}`,
           value: j == last ? fmt(sum(c)) : undefined,
           name: j ? undefined : k,
           detail: { index: i, item: c, part: j } as BlockSpec["detail"],
         });
-        rows.push([k, p.name, p.v]);
+        rows.push([k, name, p.v]);
         z += h;
       });
     });

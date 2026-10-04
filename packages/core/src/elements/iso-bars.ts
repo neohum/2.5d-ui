@@ -1,4 +1,4 @@
-import { IsoElement, color, fmt, list, num, type Layout } from "./base.ts";
+import { IsoElement, color, fmt, list, num, str, type Layout } from "./base.ts";
 
 export interface Bar {
   k: string;
@@ -20,7 +20,7 @@ export const floorFor = (n: number) => ({ x: -0.5, y: -0.5, w: 2, d: (n - 1) * G
 export class IsoBars extends IsoElement<Bar[]> {
   protected validate(json: unknown): Bar[] {
     const bars = list(json) as unknown as Bar[];
-    for (const b of bars) num(b.v);
+    for (const b of bars) str(b.k), num(b.v);
     return bars;
   }
 
@@ -35,7 +35,7 @@ export class IsoBars extends IsoElement<Bar[]> {
           key: k,
           x: 0,
           y: i * GAP,
-          h: b.v * s,
+          h: s(b.v),
           c: typeof b.c == "string" ? b.c : color(i),
           zi: i + 1,
           aria: `${k}: ${v}`,

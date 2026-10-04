@@ -262,3 +262,73 @@ describe("<iso-stack>", () => {
     expect(fn).toHaveBeenCalledWith({ index: 1, item: STACK[1], part: 1 });
   });
 });
+
+describe("리뷰 보완", () => {
+  test("순서가 바뀌어도 포커스된 블록이 포커스를 유지한다", () => {
+    const el = mount("iso-bars", { data: JSON.stringify([{ k: "a", v: 1 }, { k: "b", v: 2 }]) });
+    const b = blocks(el)[1];
+    b.focus();
+    expect(document.activeElement).toBe(b);
+    el.setAttribute("data", JSON.stringify([{ k: "b", v: 2 }, { k: "a", v: 1 }]));
+    expect(blocks(el)[0]).toBe(b);
+    expect(document.activeElement).toBe(b);
+  });
+
+  test.each([
+    ["iso-bars", [{ v: 1 }]],
+    ["iso-bars", [{ k: { x: 1 }, v: 1 }]],
+    ["iso-bars", [{ k: "a" }]],
+    ["iso-stack", [{ parts: [{ name: "x", v: 1 }] }]],
+    ["iso-stack", [{ k: "a" }]],
+    ["iso-stack", [{ k: "a", parts: null }]],
+    ["iso-stack", [{ k: "a", parts: [{ name: "x" }] }]],
+    ["iso-stack", [{ k: "a", parts: [{ name: {}, v: 1 }] }]],
+  ])("%s 필수 필드 누락/형식 오류 %j → console.error + 오류 상태", (tag, data) => {
+    const el = mount(tag, { data: JSON.stringify(data) });
+    expect(err).toHaveBeenCalled();
+    expect(el.querySelector(".iso-scene")).toBeNull();
+    expect(el.querySelector(".iso-empty")).not.toBeNull();
+    expect(el.textContent).not.toContain("undefined");
+  });
+
+  test("숫자 k는 허용, 계열 name이 없으면 '계열 n'", () => {
+    const a = mount("iso-bars", { data: JSON.stringify([{ k: 2024, v: 1 }]) });
+    expect(a.querySelector(".iso-label--ground")!.textContent).toBe("2024");
+    const s = mount("iso-stack", { data: JSON.stringify([{ k: "a", parts: [{ v: 1 }, { v: 2 }] }]) });
+    expect(err).not.toHaveBeenCalled();
+    const text = s.querySelector("table")!.textContent!;
+    expect(text).toContain("계열 1");
+    expect(text).toContain("계열 2");
+    expect(s.textContent).not.toContain("undefined");
+  });
+
+  test.each([["Infinity"], ["-Infinity"], ["1e999"], ["NaN"], ["0"], ["-3"]])(
+    "비유한·비양수 숫자 속성(%s)은 기본값",
+    (bad) => {
+      const el = mount("iso-bars", { data: JSON.stringify(DATA), unit: bad, "height-units": bad, max: bad });
+      const scene = el.querySelector(".iso-scene") as HTMLElement;
+      expect(scene.style.getPropertyValue("--iso-u")).toBe("24px");
+      expect(hOf(blocks(el)[2])).toBe(5);
+    },
+  );
+
+  test("아주 작은 값에서도 높이가 유한하다(배율 오버플로 없음)", () => {
+    const el = mount("iso-bars", { data: JSON.stringify([{ k: "a", v: 1e-309 }, { k: "b", v: 0 }]) });
+    expect(blocks(el).map(hOf)).toEqual([5, 0]);
+    const scene = el.querySelector(".iso-scene") as HTMLElement;
+    expect(Number.isFinite(parseFloat(scene.style.height))).toBe(true);
+  });
+
+  test("모든 값이 0이면 높이 0", () => {
+    const el = mount("iso-bars", { data: JSON.stringify([{ k: "a", v: 0 }, { k: "b", v: 0 }]) });
+    expect(blocks(el).map(hOf)).toEqual([0, 0]);
+  });
+
+  test("빈/오류 상태로 바뀌면 장면 참조와 블록 맵을 놓는다", () => {
+    const host = mount("iso-bars", { data: JSON.stringify(DATA) });
+    host.setAttribute("data", "bad");
+    const el = host as unknown as Record<string, unknown>;
+    for (const f of ["scene", "origin", "floor", "table"]) expect(el[f]).toBeUndefined();
+    expect((el.blocks as Map<string, Element>).size).toBe(0);
+  });
+});
