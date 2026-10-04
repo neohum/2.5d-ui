@@ -2,10 +2,10 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "tests/visual",
-  snapshotPathTemplate: "{testDir}/__snapshots__/{testFilePath}/{arg}-{projectName}{ext}",
+  snapshotPathTemplate: "{testDir}/__snapshots__/{testFilePath}/{arg}-{projectName}-{platform}{ext}",
   expect: { toHaveScreenshot: { maxDiffPixelRatio: 0.01 } },
   use: { baseURL: "http://localhost:4173" },
-  webServer: { command: "npx vite --port 4173 --strictPort", url: "http://localhost:4173", reuseExistingServer: true },
+  webServer: { command: "npx vite --port 4173 --strictPort", url: "http://localhost:4173/packages/core/demo/primitives.html", reuseExistingServer: true },
   projects: [
     { name: "light", use: { ...devices["Desktop Chrome"], colorScheme: "light" } },
     { name: "dark", use: { ...devices["Desktop Chrome"], colorScheme: "dark" } },
