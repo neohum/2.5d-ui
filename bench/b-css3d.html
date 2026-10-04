@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>B · CSS 3D preserve-3d 큐브</title>
 <style>
+@property --h { syntax: "<number>"; inherits: true; initial-value: 1; }
 html, body { margin: 0; background: #f6f5f1; overflow: hidden; }
 .scene { position: relative; width: 1366px; height: 768px; }
 /* 바닥 평면을 rotateZ(45°)·rotateX(54.7356°)로 눕힌 뒤 1.2247배 키우면
@@ -19,7 +20,7 @@ html, body { margin: 0; background: #f6f5f1; overflow: hidden; }
   position: absolute; left: 0; top: 0;
   transform-style: preserve-3d;
   transform: translate3d(calc(var(--x) * var(--u)), calc(var(--y) * var(--u)), 0);
-  transition: transform 0.18s ease-out;
+  transition: transform 0.18s ease-out, --h 0.18s ease-out;
 }
 .cube:hover { transform: translate3d(calc(var(--x) * var(--u)), calc(var(--y) * var(--u)), 6px); }
 .cube > i { position: absolute; left: 0; top: 0; display: block; transform-origin: 0 0 0; }
@@ -50,7 +51,12 @@ for (const b of L.blocks) {
   html += `<div class="cube" style="--x:${b.x};--y:${b.y};--h:${b.h};--c:${b.c}"><i class="l"></i><i class="r"></i><i class="t"></i></div>`;
 }
 p.innerHTML = html;
-markRendered(L);
+const els = p.children;
+markRendered(L, {
+  setHeights(k) {
+    for (const b of L.blocks) els[b.i].style.setProperty("--h", b.heights[k]);
+  },
+});
 </script>
 </body>
 </html>

@@ -218,16 +218,16 @@ pre { margin: 0; background: var(--surface); border: 1px solid var(--line); bord
   <section>
     <span class="eyebrow">P0 비교 대상</span>
     <h2>렌더링 방식 후보</h2>
-    <p>P0 측정 결과(<code>docs/adr/0001-render-approach.md</code>, <code>bench/results.md</code>)로 A안을 기본으로 확정했다. 다만 블록 200개 이하일 때만 쓴다. A안이 성능 예산을 모두 지키는 구간이 200개까지이기 때문이다(첫 렌더 82.5ms). 300개부터는 첫 렌더가 109.9ms로 예산을 넘고, 1000개에서는 새로 가리킨 블록의 반응이 늦다(표시 프레임 부분 갱신 39.1%). 그래서 200개를 넘으면 C안(SVG)으로 전환한다. C안은 500개 첫 렌더가 83.2ms이고, 1000개까지 표시 프레임 드롭 0.0%, 부분 갱신 0.8% 이하였다. 2000개에서는 어떤 안도 예산을 지키지 못했다. 측정은 데스크톱에서 CPU를 6배 느리게 해서 했고, 크롬북 실기기 확인이 남아 있다.</p>
+    <p>P0 측정 결과(<code>docs/adr/0001-render-approach.md</code>, <code>bench/results.md</code>, <code>bench/results-threshold.md</code>)로 CSS 경로를 기본으로 확정했다. CSS 경로는 A안에 최적화 두 가지를 더한 A′안이다. 위치 변수를 <code>@property { inherits: false }</code>로 등록하고, 높이를 정수 px로 반올림한다. 블록이 200개를 넘으면 C안(SVG)으로 자동 전환한다. A′안이 첫 렌더 예산(≤ 100ms)을 지키는 마지막 측정점이 200개(92.2ms)이고, 300개에서는 106.6ms이기 때문이다. C안은 300개 86.1ms, 700개 96.1ms이고, 1000개까지 호버 표시 드롭 0.8% 이하, 메인 스레드 누락 0.0%였다. 값 변경 애니메이션은 두 경로 모두 예산(드롭 ≤ 5%)을 지키지 못했다(A′안 200개 66.7%, C안 200개 7.1%). 측정은 데스크톱에서 CPU를 6배 느리게 해서 했고, 크롬북 실기기 확인이 남아 있다.</p>
   </section>
   <div class="table-wrap wide">
     <table>
       <thead><tr><th>안</th><th>방식</th><th>블록당 비용</th><th>장점</th><th>위험</th><th>판단</th></tr></thead>
       <tbody>
-        <tr><td class="num">A</td><td>CSS 2D <code>matrix()</code> 면 3개</td><td class="num">DOM 4</td><td>JS 불필요, 텍스트·이벤트 그대로, 합성 비용 낮음</td><td>노드 수 증가, 면 사이 서브픽셀 틈</td><td><span class="pill ok">기본 · 200개 이하</span></td></tr>
-        <tr><td class="num">B</td><td>CSS 3D <code>preserve-3d</code> 큐브</td><td class="num">DOM 4–7</td><td>회전 연출 가능</td><td>합성 레이어 폭증, 저사양 GPU 없는 환경에서 느림</td><td><span class="pill warn">기각 · 500개에서 표시 프레임 30.9% 드롭</span></td></tr>
-        <tr><td class="num">C</td><td>JS로 좌표 계산 → SVG <code>polygon</code></td><td class="num">DOM 4 (<code>g</code> + <code>polygon</code> 3)</td><td>블록이 많아도 첫 렌더가 빠르고 호버 반응이 늦어지지 않음(1000개까지 측정), 확대해도 선명</td><td>JS 필수, CSS 단독 사용 불가. 노드 수는 A안과 같음</td><td><span class="pill ok">200개 초과 시 전환</span></td></tr>
-        <tr><td class="num">D</td><td>Canvas 2D 일괄 그리기</td><td class="num">픽셀</td><td>수천 블록에서도 노드 0</td><td>텍스트·접근성·이벤트 직접 구현, 호버 때 매 프레임 전체 다시 그리기</td><td><span class="pill mute">채택 안 함 · 1000개에서 표시 프레임 38.6% 드롭</span></td></tr>
+        <tr><td class="num">A / A′</td><td>CSS 2D <code>matrix()</code> 면 3개. A′는 위치 변수 비상속 등록과 높이 px 반올림을 더함</td><td class="num">DOM 4</td><td>JS 불필요, 텍스트·이벤트 그대로, 호버는 컴포지터 트랜지션</td><td>노드 수 증가, 면 사이 서브픽셀 틈, 높이 값 변경은 메인 스레드 애니메이션이라 느림(200개에서 66.7% 드롭)</td><td><span class="pill ok">기본(A′) · 200개 이하</span></td></tr>
+        <tr><td class="num">B</td><td>CSS 3D <code>preserve-3d</code> 큐브</td><td class="num">DOM 4–7</td><td>회전 연출 가능</td><td>합성 레이어 폭증, 저사양 GPU 없는 환경에서 느림</td><td><span class="pill warn">기각 · 500개에서 호버 표시 프레임 30.7% 드롭</span></td></tr>
+        <tr><td class="num">C</td><td>JS로 좌표 계산 → SVG <code>polygon</code></td><td class="num">DOM 4 (<code>g</code> + <code>polygon</code> 3)</td><td>블록이 많아도 첫 렌더가 빠르고 호버 반응이 늦어지지 않음(1000개까지 측정), 확대해도 선명</td><td>JS 필수, CSS 단독 사용 불가. 노드 수는 A안과 같음. 값 변경은 500개에서 14.3% 드롭</td><td><span class="pill ok">200개 초과 시 자동 전환</span></td></tr>
+        <tr><td class="num">D</td><td>Canvas 2D 일괄 그리기</td><td class="num">픽셀</td><td>수천 블록에서도 노드 0</td><td>텍스트·접근성·이벤트 직접 구현, 움직일 때 매 프레임 전체 다시 그리기</td><td><span class="pill mute">채택 안 함 · 1000개에서 호버 표시 프레임 36.8% 드롭</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -235,7 +235,7 @@ pre { margin: 0; background: var(--surface); border: 1px solid var(--line); bord
   <section>
     <span class="eyebrow">성능 예산</span>
     <h2>크롬북 기준 목표치</h2>
-    <p>기준 기기는 Intel Celeron N 계열이나 MediaTek ARM, 4GB RAM 크롬북이다. 실기기가 없으면 DevTools CPU 6배 스로틀로 대체 측정한다. P0 측정(ADR 0001) 뒤 호버 지표의 정의와 적용 범위를 고쳤다. 결과 열은 결정한 경로(200개 이하 A안, 초과 C안)의 데스크톱 CPU 6× 스로틀 측정값이다.</p>
+    <p>기준 기기는 Intel Celeron N 계열이나 MediaTek ARM, 4GB RAM 크롬북이다. 실기기가 없으면 DevTools CPU 6배 스로틀로 대체 측정한다. P0 측정(ADR 0001) 뒤 호버 예산의 지표와 적용 범위를 고치고, 값 변경 예산을 따로 적었다. 결과 열은 결정한 경로(200개 이하 A′안, 초과 C안)의 데스크톱 CPU 6× 스로틀 측정값이다.</p>
   </section>
   <div class="table-wrap wide">
     <table>
@@ -244,9 +244,10 @@ pre { margin: 0; background: var(--surface); border: 1px solid var(--line); bord
         <tr><td>코어 CSS 크기</td><td class="num">≤ 6 KB gzip</td><td><code>size-limit</code>, CI에서 초과 시 실패</td><td>P1에서 측정</td></tr>
         <tr><td>선택형 JS(Web Components)</td><td class="num">≤ 4 KB gzip</td><td><code>size-limit</code></td><td>P3에서 측정</td></tr>
         <tr><td>유휴 상태 CPU</td><td class="num">0 %</td><td>Performance 트레이스 10초, 스크립트·페인트 0건</td><td>충족(모든 안, rAF 0·Paint 0)</td></tr>
-        <tr><td>호버·값 변경 애니메이션 (블록 1000개 이하)</td><td class="num">60 fps</td><td>CPU 6× 스로틀, 표시 프레임 드롭 ≤ 5% 그리고 부분 갱신 ≤ 5%(cc <code>PipelineReporter</code>). 메인 스레드 rAF 누락은 참고값</td><td>1000개 이하 충족(최대 0.8%). 2000개는 C안 부분 갱신 15.5%로 미달, 예산 범위 밖</td></tr>
-        <tr><td>블록 500개 첫 렌더</td><td class="num">≤ 100 ms</td><td>Playwright, 내비게이션 시작부터 double rAF 뒤 <code>performance.mark</code>까지(블록 50개에서도 56.8–63.0ms인 고정 몫 포함)</td><td>충족(C안 83.2ms). A안이었다면 133.4ms로 미달</td></tr>
-        <tr><td>추가 메모리</td><td class="num">≤ 5 MB</td><td>블록 500개 페이지의 JS 힙 + DOM 비교</td><td>JS 힙만 충족(1.19MB). DOM 네이티브 메모리는 미측정</td></tr>
+        <tr><td>호버 애니메이션 (블록 1000개 이하)</td><td class="num">60 fps</td><td>CPU 6× 스로틀, 표시 프레임 드롭 ≤ 5%(cc <code>PipelineReporter</code>, 프레임 단위 합침) 그리고 메인 스레드 rAF 누락 ≤ 5%</td><td>1000개 이하 충족(표시 드롭 최대 0.8%, 메인 스레드 누락 0.0%). 2000개는 C안 메인 스레드 누락 10.4%로 범위 밖</td></tr>
+        <tr><td>값 변경 애니메이션</td><td class="num">60 fps</td><td>CPU 6× 스로틀, 모든 블록 높이를 바꾸고 되돌리는 동안 표시 프레임 드롭 ≤ 5%</td><td><b>미달.</b> A′안 50개 8.3%, 200개 66.7%. C안 200개 7.1%, 500개 14.3%. 처리는 ADR 0001에서 소유자 결정 대기</td></tr>
+        <tr><td>블록 500개 첫 렌더</td><td class="num">≤ 100 ms</td><td>Playwright, 내비게이션 시작부터 double rAF 뒤 <code>performance.mark</code>까지(블록 50개에서도 59.7–67.7ms인 고정 몫 포함)</td><td>충족(C안 86.9ms). A′안이었다면 132.5ms로 미달</td></tr>
+        <tr><td>추가 메모리</td><td class="num">≤ 5 MB</td><td>블록 500개 페이지의 JS 힙 + DOM 비교</td><td>JS 힙만 충족(1.22MB). DOM 네이티브 메모리는 미측정</td></tr>
       </tbody>
     </table>
   </div>
@@ -298,7 +299,7 @@ pre { margin: 0; background: var(--surface); border: 1px solid var(--line); bord
     <ol class="phases">
       <li class="phase"><span class="no">P0</span><div class="body">
         <h3>검증 스파이크</h3><span class="dur">1주</span>
-        <p>A–D안을 같은 데이터(블록 50, 500, 1000, 2000개, A·C안은 100–400개 추가)로 구현하고 성능 예산 항목을 측정한다. 대화에서 나온 선행 사례 주장도 이때 확인한다.</p>
+        <p>A–D안과 A′안을 같은 데이터(블록 50, 500, 1000, 2000개, A·A′·C안은 200–1000개 추가)로 구현하고 성능 예산 항목을 측정한다. 대화에서 나온 선행 사례 주장도 이때 확인한다.</p>
         <p class="ac"><b>AC-P0-1</b>방식별 측정표 작성 <b>AC-P0-2</b>기본 렌더링 방식 확정을 ADR로 기록</p>
       </div></li>
       <li class="phase"><span class="no">P1</span><div class="body">
@@ -354,7 +355,7 @@ pre { margin: 0; background: var(--surface); border: 1px solid var(--line); bord
           <tr><td>격자에 맞지 않거나 겹치는 블록의 앞뒤 순서 오류</td><td>v0.1은 격자 정렬 블록만 지원. <code>z-index = x + y</code> 규칙. 불규칙 배치는 JS에서 한 번만 정렬</td></tr>
           <tr><td>면 사이 서브픽셀 틈(안티앨리어싱 선)</td><td>면을 0.5px 겹치게 하거나 단위 크기를 정수 픽셀로 반올림</td></tr>
           <tr><td>3D 차트가 값을 왜곡한다는 비판</td><td>모든 블록에 정확한 숫자 라벨, 같은 축척 유지, 2D 표 보기 전환 제공</td></tr>
-          <tr><td>블록이 많을 때 DOM 노드 증가(블록당 4개)</td><td>C안도 블록당 4개라 전환으로 줄지 않는다. 200개를 넘으면 첫 렌더와 호버 반응 때문에 C안으로 전환하고, 지원 상한은 1000개로 둔다(ADR 0001). DOM 메모리는 후속 측정</td></tr>
+          <tr><td>블록이 많을 때 DOM 노드 증가(블록당 4개)</td><td>C안도 블록당 4개라 전환으로 줄지 않는다. 200개를 넘으면 첫 렌더 때문에 C안으로 자동 전환하고, 지원 상한은 1000개로 둔다(ADR 0001). DOM 메모리는 후속 측정</td></tr>
           <tr><td><code>color-mix()</code>, <code>@property</code> 미지원 브라우저</td><td>대상은 Chrome 111+이므로 문제없음. 그 외에는 미리 계산한 색 변수로 대체</td></tr>
         </tbody>
       </table>

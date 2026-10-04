@@ -13,7 +13,7 @@ svg { display: block; }
 <body>
 <svg id="s" width="1366" height="768" xmlns="http://www.w3.org/2000/svg"></svg>
 <script type="module">
-import { readN, layout, faces, shade, markRendered } from './common.js';
+import { readN, layout, faces, shade, markRendered, tweenHeights } from './common.js';
 const L = layout(readN());
 const pts = (a) => a.map(([x, y]) => `${(L.ox + x).toFixed(1)},${(L.oy + y).toFixed(1)}`).join(' ');
 let html = '';
@@ -21,8 +21,20 @@ for (const b of L.order) {
   const f = faces(b, L.u);
   html += `<g class="b"><polygon points="${pts(f.left)}" fill="${shade(b.c, 0.18)}"/><polygon points="${pts(f.right)}" fill="${shade(b.c, 0.34)}"/><polygon points="${pts(f.top)}" fill="${b.c}"/></g>`;
 }
-document.getElementById('s').innerHTML = html;
-markRendered(L);
+const svg = document.getElementById('s');
+svg.innerHTML = html;
+// 값 변경: 엘리먼트가 하듯 바뀐 높이로 points 속성을 다시 쓴다(180ms 보간, 프레임마다).
+const groups = svg.children; // L.order 순서
+function writePoints() {
+  for (let k = 0; k < L.order.length; k++) {
+    const f = faces(L.order[k], L.u);
+    const [l, r, t] = groups[k].children;
+    l.setAttribute('points', pts(f.left));
+    r.setAttribute('points', pts(f.right));
+    t.setAttribute('points', pts(f.top));
+  }
+}
+markRendered(L, { setHeights: (k) => tweenHeights(L, k, writePoints) });
 </script>
 </body>
 </html>

@@ -11,7 +11,7 @@ canvas { display: block; width: 1366px; height: 768px; }
 <body>
 <canvas id="c"></canvas>
 <script type="module">
-import { readN, layout, faces, shade, markRendered, VIEW_W, VIEW_H, LIFT } from './common.js';
+import { readN, layout, faces, shade, markRendered, tweenHeights, easeOut, DURATION, VIEW_W, VIEW_H, LIFT } from './common.js';
 const L = layout(readN());
 const cv = document.getElementById('c');
 const dpr = window.devicePixelRatio || 1;
@@ -60,25 +60,12 @@ function pick(mx, my) {
 // A·B·C의 CSS `transition: transform 0.18s ease-out`과 같은 일을 블록마다 따로 한다.
 // 올라가는 블록과 내려가는 블록이 동시에 여럿 움직일 수 있다. 중간에 방향이 바뀌면
 // CSS의 역방향 단축처럼 남은 거리에 비례해 시간을 줄인다.
-const DUR = 180;
-function bezier(x1, y1, x2, y2) {
-  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
-  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
-  const sx = (t) => ((ax * t + bx) * t + cx) * t;
-  const sy = (t) => ((ay * t + by) * t + cy) * t;
-  return (x) => {
-    let lo = 0, hi = 1, t = x;
-    for (let k = 0; k < 20; k++) { if (sx(t) < x) lo = t; else hi = t; t = (lo + hi) / 2; }
-    return sy(t);
-  };
-}
-const easeOut = bezier(0, 0, 0.58, 1); // CSS ease-out
 const anims = new Map(); // 블록 번호 → { from, to, start, dur }
 let hovered = -1, raf = 0;
 function setTarget(i, to, now) {
   const from = lift[i];
   if (from === to && !anims.has(i)) return;
-  const dur = (DUR * Math.abs(to - from)) / LIFT;
+  const dur = (DURATION * Math.abs(to - from)) / LIFT;
   if (dur === 0) { anims.delete(i); return; }
   anims.set(i, { from, to, start: now, dur });
   if (!raf) raf = requestAnimationFrame(tick);
@@ -103,7 +90,8 @@ cv.addEventListener('mousemove', (e) => hover(pick(e.offsetX, e.offsetY)));
 cv.addEventListener('mouseleave', () => hover(-1));
 
 draw();
-markRendered(L);
+// 값 변경: 모든 블록 높이를 180ms 보간하며 프레임마다 캔버스 전체를 다시 그린다.
+markRendered(L, { setHeights: (k) => tweenHeights(L, k, draw) });
 </script>
 </body>
 </html>
