@@ -51,6 +51,11 @@ describe("검증", () => {
     ["프로토타입 이름 상태", { items: [{ k: "a", x: 0, y: 0, state: "constructor" }] }, "bad state"],
     ["이름 없음", { items: [{ x: 0, y: 0, v: 1 }] }, "bad key"],
     ["items가 배열 아님", { items: { k: "a" } }, "bad list"],
+    ["w: null", { items: [{ k: "a", x: 0, y: 0, w: null }] }, "bad value"],
+    ["d: null(겹침을 놓치면 안 됨)", { items: [{ k: "a", x: 0, y: 0, d: null }, { k: "b", x: 0, y: 0, d: null }] }, "bad value"],
+    ["w: 문자열", { items: [{ k: "a", x: 0, y: 0, w: "2" }] }, "bad value"],
+    ["v: null", { items: [{ k: "a", x: 0, y: 0, v: null }] }, "bad value"],
+    ["state: null", { items: [{ k: "a", x: 0, y: 0, state: null }] }, "bad state"],
     ["잘못된 색", { items: [{ k: "a", x: 0, y: 0, v: 1, c: "red;top:0" }] }, "bad color"],
   ] as const;
   test.each(bad)("%s → 오류 상태", (_, data, msg) => {
@@ -210,13 +215,23 @@ describe("접근성", () => {
     expect(aria(el)).toContain("4: 0");
   });
 
-  test("이름·값 라벨이 모든 칸에 붙는다(보임은 edu.css가 호버·포커스로)", () => {
-    const el = mount(ROOM);
-    const seat = blocks(el).find((b) => b.getAttribute("aria-label") == "7번: 6")!;
-    expect([...seat.querySelectorAll(".iso-label")].map((l) => [l.className, l.textContent])).toEqual([
+  test.each(["css", "svg"])("%s 경로: 값·상태 칸의 이름 라벨은 윗면 위(값 라벨 위 줄), 바닥 라벨이 아니다", (r) => {
+    const el = mount(ROOM, { renderer: r });
+    const labels = (k: string) =>
+      [...blocks(el).find((b) => b.getAttribute("aria-label")!.startsWith(k))!.querySelectorAll(".iso-label")].map((l) => [l.getAttribute("class"), l.textContent]);
+    expect(labels("7번")).toEqual([
       ["iso-label ", "6"],
-      ["iso-label iso-label--ground", "7번"],
+      ["iso-label iso-label--name", "7번"],
     ]);
+    expect(labels("8번")).toEqual([
+      ["iso-label ", "결석"],
+      ["iso-label iso-label--name", "8번"],
+    ]);
+    if (r == "svg") {
+      // SVG 경로: 이름 라벨도 값 라벨과 같은 자리(윗면 위)에 놓인다(바닥 앞 꼭짓점이 아니다).
+      const [v, n] = [...blocks(el).find((b) => b.getAttribute("aria-label")!.startsWith("7번"))!.querySelectorAll("text")];
+      expect([n.getAttribute("x"), n.getAttribute("y")]).toEqual([v.getAttribute("x"), v.getAttribute("y")]);
+    }
   });
 });
 
@@ -230,7 +245,8 @@ describe("iso-select", () => {
     seat9.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     seat9.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
     seat9.dispatchEvent(new KeyboardEvent("keydown", { key: "a", bubbles: true }));
-    expect(seen).toEqual([0, 1, 2].map(() => ({ index: 3, item: ROOM.items[3] })));
+    // item은 그 칸의 데이터(생략한 w·d는 검증에서 1로 채운다).
+    expect(seen).toEqual([0, 1, 2].map(() => ({ index: 3, item: { ...ROOM.items[3], w: 1, d: 1 } })));
   });
 });
 

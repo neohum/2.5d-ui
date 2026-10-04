@@ -31,6 +31,63 @@ test.describe("화면", () => {
     await expect(page.locator("#room-css")).toHaveScreenshot("classroom-hover.png", { animations: "disabled" });
   });
 
+  test("뒤 칸을 호버한 뒤 앞 칸으로 옮기면 앞 칸이 호버된다(뒤 칸이 앞 칸을 덮지 않는다)", async ({ page }, info) => {
+    test.skip(info.project.name == "mobile", "마우스 호버는 데스크톱에서");
+    const back = page.locator("#room-css .iso-block[aria-label='9번: 7']");
+    const front = page.locator("#room-css .iso-block[aria-label='16번: 5']");
+    await back.locator(".iso-top").hover();
+    // 앞 칸 윗면 가운데: 뒤 칸(9번)의 실루엣 안에 있는 점이다.
+    const box = (await front.locator(".iso-top").boundingBox())!;
+    const [X, Y] = [box.x + box.width / 2, box.y + box.height / 2];
+    await page.mouse.move(X, Y);
+    const r = await page.evaluate(([X, Y]) => {
+      const hit = document.elementFromPoint(X, Y)?.closest(".iso-block");
+      return { hit: hit?.getAttribute("aria-label"), hovered: [...document.querySelectorAll("#room-css .iso-block:hover")].map((b) => b.getAttribute("aria-label")) };
+    }, [X, Y]);
+    expect(r).toEqual({ hit: "16번: 5", hovered: ["16번: 5"] });
+  });
+
+  test("모든 블록의 z-index는 --iso-z 그대로다(호버·포커스 중에도)", async ({ page }, info) => {
+    test.skip(info.project.name == "mobile", "마우스 호버는 데스크톱에서");
+    const check = () =>
+      page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>("iso-map .iso-origin > .iso-block")]
+          .filter((b) => getComputedStyle(b).zIndex != b.style.getPropertyValue("--iso-z"))
+          .map((b) => b.getAttribute("aria-label")),
+      );
+    expect(await check()).toEqual([]);
+    await page.locator("#room-css .iso-block[aria-label='9번: 7'] .iso-top").hover();
+    expect(await check()).toEqual([]);
+    await page.locator("#room-css .iso-block[aria-label='9번: 7']").focus();
+    await page.keyboard.press("Tab");
+    expect(await check()).toEqual([]);
+  });
+
+  test("호버한 칸의 라벨: 값은 윗면 위, 이름은 그 아래 줄(윗면 뒤쪽 위)", async ({ page }, info) => {
+    test.skip(info.project.name == "mobile", "마우스 호버는 데스크톱에서");
+    for (const id of ["room-css", "room-svg"]) {
+      const seat = page.locator(`#${id} .iso-block[aria-label='9번: 7']`);
+      await seat.locator(".iso-top").hover();
+      const [top, v, n] = await Promise.all([seat.locator(".iso-top"), seat.locator(".iso-label").nth(0), seat.locator(".iso-label").nth(1)].map((l) => l.boundingBox()));
+      // 세로는 줄 가운데로 비교한다(SVG 글자 상자는 줄 상자보다 높다).
+      const cy = (b: { y: number; height: number }) => b.y + b.height / 2;
+      expect(cy(v!), id).toBeLessThan(top!.y);
+      expect(cy(n!) - cy(v!), id).toBeGreaterThanOrEqual(12);
+      expect(cy(n!) - cy(v!), id).toBeLessThanOrEqual(22);
+      expect(cy(n!), id).toBeGreaterThan(top!.y);
+      expect(Math.abs(n!.x + n!.width / 2 - (v!.x + v!.width / 2)), id).toBeLessThan(2);
+    }
+  });
+
+  test("누르면(포커스) 라벨이 보인다: 터치 기기", async ({ page }) => {
+    const seat = page.locator("#room-css .iso-block[aria-label='9번: 7']");
+    // 마우스·터치로 누른 포커스는 :focus-visible이 아니다. 누른 뒤 포인터가 떠나도 보여야 한다.
+    await seat.locator(".iso-top").click();
+    await page.mouse.move(0, 0);
+    expect(await seat.evaluate((b) => [b.matches(":focus"), b.matches(":focus-visible")])).toEqual([true, false]);
+    await expect(seat.locator(".iso-label").first()).toHaveCSS("opacity", "1");
+  });
+
   test("구조물 라벨은 늘 보이고, 구조물은 고를 수 없다", async ({ page }) => {
     const desk = page.locator("#room-css .iso-block[data-fixture]");
     await expect(desk.locator(".iso-label")).toHaveCSS("opacity", "1");

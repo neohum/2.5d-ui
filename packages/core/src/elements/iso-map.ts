@@ -23,7 +23,7 @@ const STATES = ["absent", "empty", "closed"];
 const WORDS = ["결석", "빈자리", "사용 안 함"];
 
 /** 양수만 통과(0은 num이 통과시키므로 여기서 막는다). */
-const pos = (v: unknown): number => num(v) || bad("bad size " + v);
+const pos = (v: unknown): number => num(v) || bad("bad size");
 
 /** 정렬한 서로 다른 값들 중 v의 순위(1부터). 숨김 표의 행·열. */
 const ranks = (vs: number[]): ((v: number) => number) => {
@@ -41,19 +41,21 @@ export class IsoMap extends IsoElement<MapData> {
     const { floor: f, items } = (json ?? {}) as Rec;
     const it = list(items) as unknown as MapItem[];
     const fl = f as { w: number; d: number } | undefined;
-    if (fl != null) pos(fl.w), pos(fl.d);
+    // 생략(undefined)만 기본값이다. null 등은 오류(그대로 두면 폭 0 면이 되고 overlaps()가 놓친다).
+    if (fl !== undefined) pos(fl.w), pos(fl.d);
     let x0 = 1 / 0;
     let y0 = x0;
     let x1 = -x0;
     let y1 = x1;
     for (const o of it) {
       str(o.k);
-      if (o.v != null) num(o.v);
-      if (o.state != null && STATES.indexOf(o.state) < 0) bad("bad state " + o.state);
+      if (o.v !== undefined) num(o.v);
+      if (o.state !== undefined && STATES.indexOf(o.state) < 0) bad("bad state " + o.state);
+      // w·d를 숫자로 채워 둔다: 아래(overlaps, order, 블록)는 null을 보지 않는다.
       x0 = Math.min(x0, num(o.x));
       y0 = Math.min(y0, num(o.y));
-      x1 = Math.max(x1, o.x + (o.w == null ? 1 : pos(o.w)));
-      y1 = Math.max(y1, o.y + (o.d == null ? 1 : pos(o.d)));
+      x1 = Math.max(x1, o.x + (o.w = o.w === undefined ? 1 : pos(o.w)));
+      y1 = Math.max(y1, o.y + (o.d = o.d === undefined ? 1 : pos(o.d)));
     }
     if (fl && (x1 > fl.w + 1e-9 || y1 > fl.d + 1e-9)) bad("outside floor");
     const p = overlaps(it);
@@ -85,7 +87,10 @@ export class IsoMap extends IsoElement<MapData> {
         zi: 0,
         aria: fx ? k : k + ": " + val,
         value: fx ? undefined : val,
-        name: k,
+        // 구조물 이름은 바닥 앞(늘 보임). 값·상태 칸 이름은 값 라벨 위 줄(윗면 위, edu.css):
+        // 바닥 앞 라벨은 앞 칸에 가린다. 클래스에 ground가 없어 SVG 경로도 윗면 위 자리에 둔다.
+        name: fx ? k : undefined,
+        labels: fx ? undefined : [{ t: k, cls: "iso-label--name" }],
         // 키가 같은 노드를 다시 쓰므로 종류가 바뀌어도 맞게 늘 모든 속성을 쓴다(null은 지움).
         attrs: {
           "data-state": o.state || null,

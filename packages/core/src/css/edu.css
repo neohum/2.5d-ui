@@ -86,16 +86,22 @@ iso-map .iso-scene .iso-block > .iso-label {
   stroke-linejoin: round;
 }
 
-/* 값·상태 칸의 라벨(이름, 값)은 호버·포커스 때만. 숨김 표에는 늘 있다. */
-iso-map .iso-block:not([data-fixture], :hover, :focus-visible) > .iso-label {
-  opacity: 0;
+/* 값·상태 칸의 이름 라벨: 값 라벨 바로 아래 줄, 윗면 뒤쪽 위에 얹는다(바닥 앞에 두면 앞 칸에
+   가린다). 윗면이 보이는 만큼 보이고, 장면 위 여백(값 라벨 몫)을 더 쓰지 않는다. 훨씬 높은 앞
+   칸은 여전히 가릴 수 있다(두 경로 같음). 전체 값은 aria-label과 숨김 표에 있다. */
+iso-map .iso-label--name {
+  transform: translate(-50%, 2px);
 }
 
-/* CSS 경로: 호버·포커스한 칸을 맨 앞에 그려(들림과 함께 집어 든 모양) 이름·값 라벨이 앞 칸에
-   가리지 않게 한다. 블록마다 z-index 쌓임 맥락이라 라벨만 올릴 수는 없다. SVG 경로에는
-   z-index가 없어 그리는 순서 그대로다. */
-iso-map .iso-block:is(:hover, :focus-visible) {
-  z-index: 99999;
+/* SVG 경로: svg.css의 값 라벨 이동(-16px)을 덮어 같은 자리(줄 가운데 = 꼭짓점 + 8px)로. */
+iso-map .iso-svg .iso-label.iso-label--name {
+  transform: translate(-50%, 2px);
+}
+
+/* 값·상태 칸의 라벨(이름, 값)은 호버·포커스 때만. 숨김 표에는 늘 있다. :focus(가시 포커스만이
+   아님)라 터치 크롬북에서 누르면 보인다. 구조물 라벨은 늘 보인다. */
+iso-map .iso-block:not([data-fixture], :hover, :focus) > .iso-label {
+  opacity: 0;
 }
 
 /* 상태 칸(높이 0): 윗면 색 + 1.5px 점선 윤곽. CSS 경로는 background·outline, SVG 경로는
