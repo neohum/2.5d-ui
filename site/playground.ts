@@ -89,21 +89,33 @@ const update = () => {
     err = (e as Error).message;
   }
   ta.setAttribute("aria-invalid", String(!ok));
-  statusEl.classList.toggle("bad", !ok);
-
   for (const a of ATTRS) attr(a, input(a).value.trim() || null);
 
+  let msg: string;
+  let fail = !ok;
   if (tag == "iso-kpi") {
-    // kpi에는 data 속성이 없다. JSON이 깨지면 이전 값을 그대로 둔다.
-    if (ok && parsed && typeof parsed == "object") {
-      const o = parsed as Record<string, unknown>;
-      for (const k of KPI_KEYS) attr(k, o[k] == null ? null : String(o[k]));
-    }
-    statusEl.textContent = ok ? "value·suffix 키를 속성으로 옮겼습니다." : `JSON 오류: ${err} (iso-kpi는 이전 값을 유지합니다)`;
+    // kpi에는 data 속성이 없다. JSON의 value·suffix 키를 속성으로 옮기며, 객체가 아니면
+    // 옮길 것이 없으므로 엘리먼트는 이전 값을 그대로 보인다 — 상태 문구도 그렇게 말한다.
+    const o = ok && parsed && typeof parsed == "object" && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : null;
+    if (o) for (const k of KPI_KEYS) attr(k, o[k] == null ? null : String(o[k]));
+    const v = o?.value;
+    const good = typeof v == "number" ? isFinite(v) && v >= 0 : typeof v == "string" && v.trim() != "" && +v >= 0;
+    fail = !o || (v != null && !good);
+    msg = !ok
+      ? `JSON 오류: ${err} — iso-kpi는 이전 값을 그대로 보입니다.`
+      : !o
+        ? 'iso-kpi에는 {"value": 숫자, "suffix": "단위"} 같은 객체가 필요합니다 — 이전 값을 그대로 보입니다.'
+        : v == null
+          ? "value가 없어 엘리먼트가 빈 상태를 보입니다."
+          : good
+            ? "value·suffix를 속성으로 옮겼습니다."
+            : "value가 0 이상의 수가 아니어서 엘리먼트가 오류 상태를 보입니다.";
   } else {
     attr("data", raw);
-    statusEl.textContent = ok ? "올바른 JSON입니다." : `JSON 오류: ${err} — 엘리먼트가 오류 상태를 보입니다.`;
+    msg = ok ? "올바른 JSON입니다." : `JSON 오류: ${err} — 엘리먼트가 오류 상태를 보입니다.`;
   }
+  statusEl.textContent = msg;
+  statusEl.classList.toggle("bad", fail);
   code.textContent = snippet(tag, raw, parsed, ok);
 };
 

@@ -46,11 +46,12 @@
           <option value="iso-kpi">iso-kpi</option>
         </select>
       </label>
-      <label>max <input id="pg-max" type="number" min="0" step="any" inputmode="decimal" placeholder="데이터 최댓값"></label>
+      <label>max <input id="pg-max" type="number" min="0.01" step="any" inputmode="decimal" placeholder="데이터 최댓값"></label>
       <label>unit (px) <input id="pg-unit" type="number" min="1" step="1" inputmode="numeric" placeholder="24"></label>
-      <label>height-units <input id="pg-height-units" type="number" min="0" step="any" inputmode="decimal" placeholder="5"></label>
+      <label>height-units <input id="pg-height-units" type="number" min="0.5" step="0.5" inputmode="decimal" placeholder="5"></label>
       <label>label <input id="pg-label" type="text"></label>
     </div>
+    <p class="muted">max·unit·height-units는 0보다 큰 수만 씁니다. 비우거나 0 이하·숫자가 아닌 값이면 엘리먼트가 기본값(max는 데이터 최댓값, unit 24, height-units 5)으로 그립니다.</p>
     <label for="pg-data" id="pg-data-label">data (JSON)</label>
     <textarea id="pg-data" spellcheck="false" aria-describedby="pg-status"></textarea>
     <p class="status" id="pg-status" role="status"></p>

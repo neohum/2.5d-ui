@@ -31,12 +31,12 @@
 <section class="head">
   <span class="eyebrow">Web Component</span>
   <h1>&lt;iso-kpi&gt;</h1>
-  <p class="lede">지표 하나를 블록의 채움 높이로 보여 줍니다. <code>data</code> 대신 <code>value</code>, <code>max</code>, <code>label</code>, <code>suffix</code> 속성을 씁니다.</p>
+  <p class="lede">지표 하나를 반투명 상자 안의 채움 높이로 보여 줍니다. <code>data</code> 대신 <code>value</code>, <code>max</code>, <code>label</code>, <code>suffix</code> 속성을 씁니다.</p>
 </section>
 
 <section aria-labelledby="ex">
   <h2 id="ex">예시</h2>
-  <p class="muted">예시 데이터</p>
+  <p class="muted">예시 데이터. 상자 높이가 <code>max</code>, 안쪽 채움이 <code>value</code>입니다.</p>
   <div class="grid">
     <div class="card example" data-log>
       <script type="text/html">
@@ -45,7 +45,7 @@
     </div>
     <div class="card example">
       <script type="text/html">
-        <iso-kpi value="318" max="400" suffix="대" label="오늘 접속한 기기"></iso-kpi>
+        <iso-kpi value="12.5" max="32" suffix=" GB" height-units="4" label="저장 공간"></iso-kpi>
       </script>
     </div>
   </div>
@@ -56,29 +56,31 @@
   <div class="table"><table>
     <thead><tr><th>속성</th><th>형식</th><th>의미</th></tr></thead>
     <tbody>
-      <tr><td><code>value</code></td><td>숫자</td><td>지표 값. 0 이상</td></tr>
-      <tr><td><code>max</code></td><td>숫자</td><td>꽉 찬 높이에 해당하는 값</td></tr>
-      <tr><td><code>label</code></td><td>문자열</td><td>지표 이름이자 접근성 캡션</td></tr>
-      <tr><td><code>suffix</code></td><td>문자열</td><td>값 뒤에 붙는 단위(예: <code>%</code>, <code>대</code>)</td></tr>
+      <tr><td><code>value</code></td><td>숫자</td><td>지표 값. 없으면 빈 상태, 숫자가 아니거나 음수면 <code>console.error</code> 후 오류 상태</td></tr>
+      <tr><td><code>max</code></td><td>숫자</td><td>상자를 가득 채우는 값. 없으면 <code>value</code>(늘 가득). 넘는 값은 가득으로 잘린다</td></tr>
+      <tr><td><code>label</code></td><td>문자열</td><td>상자 아래 이름 라벨이자 접근 가능한 이름의 앞부분</td></tr>
+      <tr><td><code>suffix</code></td><td>문자열</td><td>값 바로 뒤에 붙는 단위. 띄어 쓰려면 앞에 공백을 넣는다(예: <code>" GB"</code>)</td></tr>
       <tr><td><code>unit</code></td><td>숫자(px)</td><td><code>--iso-u</code> 값. 기본 24</td></tr>
-      <tr><td><code>height-units</code></td><td>숫자</td><td>꽉 찬 높이. 기본 5</td></tr>
+      <tr><td><code>height-units</code></td><td>숫자</td><td>상자 높이(블록 단위). 기본 5</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <section aria-labelledby="events">
   <h2 id="events">이벤트</h2>
-  <p>블록을 누르거나 Enter·Space를 누르면 공통 규격대로 <code>iso-select</code>가 버블링됩니다. 지표 상세 화면으로 넘어가는 데 쓰세요.</p>
-  <pre data-copy><code>document.querySelector("iso-kpi").addEventListener("iso-select", () => {
-  location.href = "/battery";
+  <p>상자를 누르거나 Enter·Space를 누르면 <code>iso-select</code>가 버블링됩니다. <code>detail</code>은 <code>{ index: 0, item: { value, max } }</code>입니다. 지표 상세 화면으로 넘어가는 데 쓰세요.</p>
+  <pre data-copy><code>document.querySelector("iso-kpi").addEventListener("iso-select", (e) => {
+  const { value, max } = e.detail.item;
+  console.log(value, "/", max);
 });</code></pre>
 </section>
 
 <section aria-labelledby="a11y">
   <h2 id="a11y">접근성</h2>
   <ul>
-    <li><code>label</code>을 꼭 지정하세요. 값·단위와 함께 블록의 접근 가능한 이름이 됩니다.</li>
-    <li>채움 높이만으로는 정확한 값을 읽기 어려우므로 값 라벨이 함께 보입니다.</li>
+    <li>포커스를 받는 것은 바깥 상자 하나이며 이름은 <code>"label: 값suffix"</code>입니다(예: "배터리 평균 잔량: 72%"). 안쪽 채움 블록은 장식이라 접근성 트리와 Tab 순서에서 빠집니다.</li>
+    <li><code>label</code>을 꼭 지정하세요. 없으면 값만 읽힙니다.</li>
+    <li>채움 높이만으로는 정확한 값을 읽기 어려우므로 값 라벨이 상자 위에 늘 함께 보입니다.</li>
   </ul>
 </section>
 </main>

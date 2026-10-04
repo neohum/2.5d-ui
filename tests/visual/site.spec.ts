@@ -15,9 +15,8 @@ const PAGES = [
   "tpl-versions",
 ] as const;
 
-// 기준 이미지는 iso-bars·iso-stack·CSS 프리미티브만 쓰는 페이지에만 둔다.
-// heatmap·ledger·kpi를 쓰는 페이지는 그 엘리먼트가 통합된 뒤 추가한다.
-const SHOTS = ["index", "primitives", "bars", "stack"] as const;
+// 플레이그라운드는 입력 상태가 주제라 동작 테스트로만 본다.
+const SHOTS = PAGES.filter((p) => p != "playground");
 
 const url = (p: string) => `/site/${p}.html`;
 
@@ -28,7 +27,7 @@ const open = async (page: Page, p: string) => {
   page.on("pageerror", (e) => errors.push(e.message));
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(url(p));
-  await page.waitForFunction(() => !!customElements.get("iso-bars") && !!customElements.get("iso-stack"));
+  await page.waitForFunction(() => ["iso-bars", "iso-stack", "iso-heatmap", "iso-ledger", "iso-kpi"].every((t) => customElements.get(t)));
   // site.ts가 예시를 찍어 넣은 뒤(남은 원문 script가 없을 때)
   await page.waitForFunction(() => !document.querySelector('.example script[type="text/html"]'));
   await page.evaluate(() => document.fonts.ready);
@@ -51,7 +50,8 @@ for (const p of PAGES) {
 for (const p of SHOTS) {
   test(`${p} 화면`, async ({ page }) => {
     await open(page, p);
-    await expect(page).toHaveScreenshot(`${p}.png`, { fullPage: true, animations: "disabled" });
+    // 전체 페이지라 기본 허용치(1%)면 카드 하나가 통째로 바뀌어도 통과한다. 0.1%로 좁힌다.
+    await expect(page).toHaveScreenshot(`${p}.png`, { fullPage: true, animations: "disabled", maxDiffPixelRatio: 0.001 });
   });
 }
 
@@ -143,76 +143,161 @@ test.describe("플레이그라운드", () => {
     await expect(page.locator("#pg-data")).toHaveAttribute("aria-invalid", "false");
   });
 
-  test("엘리먼트 종류를 바꾸면 그 예시 데이터로 다시 만든다", async ({ page }) => {
+  test("엘리먼트 종류를 바꾸면 그 예시 데이터로 다시 그린다", async ({ page }) => {
     await open(page, "playground");
-    await page.locator("#pg-type").selectOption("iso-stack");
-    const el = page.locator("#pg-stage iso-stack");
-    await expect(el.locator(".iso-block")).toHaveCount(6);
-    expect(JSON.parse(await page.locator("#pg-data").inputValue())[0].k).toBe("1월");
-    for (const tag of ["iso-heatmap", "iso-ledger", "iso-kpi"]) {
+    const counts = { "iso-stack": 6, "iso-heatmap": 9, "iso-ledger": 3, "iso-kpi": 2 } as const;
+    for (const [tag, n] of Object.entries(counts)) {
       await page.locator("#pg-type").selectOption(tag);
-      await expect(page.locator(`#pg-stage ${tag}`)).toHaveCount(1);
+      await expect(page.locator(`#pg-stage ${tag} .iso-block`)).toHaveCount(n);
     }
-    await expect(page.locator("#pg-stage iso-kpi")).toHaveAttribute("value", "72");
-    await expect(page.locator("#pg-stage iso-kpi")).toHaveAttribute("suffix", "%");
+    const kpi = page.locator("#pg-stage iso-kpi");
+    await expect(kpi).toHaveAttribute("value", "72");
+    await expect(kpi.locator('.iso-block[tabindex="0"]')).toHaveAttribute("aria-label", "배터리 평균 잔량: 72%");
+  });
+
+  test("iso-kpi: 객체가 아닌 JSON은 이전 값을 유지한다고 알리고, 잘못된 value는 오류 상태", async ({ page }) => {
+    await open(page, "playground");
+    await page.locator("#pg-type").selectOption("iso-kpi");
+    const kpi = page.locator("#pg-stage iso-kpi");
+    await page.locator("#pg-data").fill("null");
+    await expect(page.locator("#pg-status")).toContainText("이전 값을 그대로 보입니다");
+    await expect(page.locator("#pg-status")).toHaveClass(/bad/);
+    await expect(kpi).toHaveAttribute("value", "72");
+    await page.locator("#pg-data").fill('{"value": -3}');
+    await expect(kpi.locator(".iso-empty")).toHaveText("데이터를 표시할 수 없습니다");
+    await expect(page.locator("#pg-status")).toContainText("오류 상태");
+    await page.locator("#pg-data").fill('{"value": 30, "suffix": "점"}');
+    await expect(kpi.locator(".iso-label").first()).toHaveText("30점");
+    await expect(page.locator("#pg-status")).not.toHaveClass(/bad/);
+  });
+
+  test("height-units는 0보다 큰 값만 받는다", async ({ page }) => {
+    await open(page, "playground");
+    await expect(page.locator("#pg-height-units")).toHaveAttribute("min", "0.5");
   });
 });
 
-// heatmap·ledger·kpi는 다른 카드에서 구현 중이라 구조만 확인한다(등록 전에는 안내 문구가 보인다).
-test.describe("등록 전 엘리먼트 페이지 구조", () => {
-  const cases = [
-    ["heatmap", "iso-heatmap"],
-    ["ledger", "iso-ledger"],
-    ["kpi", "iso-kpi"],
-  ] as const;
-  for (const [p, tag] of cases) {
-    test(`${p}: 예시·속성 표·이벤트·접근성 절과 올바른 데이터`, async ({ page }) => {
+/** 상대 휘도 대비(WCAG). */
+const contrast = (a: number[], b: number[]) => {
+  const lum = (c: number[]) => {
+    const [r, g, bl] = c.map((v) => {
+      const s = v / 255;
+      return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+  };
+  const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+  return (x + 0.05) / (y + 0.05);
+};
+
+test("입력 칸 테두리는 카드 바탕·칸 바탕과 3:1 이상 대비", async ({ page }) => {
+  await open(page, "playground");
+  const rgb = (s: string) => s.match(/\d+/g)!.slice(0, 3).map(Number);
+  const [border, inner, card] = await page.evaluate(() => {
+    const ta = document.getElementById("pg-data")!;
+    const cs = getComputedStyle(ta);
+    return [cs.borderTopColor, cs.backgroundColor, getComputedStyle(ta.closest(".card")!).backgroundColor];
+  });
+  expect(contrast(rgb(border), rgb(card))).toBeGreaterThanOrEqual(3);
+  expect(contrast(rgb(border), rgb(inner))).toBeGreaterThanOrEqual(3);
+});
+
+test.describe("엘리먼트 페이지가 실제로 그린다", () => {
+  test("heatmap: 5×4 칸, 행·열 라벨, iso-select의 row·col·v", async ({ page }) => {
+    await open(page, "heatmap");
+    const ex = page.locator(".example").first();
+    await expect(ex.locator("iso-heatmap .iso-block")).toHaveCount(20);
+    await expect(ex.locator(".iso-label--col")).toHaveText(["9시", "11시", "13시", "15시"]);
+    await ex.locator(".iso-block").nth(1).focus();
+    await page.keyboard.press("Enter");
+    await expect(ex.locator(".log")).toContainText('index: 1, item: {"row":"월","col":"11시","v":38}');
+  });
+
+  test("ledger: 다섯 장, selected 장만 빠지고 같은 장을 다시 누르면 해제", async ({ page }) => {
+    await open(page, "ledger");
+    const el = page.locator(".example iso-ledger");
+    const blocks = el.locator(".iso-block");
+    await expect(blocks).toHaveCount(5);
+    await expect(blocks.nth(2)).toHaveAttribute("aria-pressed", "true");
+    await expect(el.locator(".iso-is-active")).toHaveCount(1);
+    await blocks.nth(2).focus();
+    await page.keyboard.press("Enter");
+    await expect(el).not.toHaveAttribute("selected");
+    await expect(el.locator(".iso-is-active")).toHaveCount(0);
+    await blocks.nth(4).focus();
+    await page.keyboard.press("Enter");
+    await expect(el).toHaveAttribute("selected", "4");
+  });
+
+  test("kpi: 그릇 블록 하나만 포커스되고 이름은 label: 값suffix", async ({ page }) => {
+    await open(page, "kpi");
+    const kpis = page.locator(".example iso-kpi");
+    await expect(kpis).toHaveCount(2);
+    await expect(kpis.nth(0).locator('.iso-block[tabindex="0"]')).toHaveAttribute("aria-label", "배터리 평균 잔량: 72%");
+    await expect(kpis.nth(1).locator('.iso-block[tabindex="0"]')).toHaveAttribute("aria-label", "저장 공간: 12.5 GB");
+    await expect(kpis.nth(0).locator('.iso-block[aria-hidden="true"]')).toHaveCount(1);
+  });
+
+  for (const p of ["heatmap", "ledger", "kpi"]) {
+    test(`${p}: 속성 표·이벤트·접근성 절이 있다`, async ({ page }) => {
       await open(page, p);
-      const els = page.locator(`.example ${tag}`);
-      expect(await els.count()).toBeGreaterThan(0);
-      for (const raw of await els.evaluateAll((xs) => xs.map((x) => x.getAttribute("data")))) {
-        if (raw != null) expect(() => JSON.parse(raw)).not.toThrow();
-      }
-      await expect(page.locator(".example pre code").first()).toContainText(`<${tag}`);
       for (const id of ["attrs", "events", "a11y"]) await expect(page.locator(`#${id}`)).toBeVisible();
       expect(await page.locator("#attrs").locator("xpath=..").locator("tbody tr").count()).toBeGreaterThan(2);
     });
   }
+});
 
-  test("템플릿은 예시 데이터임을 밝힌다", async ({ page }) => {
+test.describe("템플릿", () => {
+  test("모두 예시 데이터임을 밝힌다", async ({ page }) => {
     for (const p of ["tpl-resources", "tpl-kpi", "tpl-versions"]) {
       await open(page, p);
       await expect(page.locator(".badge")).toContainText("예시 데이터");
     }
   });
 
-  test("자원 대시보드·KPI 보드의 데이터는 올바른 JSON이다", async ({ page }) => {
-    for (const p of ["tpl-resources", "tpl-kpi"]) {
-      await open(page, p);
-      const raws = await page.locator("[data]").evaluateAll((xs) => xs.map((x) => x.getAttribute("data")!));
-      for (const raw of raws) expect(() => JSON.parse(raw)).not.toThrow();
-      const kpis = await page.locator("iso-kpi").evaluateAll((xs) =>
-        xs.map((x) => [Number(x.getAttribute("value")), Number(x.getAttribute("max")), x.getAttribute("label")] as const),
-      );
-      for (const [v, m, l] of kpis) {
-        expect(v).toBeGreaterThanOrEqual(0);
-        expect(v).toBeLessThanOrEqual(m);
-        expect(l).toBeTruthy();
-      }
-    }
+  test("자원 대시보드: KPI 3개·막대·적층·히트맵이 모두 그려진다", async ({ page }) => {
+    await open(page, "tpl-resources");
+    for (const kpi of await page.locator("iso-kpi").all()) await expect(kpi.locator(".iso-block")).toHaveCount(2);
+    await expect(page.locator("iso-kpi")).toHaveCount(3);
+    await expect(page.locator("iso-bars .iso-block")).toHaveCount(5);
+    await expect(page.locator("iso-stack .iso-block")).toHaveCount(9);
+    await expect(page.locator("iso-heatmap .iso-block")).toHaveCount(25);
+    await expect(page.locator(".iso-empty")).toHaveCount(0);
   });
 
-  test("버전 기록 뷰어: 목록에서 고르면 장부 selected와 상세가 바뀐다", async ({ page }) => {
+  test("KPI 보드: 지표 6개가 max 안의 값으로 그려진다", async ({ page }) => {
+    await open(page, "tpl-kpi");
+    await expect(page.locator("iso-kpi")).toHaveCount(6);
+    for (const kpi of await page.locator("iso-kpi").all()) {
+      await expect(kpi.locator(".iso-block")).toHaveCount(2);
+      expect(Number(await kpi.getAttribute("value"))).toBeLessThanOrEqual(Number(await kpi.getAttribute("max")));
+    }
+    await expect(page.locator("iso-bars .iso-block")).toHaveCount(6);
+    await expect(page.locator(".iso-empty")).toHaveCount(0);
+  });
+
+  test("버전 기록 뷰어: 목록·장부 선택이 서로 맞고, 장부에서 다시 누르면 해제된다", async ({ page }) => {
     await open(page, "tpl-versions");
     const ledger = page.locator("#ledger");
-    expect(JSON.parse((await ledger.getAttribute("data"))!)).toHaveLength(5);
+    const blocks = ledger.locator(".iso-block");
+    await expect(blocks).toHaveCount(5);
     await expect(ledger).toHaveAttribute("selected", "4");
+    await expect(blocks.nth(4)).toHaveAttribute("aria-pressed", "true");
+
     await page.locator("#versions button").nth(1).click();
     await expect(ledger).toHaveAttribute("selected", "1");
+    await expect(blocks.nth(1)).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("#detail-title")).toHaveText("v1.1");
     await expect(page.locator("#versions button").nth(1)).toHaveAttribute("aria-pressed", "true");
-    // 장부의 iso-select(엘리먼트가 등록되면 블록 클릭으로 발생)도 같은 경로를 탄다.
-    await ledger.evaluate((el) => el.dispatchEvent(new CustomEvent("iso-select", { detail: { index: 3 }, bubbles: true })));
+
+    await blocks.nth(3).focus();
+    await page.keyboard.press("Enter");
+    await expect(ledger).toHaveAttribute("selected", "3");
     await expect(page.locator("#detail-title")).toHaveText("v1.3");
+
+    await page.keyboard.press("Enter");
+    await expect(ledger).not.toHaveAttribute("selected");
+    await expect(page.locator("#detail-title")).toHaveText("선택한 버전 없음");
+    await expect(page.locator('#versions button[aria-pressed="true"]')).toHaveCount(0);
   });
 });
