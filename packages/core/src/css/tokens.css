@@ -1,0 +1,58 @@
+/* 토큰. 다크 테마는 토큰 값만 바꾼다(API.md). */
+@property --iso-h {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+:root {
+  --iso-color-1: #3f7be0;
+  --iso-color-2: #d9772b;
+  --iso-color-3: #2e9e6a;
+  --iso-color-4: #8a5cd6;
+  --iso-color-5: #d24c6a;
+  --iso-color-6: #1f9bb0;
+  --iso-floor: #dfe5ec;
+  --iso-grid-line: rgb(24 33 44 / 14%);
+  --iso-ink: #18212c;
+  --iso-ink-muted: #586474;
+  --iso-shade-left: 18%;
+  --iso-shade-right: 34%;
+  --iso-lift: 6px;
+  --iso-duration: 180ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --iso-color-1: #5b8ff0;
+    --iso-color-2: #e8924d;
+    --iso-color-3: #43b986;
+    --iso-color-4: #a07ff0;
+    --iso-color-5: #e8708a;
+    --iso-color-6: #3cb9cc;
+    --iso-floor: #222b37;
+    --iso-grid-line: rgb(229 234 240 / 12%);
+    --iso-ink: #e5eaf0;
+    --iso-ink-muted: #9aa6b5;
+  }
+}
+
+[data-theme="dark"] {
+  --iso-color-1: #5b8ff0;
+  --iso-color-2: #e8924d;
+  --iso-color-3: #43b986;
+  --iso-color-4: #a07ff0;
+  --iso-color-5: #e8708a;
+  --iso-color-6: #3cb9cc;
+  --iso-floor: #222b37;
+  --iso-grid-line: rgb(229 234 240 / 12%);
+  --iso-ink: #e5eaf0;
+  --iso-ink-muted: #9aa6b5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --iso-lift: 0px;
+    --iso-duration: 0ms;
+  }
+}

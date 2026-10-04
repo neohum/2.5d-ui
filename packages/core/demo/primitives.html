@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2.5d-ui 코어 프리미티브 데모</title>
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<style>
+  /* 데모 페이지 꾸밈만. 프리미티브 스타일은 코어 CSS에서 온다. */
+  :root { color-scheme: light; --page-bg: #f2f4f7; --page-surface: #fff; --page-line: #d4dbe3; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { color-scheme: dark; --page-bg: #11151b; --page-surface: #19202a; --page-line: #2b3542; }
+  }
+  [data-theme="dark"] { color-scheme: dark; --page-bg: #11151b; --page-surface: #19202a; --page-line: #2b3542; }
+  body {
+    margin: 0; padding: 16px; background: var(--page-bg); color: var(--iso-ink);
+    font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  }
+  h1 { font-size: 1.25rem; margin: 0 0 12px; }
+  .demo-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+  section { background: var(--page-surface); border: 1px solid var(--page-line); border-radius: 8px; padding: 12px; }
+  h2 { font-size: 0.95rem; margin: 0 0 4px; }
+  p { font-size: 0.8rem; margin: 0; color: var(--iso-ink-muted); }
+  .iso-scene { height: 230px; overflow: hidden; }
+</style>
+</head>
+<body>
+<h1>코어 프리미티브</h1>
+<div class="demo-grid">
+
+  <section id="single">
+    <h2>단일 블록</h2>
+    <p>w 2 · d 1 · h 3</p>
+    <div class="iso-scene" style="--iso-u: 32px">
+      <div class="iso-origin" style="--iso-ox: calc(50% - 14px); --iso-oy: 62%">
+        <div class="iso-block" tabindex="0" role="button" aria-label="문서 300" style="--iso-w: 2; --iso-h: 3">
+          <i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i>
+          <span class="iso-label">300</span>
+          <span class="iso-label iso-label--ground">문서</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="bars">
+    <h2>앱별 메모리 사용량 (MB)</h2>
+    <p>바닥판 위 막대 한 줄(y 방향)과 값·이름 라벨</p>
+    <div class="iso-scene" style="--iso-u: 22px; height: 250px">
+      <div class="iso-origin" style="--iso-ox: calc(50% + 100px); --iso-oy: 85px">
+        <div class="iso-floor" style="--iso-x: -0.5; --iso-y: -0.5; --iso-w: 2; --iso-d: 10.8"><i class="iso-top"></i></div>
+        <div class="iso-block" tabindex="0" role="button" aria-label="문서 180MB" style="--iso-y: 0; --iso-h: 1.8; --iso-z: 1"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label">180</span><span class="iso-label iso-label--ground">문서</span></div>
+        <div class="iso-block" tabindex="0" role="button" aria-label="시트 240MB" style="--iso-y: 1.8; --iso-h: 2.4; --iso-z: 2"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label">240</span><span class="iso-label iso-label--ground">시트</span></div>
+        <div class="iso-block" tabindex="0" role="button" aria-label="화상회의 410MB" style="--iso-y: 3.6; --iso-h: 4.1; --iso-z: 3"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label">410</span><span class="iso-label iso-label--ground">화상회의</span></div>
+        <div class="iso-block" tabindex="0" role="button" aria-label="클래스 150MB" style="--iso-y: 5.4; --iso-h: 1.5; --iso-z: 4"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label">150</span><span class="iso-label iso-label--ground">클래스</span></div>
+        <div class="iso-block" tabindex="0" role="button" aria-label="동영상 320MB" style="--iso-y: 7.2; --iso-h: 3.2; --iso-z: 5"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label">320</span><span class="iso-label iso-label--ground">동영상</span></div>
+        <div class="iso-block" tabindex="0" role="button" aria-label="그림판 90MB" style="--iso-y: 9; --iso-h: 0.9; --iso-z: 6"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label">90</span><span class="iso-label iso-label--ground">그림판</span></div>
+      </div>
+    </div>
+    <table class="iso-sr-only">
+      <caption>앱별 메모리 사용량 (MB)</caption>
+      <tr><th>앱</th><th>MB</th></tr>
+      <tr><td>문서</td><td>180</td></tr>
+      <tr><td>시트</td><td>240</td></tr>
+      <tr><td>화상회의</td><td>410</td></tr>
+      <tr><td>클래스</td><td>150</td></tr>
+      <tr><td>동영상</td><td>320</td></tr>
+      <tr><td>그림판</td><td>90</td></tr>
+    </table>
+  </section>
+
+  <section id="floor">
+    <h2>격자 바닥</h2>
+    <p>.iso-floor.iso-grid, 6 × 6 칸</p>
+    <div class="iso-scene" style="--iso-u: 24px">
+      <div class="iso-origin" style="--iso-ox: 50%; --iso-oy: 60px">
+        <div class="iso-floor iso-grid" style="--iso-w: 6; --iso-d: 6"><i class="iso-top"></i></div>
+        <div class="iso-block" tabindex="0" role="button" aria-label="파란 블록, 높이 2" style="--iso-x: 1; --iso-y: 1; --iso-h: 2; --iso-z: 2"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i></div>
+        <div class="iso-block" tabindex="0" role="button" aria-label="초록 블록, 높이 1" style="--iso-x: 3; --iso-y: 2; --iso-w: 2; --iso-h: 1; --iso-z: 5; --iso-c: var(--iso-color-3)"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i></div>
+        <div class="iso-block" tabindex="0" role="button" aria-label="주황 블록, 높이 3" style="--iso-x: 2; --iso-y: 4; --iso-d: 1; --iso-h: 3; --iso-z: 6; --iso-c: var(--iso-color-2)"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="active">
+    <h2>강조 블록</h2>
+    <p>가운데 블록에 .iso-is-active (들림 + 윤곽)</p>
+    <div class="iso-scene" style="--iso-u: 28px">
+      <div class="iso-origin" style="--iso-ox: calc(50% + 60px); --iso-oy: 100px">
+        <div class="iso-block" tabindex="0" role="button" aria-label="1분기 20" style="--iso-y: 0; --iso-h: 2; --iso-z: 1"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label">20</span><span class="iso-label iso-label--ground">1분기</span></div>
+        <div class="iso-block iso-is-active" tabindex="0" role="button" aria-label="2분기 30" aria-pressed="true" style="--iso-y: 1.8; --iso-h: 3; --iso-z: 2"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label">30</span><span class="iso-label iso-label--ground">2분기</span></div>
+        <div class="iso-block" tabindex="0" role="button" aria-label="3분기 15" style="--iso-y: 3.6; --iso-h: 1.5; --iso-z: 3"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label">15</span><span class="iso-label iso-label--ground">3분기</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="palette">
+    <h2>범주 팔레트</h2>
+    <p>--iso-color-1 … --iso-color-6</p>
+    <div class="iso-scene" style="--iso-u: 22px">
+      <div class="iso-origin" style="--iso-ox: calc(50% + 90px); --iso-oy: 105px">
+        <div class="iso-block" style="--iso-y: 0; --iso-h: 2; --iso-z: 1; --iso-c: var(--iso-color-1)"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label iso-label--ground">1</span></div>
+        <div class="iso-block" style="--iso-y: 1.5; --iso-h: 2.5; --iso-z: 2; --iso-c: var(--iso-color-2)"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label iso-label--ground">2</span></div>
+        <div class="iso-block" style="--iso-y: 3; --iso-h: 3; --iso-z: 3; --iso-c: var(--iso-color-3)"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label iso-label--ground">3</span></div>
+        <div class="iso-block" style="--iso-y: 4.5; --iso-h: 3.5; --iso-z: 4; --iso-c: var(--iso-color-4)"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label iso-label--ground">4</span></div>
+        <div class="iso-block" style="--iso-y: 6; --iso-h: 4; --iso-z: 5; --iso-c: var(--iso-color-5)"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label iso-label--ground">5</span></div>
+        <div class="iso-block" style="--iso-y: 7.5; --iso-h: 4.5; --iso-z: 6; --iso-c: var(--iso-color-6)"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i><span class="iso-label iso-label--ground">6</span></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

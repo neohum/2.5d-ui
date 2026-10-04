@@ -1,1 +1,3 @@
-/* 2.5d-ui core — 프리미티브는 iso-core-primitives 카드에서 채운다. */
+/* 2.5d-ui core CSS. 규격은 packages/core/API.md를 따른다. */
+@import url("./tokens.css");
+@import url("./primitives.css");

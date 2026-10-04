@@ -1,0 +1,188 @@
+/* 등각 프리미티브. 2D matrix()만 쓴다(preserve-3d·rotateX·perspective 없음). */
+.iso-scene {
+  --iso-u: 24px;
+
+  position: relative;
+  isolation: isolate;
+  color: var(--iso-ink);
+}
+
+.iso-origin {
+  position: absolute;
+  left: var(--iso-ox, 50%);
+  top: var(--iso-oy, 50%);
+}
+
+.iso-block,
+.iso-floor {
+  --iso-x: 0;
+  --iso-y: 0;
+  --iso-w: 1;
+  --iso-d: 1;
+  --iso-z: 0;
+  --iso-c: var(--iso-color-1);
+
+  position: absolute;
+  left: calc((var(--iso-x) - var(--iso-y)) * 0.866 * var(--iso-u));
+  top: calc((var(--iso-x) + var(--iso-y)) * 0.5 * var(--iso-u));
+  z-index: var(--iso-z);
+}
+
+.iso-block {
+  transition: --iso-h var(--iso-duration) ease-out;
+}
+
+/* 들림은 보이는 자식만 옮긴다(translate 속성은 각 면의 transform과 합성된다).
+   블록 자체는 움직이지 않으므로 아래 ::before 히트 패드가 고정되어 호버가 깜빡이지 않는다. */
+.iso-block > * {
+  transition: translate var(--iso-duration) ease-out;
+}
+
+/* 고정 히트 패드: 블록 실루엣(육각형) + 위로 들림 높이만큼. 보이지 않는다.
+   면을 서로 0.5–1px 겹쳐 그리므로 패드도 좌우·아래로 1px 넓혀 면 가장자리를 덮는다. */
+.iso-block:not(.iso-floor)::before {
+  --iso-l: calc(var(--iso-d) * 0.866 * var(--iso-u));
+  --iso-r: calc(var(--iso-w) * 0.866 * var(--iso-u));
+  --iso-b: calc(var(--iso-h) * var(--iso-u) + var(--iso-lift));
+
+  content: "";
+  position: absolute;
+  left: calc(var(--iso-l) * -1 - 1px);
+  top: calc(var(--iso-b) * -1);
+  width: calc(var(--iso-l) + var(--iso-r) + 2px);
+  height: calc((var(--iso-w) + var(--iso-d)) * 0.5 * var(--iso-u) + var(--iso-b) + 1px);
+  clip-path: polygon(
+    calc(var(--iso-l) + 1px) 0,
+    100% calc(var(--iso-w) * 0.5 * var(--iso-u)),
+    100% calc(var(--iso-w) * 0.5 * var(--iso-u) + var(--iso-b)),
+    calc(var(--iso-r) + 1px) 100%,
+    0 calc(var(--iso-d) * 0.5 * var(--iso-u) + var(--iso-b)),
+    0 calc(var(--iso-d) * 0.5 * var(--iso-u))
+  );
+}
+
+.iso-floor {
+  --iso-h: 0;
+  --iso-c: var(--iso-floor);
+
+  pointer-events: none;
+}
+
+.iso-top,
+.iso-left,
+.iso-right {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  transform-origin: 0 0;
+}
+
+/* 면 사이 서브픽셀 틈: 옆면을 윗면 아래로 1px, 왼쪽 면을 오른쪽 면 아래로 0.5px 겹친다. */
+.iso-left {
+  z-index: 1;
+  width: calc(var(--iso-w) * var(--iso-u) + 0.5px);
+  height: calc(var(--iso-h) * var(--iso-u) + 1px);
+  background: color-mix(in oklch, var(--iso-c), black var(--iso-shade-left));
+  transform: translate(calc(var(--iso-d) * var(--iso-u) * -0.866), calc((var(--iso-d) * 0.5 - var(--iso-h)) * var(--iso-u) - 1px)) matrix(0.866, 0.5, 0, 1, 0, 0);
+}
+
+.iso-right {
+  z-index: 2;
+  width: calc(var(--iso-d) * var(--iso-u));
+  height: calc(var(--iso-h) * var(--iso-u) + 1px);
+  background: color-mix(in oklch, var(--iso-c), black var(--iso-shade-right));
+  transform: translate(calc(var(--iso-w) * var(--iso-u) * 0.866), calc((var(--iso-w) * 0.5 - var(--iso-h)) * var(--iso-u) - 1px)) matrix(-0.866, 0.5, 0, 1, 0, 0);
+}
+
+.iso-top {
+  z-index: 3;
+  width: calc(var(--iso-w) * var(--iso-u));
+  height: calc(var(--iso-d) * var(--iso-u));
+  background: var(--iso-c);
+  transform: translateY(calc(var(--iso-h) * var(--iso-u) * -1)) matrix(0.866, 0.5, -0.866, 0.5, 0, 0);
+}
+
+.iso-floor > :is(.iso-left, .iso-right) {
+  display: none;
+}
+
+.iso-grid > .iso-top {
+  background-image:
+    repeating-linear-gradient(to right, var(--iso-grid-line) 0 1px, transparent 1px var(--iso-u)),
+    repeating-linear-gradient(to bottom, var(--iso-grid-line) 0 1px, transparent 1px var(--iso-u));
+}
+
+.iso-label {
+  position: absolute;
+  z-index: 4;
+
+  /* 윗면 중심의 X, 윗면 뒤 꼭짓점(가장 높은 점) 위. 1×1 블록에서는 데모 .v와 같은 자리이고,
+     넓은 윗면에서도 면과 겹치지 않는다. */
+  left: calc((var(--iso-w) - var(--iso-d)) * 0.433 * var(--iso-u));
+  top: calc(var(--iso-h) * var(--iso-u) * -1);
+  transform: translate(-50%, calc(-100% - 4px));
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--iso-ink);
+  pointer-events: none;
+}
+
+.iso-label--ground {
+  left: calc((var(--iso-w) - var(--iso-d)) * 0.866 * var(--iso-u));
+  top: calc((var(--iso-w) + var(--iso-d)) * 0.5 * var(--iso-u));
+  transform: translate(-30%, 6px);
+  font-weight: 400;
+  color: var(--iso-ink-muted);
+}
+
+.iso-block:focus-visible {
+  outline: none;
+}
+
+.iso-block:not(.iso-floor):is(:hover, :focus-visible, .iso-is-active) > :not(.iso-label--ground) {
+  translate: 0 calc(var(--iso-lift) * -1);
+}
+
+.iso-block.iso-is-active > :is(.iso-top, .iso-left, .iso-right) {
+  outline: 2px solid var(--iso-ink);
+  outline-offset: -1px;
+}
+
+/* 키보드 포커스는 강조(실선)와 구분되도록 점선 윤곽을 쓴다. */
+.iso-block:focus-visible > :is(.iso-top, .iso-left, .iso-right) {
+  outline: 2px dashed var(--iso-ink);
+  outline-offset: -1px;
+}
+
+.iso-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.iso-empty {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--iso-ink-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iso-block,
+  .iso-block > * {
+    transition: none;
+  }
+
+  .iso-block:not(.iso-floor):is(:hover, :focus-visible, .iso-is-active) > :not(.iso-label--ground) {
+    translate: none;
+  }
+}
