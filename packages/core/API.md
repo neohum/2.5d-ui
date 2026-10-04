@@ -52,7 +52,8 @@
 
 `packages/core/src/index.ts`를 불러오면 모두 등록된다. 공통 기반은
 `packages/core/src/elements/base.ts`의 `IsoElement`다. 교육용 엘리먼트 셋은 따로
-`packages/core/src/edu.ts`(`2.5d-ui/edu`)에서 등록한다(아래 "교육용 엘리먼트").
+`packages/core/src/edu/<이름>.ts`(`2.5d-ui/edu/<이름>`)에서 하나씩, `packages/core/src/edu.ts`(`2.5d-ui/edu`)에서
+모두 등록한다(아래 "교육용 엘리먼트", "엘리먼트 엔트리 추가").
 
 공통 속성:
 
@@ -149,39 +150,87 @@ SVG 경로에서 다른 것:
 
 | 파일 | 원본 | 패키지 경로 | 내용 |
 | --- | --- | --- | --- |
-| `iso.min.js` | `src/index.ts` | `2.5d-ui` | 코어 엘리먼트 다섯 개 등록. `iso-base.min.js`를 불러온다 |
-| `iso-edu.min.js` | `src/edu.ts` | `2.5d-ui/edu` | 교육용 엘리먼트 셋 등록. `iso-base.min.js`를 불러온다 |
-| `iso-base.min.js` | 두 엔트리가 함께 쓰는 코드(`base.ts`, `geometry.ts`) | (직접 쓰지 않음) | esbuild 코드 분할의 공유 청크. 이름은 해시 없이 고정 |
+| `iso.min.js` | `src/index.ts` | `2.5d-ui` | 코어 엘리먼트 다섯 개 등록 |
+| `iso-edu-map.min.js` | `src/edu/map.ts` | `2.5d-ui/edu/map` | `iso-map`만 등록 |
+| `iso-edu-city.min.js` | `src/edu/city.ts` | `2.5d-ui/edu/city` | `iso-city`만 등록 |
+| `iso-edu.min.js` | `src/edu.ts` | `2.5d-ui/edu` | 교육용 전부: 위 엘리먼트별 파일을 다시 내보내는 한 줄짜리 |
+| `iso-base.min.js` | `base.ts`, `geometry.ts` | (직접 쓰지 않음) | 공유 청크: 모든 JS 엔트리가 쓴다 |
+| `iso-edu-order.min.js` | `layout/order.ts` | (직접 쓰지 않음) | 공유 청크: 깊이 정렬을 쓰는 교육용 엔트리(map, city)가 쓴다 |
 | `iso.min.css` | `src/css/index.css` | `2.5d-ui/css` | 코어 CSS |
-| `iso-edu.min.css` | `src/css/edu.css` | `2.5d-ui/edu/css` | 교육용 CSS. 코어 CSS 다음에 불러온다 |
+| `iso-edu.min.css` | `src/css/edu.css` | `2.5d-ui/edu/css` | 교육용 CSS 전부(엘리먼트별로 나누지 않는다, 아래). 코어 CSS 다음에 불러온다 |
 
-- 두 엔트리는 ES 모듈이고 같은 폴더의 `./iso-base.min.js`를 상대 경로로 불러온다. 빌드 파일을 복사해 쓸 때는
-  JS 파일 셋을 한 폴더에 둔다. 한 페이지에서 두 엔트리를 함께 불러와도 기반 코드는 한 번만 받는다.
+- JS는 모두 ES 모듈이고 같은 폴더의 청크를 상대 경로로 불러온다. 빌드 파일을 복사해 쓸 때는 `dist/`의 JS를
+  모두 한 폴더에 둔다. 한 페이지에서 엔트리를 여럿 불러와도(코어 + map + city + 전체 엔트리를 섞어도) 각 파일은
+  한 번만 받는다 — 전체 엔트리 `iso-edu.min.js`는 엘리먼트별 파일을 다시 내보내기만 하므로 코드가 두 벌 생기지
+  않는다(`tests/visual/dist.spec.ts`가 요청 수로 확인한다).
 - 교육용 엔트리는 코어 엘리먼트를 등록하지 않는다. 둘 다 쓰려면 두 엔트리를 모두 불러온다.
-- JS 산출물이 이 셋과 다르면(공유 청크가 둘 이상 생기거나 이름이 바뀌면) 빌드가 실패한다.
+- 공유 청크는 esbuild 코드 분할이 그 코드를 쓰는 엔트리 조합마다 만든다. esbuild는 청크 이름에 해시만 붙일 수
+  있어, 빌드는 해시 이름으로 만든 뒤 청크 안의 대표 소스로 이름을 정해 바꿔 쓴다(`build.mjs`의 `CHUNKS`:
+  `base.ts` → `iso-base.min.js`, `order.ts` → `iso-edu-order.min.js`). 대표 소스가 없거나 둘인 청크가 생기면
+  (예: 새 엘리먼트가 `treemap.ts`를 함께 쓰기 시작함), 또는 JS 산출물이 위 표와 다르면 빌드가 실패한다. 그때는
+  `CHUNKS`에 청크를 더하고 이 표와 `.size-limit.json`을 함께 고친다.
 - 엘리먼트와 `base.ts` 사이에서만 쓰는 속성 이름(`busy sty fire draw aria labels attrs zi mr scene blocks validate
-  layout source scale sel`)은 빌드에서 짧은 이름으로 바뀐다(`mangleProps`). 이 이름들은 점 표기로만 쓴다
-  (`s.zi`는 되고 `s["zi"]`는 바뀌지 않아 빌드본에서 깨진다). 목록에 이름을 더할 때는 DOM·데이터 JSON·이벤트에
-  같은 이름이 없는지 확인한다(`key`, `detail`, `value`, `name`, `rows`, `floor`는 그래서 뺐다).
+  layout source scale sel dists districts names`)은 빌드에서 짧은 이름으로 바뀐다(`mangleProps`). 이 이름들은
+  점 표기로만 쓴다(`s.zi`는 되고 `s["zi"]`는 바뀌지 않아 빌드본에서 깨진다). 목록에 이름을 더할 때는 DOM·데이터
+  JSON·이벤트에 같은 이름이 없는지 확인한다(`key`, `detail`, `value`, `name`, `rows`, `floor`, `items`는 그래서
+  뺐다). 빌드본이 소스와 같은 DOM을 그리는지는 `tests/visual/dist.spec.ts`가 본다.
 - 그래서 `IsoElement`는 공개 확장 API가 아니다. 빌드본(`dist`)의 `IsoElement`를 상속해 `validate`·`layout`
   등을 구현해도 이름이 줄어든 쪽만 호출되므로 동작하지 않는다. 새 엘리먼트는 이 저장소 안에서 소스로
-  만들어 같은 빌드에 넣는다. `edu.ts`가 임시로 내보내는 `IsoElement`·`define`은 공유 청크 모양을 맞추기 위한
-  자리 표시이며 첫 교육용 엘리먼트가 들어오면 지운다.
+  만들어 같은 빌드에 넣는다. 교육용 엔트리는 `IsoElement`·`define`을 내보내지 않는다.
 
-크기 예산(`.size-limit.json`, `npm run size`). gzip 레벨 9로 **파일마다 따로** 압축해 더한다 — 브라우저가 받는 그대로다.
+크기 예산(`.size-limit.json`, `npm run size`). gzip 레벨 9로 **파일마다 따로** 압축해 더한다 — 브라우저가 받는
+그대로다. 교육용 항목은 모두 **코어 공유 청크 `iso-base.min.js` 위에 더 받는 바이트**로 잰다(교육용 페이지도
+`iso-base.min.js` 약 3.1 KB는 받는다; 코어와 함께 쓰면 그 몫은 이미 core js에 있다).
 
-| 항목 | 재는 파일 | 한도 |
-| --- | --- | --- |
-| core js | `iso.min.js` + `iso-base.min.js` (코어만 쓰는 페이지가 받는 JS 전부) | 5 KB (5000 B) |
-| edu js | `iso-edu.min.js` 하나 (공유 청크 위에 교육용이 더하는 바이트) | 3 KB (3000 B) |
-| core css | `iso.min.css` | 6 KB |
-| edu css | `iso-edu.min.css` | 2 KB |
+| 항목 | 재는 파일 | 한도 | 2026-10-05 |
+| --- | --- | --- | --- |
+| core js | `iso.min.js` + `iso-base.min.js` (코어만 쓰는 페이지가 받는 JS 전부) | 5 KB (5000 B) | 4962 B |
+| edu/map js | `iso-edu-map.min.js` + `iso-edu-order.min.js` (map만 쓰는 페이지가 더 받는 전부) | 2 KB | 1458 B |
+| edu/city js | `iso-edu-city.min.js` + `iso-edu-order.min.js` | 2 KB | 1992 B |
+| edu all js | `iso-edu*.min.js` 전부(전체 엔트리 + 엘리먼트별 파일 + 교육용 공유 청크) | 없음(보고만) | 2988 B |
+| core css | `iso.min.css` | 6 KB | 1770 B |
+| edu css | `iso-edu.min.css` | 2 KB | 668 B |
 
-교육용만 쓰는 페이지가 받는 JS는 `iso-edu.min.js` + `iso-base.min.js`(edu js + 약 3.1 KB)다. 공유 청크에는 두
-엔트리가 **함께** 쓰는 코드만 들어간다: 교육용 엘리먼트만 쓰는 `base.ts` 도우미는 `iso-edu.min.js`에 들어가
-edu 예산으로 잡힌다. 공유 청크로 나누면 gzip 사전이 두 파일로 갈려 한 파일일 때보다 약 350 B 커지고, 이를
-`mangleProps`로 일부 되찾아 core js는 한도에 가깝다(2026-10-05 기준 4958 B, 남은 42 B). `base.ts`를 바꾸는
-카드는 `npm run size`로 core js를 확인한다.
+- **엘리먼트별 한도**는 그 엘리먼트 하나만 쓰는 페이지가 `iso-base.min.js` 위에 받는 파일 전부다: 엔트리 파일과
+  그 엔트리가 불러오는 교육용 공유 청크(지금은 `iso-edu-order.min.js`)를 더한다. 여러 엘리먼트가 같이 쓰는
+  청크는 각 엘리먼트 항목에 모두 들어간다(혼자 쓸 때 실제로 받으므로).
+- **전체 엔트리에는 한도를 두지 않는다.** 전체 엔트리의 코드는 엘리먼트별 파일과 공유 청크뿐이라 엘리먼트별
+  한도의 합(공유 청크는 한 번)으로 이미 묶이고, 따로 한도를 두면 엘리먼트를 하나 더할 때마다 근거 없이 올려야
+  한다. 크기는 `npm run size`에 그대로 보인다(glob이라 새 엘리먼트 파일도 저절로 들어간다).
+- **교육용 CSS는 한 파일이다.** 세 엘리먼트를 합쳐도 gzip 1 KB 안팎이라, 엘리먼트별로 나누면 한 엘리먼트만
+  쓰는 페이지가 아끼는 것은 수백 B인데 여러 엘리먼트를 쓰는 페이지(템플릿)는 요청이 늘고 파일마다 gzip
+  머리·사전 손실이 붙는다. 학교 망처럼 왕복 지연이 큰 곳에서는 요청 하나가 수백 B보다 비싸다. 한 파일이
+  2 KB를 넘으면 그때 나눈다.
+- 공유 청크로 나누면 gzip 사전이 파일마다 갈려 크기가 늘어난다. 이를 `mangleProps`로 일부 되찾아도 core js는
+  한도에 가깝고(남은 38 B), edu/city도 그렇다(남은 8 B). `base.ts`·`layout/`·`iso-city.ts`를 바꾸는 카드는
+  `npm run size`를 확인한다.
+
+### 엘리먼트 엔트리 추가
+
+새 교육용 엘리먼트 `iso-<이름>`(예: `iso-layers`)을 엔트리로 내는 단계. `build.mjs`는 고치지 않는다(`src/edu/`의
+파일을 저절로 엔트리로 잡는다). `tests/unit/entries.test.ts`가 아래 네 자리가 맞는지 확인한다.
+
+1. `packages/core/src/edu/<이름>.ts` — import 둘, `define` 한 줄, export 하나만:
+   ```ts
+   import { define } from "../elements/base.ts";
+   import { IsoLayers } from "../elements/iso-layers.ts";
+
+   define("iso-layers", IsoLayers);
+   export { IsoLayers };
+   ```
+2. `packages/core/src/edu.ts`에 한 줄: `export * from "./edu/layers.ts";`
+3. `packages/core/package.json`의 `exports`에 한 줄: `"./edu/layers": "./dist/iso-edu-layers.min.js"`
+4. `.size-limit.json`에 한 항목(엔트리 + 그 엔트리가 불러오는 교육용 공유 청크):
+   ```json
+   { "name": "edu/layers js (iso-edu-layers.min.js + iso-edu-order.min.js, beyond iso-base.min.js)", "path": ["packages/core/dist/iso-edu-layers.min.js", "packages/core/dist/iso-edu-order.min.js"], "limit": "2 KB", "gzip": true }
+   ```
+   `order.ts`를 쓰지 않으면 `iso-edu-order.min.js`는 빼고, 다른 공유 청크가 생기면 빌드 오류가 알려 준다(위
+   `CHUNKS`). 엔트리가 실제로 불러오는 파일은 `head -c 300 packages/core/dist/iso-edu-<이름>.min.js`의 import로
+   확인한다.
+5. `npm run size`, `npm test`, `tests/visual/dist.spec.ts`를 돌린다. `dist.spec.ts`의 엘리먼트별 검사 목록에 새
+   엘리먼트를 더하면 좋다(선택).
+
+CSS는 `src/css/edu.css`에 `iso-<이름> …` 규칙으로 더한다(파일을 새로 만들지 않는다).
 
 ## 교육용 엘리먼트 (2.5d-ui/edu)
 
@@ -192,11 +241,13 @@ edu 예산으로 잡힌다. 공유 청크로 나누면 gzip 사전이 두 파일
 ```html
 <link rel="stylesheet" href="iso.min.css">
 <link rel="stylesheet" href="iso-edu.min.css">
-<script type="module" src="iso-edu.min.js"></script>   <!-- 같은 폴더에 iso-base.min.js -->
+<script type="module" src="iso-edu.min.js"></script>        <!-- 교육용 전부 -->
+<script type="module" src="iso-edu-map.min.js"></script>    <!-- 또는 쓰는 엘리먼트만 -->
+<!-- dist/의 JS(공유 청크 iso-base.min.js, iso-edu-order.min.js 포함)를 한 폴더에 둔다 -->
 ```
 
 개발 중(데모·사이트)에는 소스를 그대로 쓴다: `/packages/core/src/css/index.css`, `/packages/core/src/css/edu.css`,
-`/packages/core/src/edu.ts`.
+`/packages/core/src/edu.ts`(전부) 또는 `/packages/core/src/edu/<이름>.ts`(엘리먼트별).
 
 ### 공통 규칙
 
@@ -235,7 +286,7 @@ const blocks = ord.map((i, p) => ({ ...spec(i), zi: p + 1 }));
 ### 배치 도우미 (`src/layout/`)
 
 순수 함수다. DOM을 쓰지 않으며 `tests/unit/{order,treemap}.test.ts`로 검증한다. 교육용 엔트리에만 들어간다
-(둘을 합쳐 gzip 약 0.97 KB — edu 예산 3 KB 중 세 엘리먼트 몫은 약 2 KB다).
+(`order.ts`는 공유 청크 `iso-edu-order.min.js`, `treemap.ts`는 쓰는 엘리먼트 엔트리 안에 들어간다).
 
 **`order(boxes: Box[]): number[]`** — 바닥(z = 0)에 선, 밑면이 서로 겹치지 않는 축 정렬 직육면체(`x, y, w = 1,
 d = 1`, 높이는 제각각)의 그리는 순서(뒤 → 앞 인덱스).
@@ -415,15 +466,15 @@ d = 1`, 높이는 제각각)의 그리는 순서(뒤 → 앞 인덱스).
 
 | 경로 | 담당 카드 |
 | --- | --- |
-| `packages/core/build.mjs`, `.size-limit.json`, `packages/core/package.json`의 `exports`, `packages/core/src/layout/`, `tests/unit/{order,treemap,paint-order}.test.ts`, `tests/visual/dist.spec.ts`(빌드본 = 소스 검사), 이 절 | iso-edu-foundation |
+| `packages/core/build.mjs`, `.size-limit.json`, `packages/core/package.json`의 `exports`, `packages/core/src/layout/`, `tests/unit/{order,treemap,paint-order,entries}.test.ts`, `tests/visual/dist.spec.ts`(빌드본 = 소스 검사), 이 절 | iso-edu-foundation, iso-edu-entries |
 | `packages/core/src/elements/iso-map.ts`, `packages/core/demo/map.html`, `tests/unit/map.test.ts`, `tests/visual/map.spec.ts`(+ 기준 이미지) | iso-map |
 | `packages/core/src/elements/iso-layers.ts`, `packages/core/demo/layers.html`, `tests/unit/layers.test.ts`, `tests/visual/layers.spec.ts`(+ 기준 이미지) | iso-layers |
 | `packages/core/src/elements/iso-city.ts`, `packages/core/demo/city.html`, `tests/unit/city.test.ts`, `tests/visual/city.spec.ts`(+ 기준 이미지) | iso-city |
-| `packages/core/src/edu.ts` | 각 팀이 자기 import·`define`·export 한 줄씩만 추가(먼저 들어오는 팀이 자리 표시 export를 지운다) |
+| `packages/core/src/edu/<이름>.ts`, `packages/core/src/edu.ts`의 한 줄, `package.json` `exports`의 한 줄, `.size-limit.json`의 한 항목 | 각 엘리먼트 카드("엘리먼트 엔트리 추가") |
 | `packages/core/src/css/edu.css` | 공유. 각 팀은 자기 엘리먼트 이름으로 시작하는 규칙(`iso-map …`)만 추가 |
 
 세 팀은 `base.ts`, `geometry.ts`, `layout/`, 코어 CSS를 고치지 않는다. 필요하면 이 절을 고치는 별도 카드로
-올린다(core js 여유 42 B).
+올린다(core js 여유 38 B).
 
 ## 파일 소유
 
