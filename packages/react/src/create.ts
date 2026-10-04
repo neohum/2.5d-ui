@@ -4,17 +4,20 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useMemo,
   useRef,
   type CSSProperties,
   type ForwardRefExoticComponent,
   type Ref,
   type RefAttributes,
+  version,
 } from "react";
 import type { IsoSelectDetail } from "./types.ts";
 
 // React 18은 서버에서 useLayoutEffect를 쓰면 경고하므로 브라우저에서만 쓴다.
 const useIsoLayoutEffect = typeof document !== "undefined" ? useLayoutEffect : useEffect;
+
+// ref 콜백의 정리 함수 반환은 React 19부터다. React 18은 반환값을 버리고 경고하므로 돌려주지 않는다.
+const REF_CLEANUP = Number(version.split(".")[0]) >= 19;
 
 export interface IsoBaseProps<Item = unknown> {
   id?: string;
@@ -37,10 +40,34 @@ function syncAttr(el: Element, name: string, value: AttrValue): void {
   if (el.getAttribute(name) !== next) el.setAttribute(name, next);
 }
 
-function assignRef<T>(ref: Ref<T> | undefined, value: T | null): void {
-  if (typeof ref === "function") ref(value);
-  else if (ref) (ref as { current: T | null }).current = value;
+/**
+ * (React 19) 사용자 ref를 React 자신의 규칙대로 연결하고 떼는 정리 함수를 돌려준다. React 19는
+ * ref 콜백이 정리 함수를 돌려주면 뗄 때 그것만 부르고 ref(null)은 부르지 않는다. 그래서 사용자
+ * ref가 돌려준 정리 함수가 있으면 그것을, 없으면 ref(null)을 불러 연결·해제가 짝을 이룬다.
+ */
+function attachRef<T>(ref: Ref<T> | undefined, value: T): () => void {
+  if (typeof ref === "function") {
+    const cleanup = ref(value);
+    return typeof cleanup === "function" ? cleanup : () => ref(null);
+  }
+  if (ref) {
+    ref.current = value;
+    return () => {
+      ref.current = null;
+    };
+  }
+  return () => {};
 }
+
+/**
+ * 엘리먼트는 연결되자마자 light DOM에 자기 자식(빈 상태·차트)을 그린다. React가 자식을 가지면
+ * 하이드레이션 때 서버 HTML(자식 없음)과 실제 DOM(엘리먼트가 그린 자식)이 달라 노드를 갈아치운다.
+ * 빈 dangerouslySetInnerHTML을 주면 React는 자식 파이버를 만들지 않아 자식을 비교·패치하지 않고,
+ * __html이 바뀌지 않는 한 다시 쓰지도 않는다. suppressHydrationWarning은 이 엘리먼트 한 겹의
+ * 차이(그린 자식, 엘리먼트가 스스로 붙인 속성)에 대한 하이드레이션 경고만 끈다. 호스트 div를 두고
+ * 엘리먼트를 명령형으로 붙이는 방식보다 DOM이 한 겹 얇고, 서버 HTML에도 태그가 그대로 남는다.
+ */
+const NO_CHILDREN = { __html: "" };
 
 /**
  * 커스텀 엘리먼트 래퍼를 만든다. `attrs`는 prop 이름 → 속성 이름이며 `data`는 따로 직렬화한다.
@@ -63,14 +90,26 @@ export function createIsoComponent<P extends IsoBaseProps<never>>(
 
     const setRef = useCallback(
       (el: HTMLElement | null) => {
+        // React 18(또는 정리 함수 없는 해제)은 예전 규칙: 붙일 때 el, 뗄 때 null을 넘긴다.
+        if (el === null || !REF_CLEANUP) {
+          elRef.current = el;
+          if (typeof forwardedRef === "function") forwardedRef(el);
+          else if (forwardedRef) forwardedRef.current = el;
+          return;
+        }
         elRef.current = el;
-        assignRef(forwardedRef, el);
+        const detach = attachRef(forwardedRef, el);
+        return () => {
+          elRef.current = null;
+          detach();
+        };
       },
       [forwardedRef],
     );
 
-    // 같은 객체면 다시 직렬화하지 않는다. 내용이 같은 새 객체는 문자열이 같으므로 effect가 건너뛴다.
-    const json = useMemo(() => (data === undefined ? undefined : JSON.stringify(data)), [data]);
+    // 제자리에서 고친 data도 잡도록 매 렌더 직렬화한다(이 크기에선 싸다). effect는 문자열이
+    // 바뀔 때만 돌고 syncAttr가 현재 속성과 한 번 더 비교하므로, 같은 내용이면 속성을 쓰지 않는다.
+    const json = data === undefined ? undefined : JSON.stringify(data);
 
     useIsoLayoutEffect(() => {
       if (elRef.current) syncAttr(elRef.current, "data", json);
@@ -83,18 +122,32 @@ export function createIsoComponent<P extends IsoBaseProps<never>>(
       entries.forEach(([, attr], i) => syncAttr(el, attr, values[i]));
     }, values);
 
-    useEffect(() => {
+    // 리스너는 하나만 layout effect에서 붙이고 핸들러는 ref로 읽는다. 자식의 layout effect는
+    // 부모보다 먼저 돌므로, 부모가 커밋 직후 layout effect에서 낸 이벤트도 지금의 핸들러가 받는다.
+    const handlerRef = useRef(onSelect);
+    useIsoLayoutEffect(() => {
+      handlerRef.current = onSelect;
+    }, [onSelect]);
+
+    useIsoLayoutEffect(() => {
       const el = elRef.current;
-      if (!el || !onSelect) return;
+      if (!el) return;
       const listener = (event: Event) => {
-        (onSelect as (detail: unknown) => void)((event as CustomEvent).detail);
+        (handlerRef.current as ((detail: unknown) => void) | undefined)?.((event as CustomEvent).detail);
       };
       el.addEventListener("iso-select", listener);
       return () => el.removeEventListener("iso-select", listener);
-    }, [onSelect]);
+    }, []);
 
     // React 18은 커스텀 엘리먼트의 className을 그대로 "classname" 속성으로 쓰므로 class로 넘긴다.
-    return createElement(tagName, { ref: setRef, id, class: className, style });
+    return createElement(tagName, {
+      ref: setRef,
+      id,
+      class: className,
+      style,
+      dangerouslySetInnerHTML: NO_CHILDREN,
+      suppressHydrationWarning: true,
+    });
   });
 
   Component.displayName = displayName;

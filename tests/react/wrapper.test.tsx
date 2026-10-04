@@ -1,5 +1,6 @@
-import { act, createRef, StrictMode, version, type ReactNode } from "react";
-import { createRoot, type Root } from "react-dom/client";
+import * as React from "react";
+import { createRef, StrictMode, useLayoutEffect, useRef, version, type ReactNode } from "react";
+import { createRoot, hydrateRoot, type Root } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import {
   IsoBars,
@@ -7,10 +8,17 @@ import {
   IsoKpi,
   IsoLedger,
   IsoStack,
+  type IsoBarsDatum,
   type IsoSelectDetail,
 } from "../../packages/react/src/index.ts";
 
-// 코어 엘리먼트 대신 쓰는 최소 스텁. 속성 쓰기를 세어 불필요한 갱신을 잡는다.
+// React 18.2는 act를 unstable_act로만 내보낸다(react 패키지의 act는 18.3부터).
+const reactExports = React as unknown as Record<string, ((cb: () => void) => void) | undefined>;
+const act = (reactExports.act ?? reactExports.unstable_act)!;
+const isReact19 = version.startsWith("19.");
+
+// 코어 엘리먼트 대신 쓰는 최소 스텁. 속성 쓰기를 세고, 실제 엘리먼트처럼 연결되자마자
+// light DOM에 자식(빈 상태)을 그린다.
 const writes: { tag: string; name: string; value: string }[] = [];
 for (const tag of ["iso-bars", "iso-stack", "iso-heatmap", "iso-ledger", "iso-kpi"]) {
   if (customElements.get(tag)) continue;
@@ -18,6 +26,14 @@ for (const tag of ["iso-bars", "iso-stack", "iso-heatmap", "iso-ledger", "iso-kp
     tag,
     class extends HTMLElement {
       static observedAttributes = ["data", "max", "unit", "height-units", "label", "selected", "value", "suffix"];
+      connectedCallback() {
+        if (!this.firstChild) {
+          const scene = document.createElement("div");
+          scene.className = "iso-scene";
+          scene.textContent = "데이터 없음";
+          this.append(scene);
+        }
+      }
       attributeChangedCallback(name: string, _old: string | null, value: string) {
         writes.push({ tag, name, value });
       }
@@ -54,6 +70,7 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   container.remove();
+  vi.restoreAllMocks();
 });
 
 test(`React 버전 표시 (${version})`, () => {
@@ -115,7 +132,44 @@ describe("props → 속성", () => {
   });
 });
 
-describe("data 메모", () => {
+describe("엘리먼트의 자식", () => {
+  test("React가 다시 그려도 엘리먼트가 그린 자식을 지우지 않는다", () => {
+    render(<IsoBars data={[{ k: "a", v: 1 }]} />);
+    const scene = el("iso-bars").firstElementChild;
+    expect(scene?.className).toBe("iso-scene");
+    render(<IsoBars data={[{ k: "a", v: 2 }]} label="다시" />);
+    expect(el("iso-bars").firstElementChild).toBe(scene);
+  });
+
+  test("미리 등록된 엘리먼트가 자식을 그린 서버 HTML도 그대로 하이드레이션한다", () => {
+    const data = [{ k: "a", v: 1 }];
+    const app = <IsoBars id="h" className="c" data={data} label="저장소" />;
+    // beforeEach의 클라이언트 루트는 첫 커밋 때 컨테이너를 비우므로 서버 HTML을 넣기 전에 뗀다.
+    act(() => root.unmount());
+    // 브라우저처럼 등록된 엘리먼트가 연결되며 자식을 그린 뒤 하이드레이션한다.
+    container.innerHTML = renderToString(app);
+    const node = el("iso-bars");
+    const scene = node.firstElementChild;
+    expect(scene?.className).toBe("iso-scene");
+
+    const recoverable = vi.fn();
+    const consoleError = vi.spyOn(console, "error");
+    let hydrated!: Root;
+    act(() => {
+      hydrated = hydrateRoot(container, <StrictMode>{app}</StrictMode>, { onRecoverableError: recoverable });
+    });
+
+    expect(recoverable).not.toHaveBeenCalled();
+    expect(consoleError).not.toHaveBeenCalled();
+    expect(el("iso-bars")).toBe(node);
+    expect(node.firstElementChild).toBe(scene);
+    expect(JSON.parse(node.getAttribute("data")!)).toEqual(data);
+    expect(node.getAttribute("label")).toBe("저장소");
+    root = hydrated;
+  });
+});
+
+describe("data 직렬화", () => {
   test("내용이 같은 새 객체를 다시 넘기면 속성을 다시 쓰지 않는다", () => {
     render(<IsoBars data={[{ k: "a", v: 1 }]} max={5} />);
     const dataWrites = () => writes.filter((w) => w.name === "data").length;
@@ -131,14 +185,16 @@ describe("data 메모", () => {
     expect(JSON.parse(el("iso-bars").getAttribute("data")!)).toEqual([{ k: "a", v: 2 }]);
   });
 
-  test("같은 객체 참조면 다시 직렬화하지 않는다", () => {
-    const data = [{ k: "a", v: 1 }];
-    const spy = vi.spyOn(JSON, "stringify");
+  test("같은 객체를 제자리에서 고친 뒤 다시 그려도 새 값을 반영한다", () => {
+    const data: IsoBarsDatum[] = [{ k: "a", v: 1 }];
     render(<IsoBars data={data} />);
-    const first = spy.mock.calls.filter(([arg]) => arg === data).length;
-    render(<IsoBars data={data} label="다시" />);
-    expect(spy.mock.calls.filter(([arg]) => arg === data).length).toBe(first);
-    spy.mockRestore();
+    data[0]!.v = 2;
+    data.push({ k: "b", v: 3 });
+    render(<IsoBars data={data} />);
+    expect(JSON.parse(el("iso-bars").getAttribute("data")!)).toEqual([
+      { k: "a", v: 2 },
+      { k: "b", v: 3 },
+    ]);
   });
 });
 
@@ -164,6 +220,31 @@ describe("onSelect", () => {
     render(<IsoLedger data={[{ k: "v1" }]} />);
     fireSelect(el("iso-ledger"), { index: 0, item: { k: "v1" } });
     expect(second).toHaveBeenCalledTimes(1);
+  });
+
+  test("부모의 layout effect에서 바로 낸 이벤트도 지금의 핸들러가 받는다", () => {
+    function Parent({ onSelect }: { onSelect?: (detail: IsoSelectDetail<IsoBarsDatum>) => void }) {
+      const ref = useRef<HTMLElement>(null);
+      useLayoutEffect(() => {
+        fireSelect(ref.current!, { index: 0, item: { k: "a", v: 1 } });
+      });
+      return <IsoBars ref={ref} data={[{ k: "a", v: 1 }]} onSelect={onSelect} />;
+    }
+    const first = vi.fn();
+    const second = vi.fn();
+
+    render(<Parent onSelect={first} />);
+    expect(first).toHaveBeenCalled();
+    const firstCalls = first.mock.calls.length;
+
+    render(<Parent onSelect={second} />);
+    expect(second).toHaveBeenCalled();
+    expect(first).toHaveBeenCalledTimes(firstCalls);
+    const secondCalls = second.mock.calls.length;
+
+    render(<Parent />);
+    expect(first).toHaveBeenCalledTimes(firstCalls);
+    expect(second).toHaveBeenCalledTimes(secondCalls);
   });
 
   test("언마운트하면 리스너를 뗀다", () => {
@@ -193,9 +274,36 @@ describe("ref", () => {
     expect(ref.current).toBeNull();
   });
 
-  test("함수 ref도 엘리먼트를 받는다", () => {
-    let received: HTMLElement | null = null;
-    render(<IsoHeatmap ref={(node) => { received = node; }} />);
-    expect(received).toBe(el("iso-heatmap"));
+  test("고전 함수 ref는 엘리먼트를 받고 떼어질 때 null을 받는다", () => {
+    const calls: (HTMLElement | null)[] = [];
+    const ref = (node: HTMLElement | null) => {
+      calls.push(node);
+    };
+    render(<IsoHeatmap ref={ref} />);
+    const node = el("iso-heatmap");
+    expect(calls.at(-1)).toBe(node);
+    expect(calls.filter((c) => c === node).length - calls.filter((c) => c === null).length).toBe(1);
+
+    render(null);
+    expect(calls.at(-1)).toBeNull();
+    expect(calls.filter((c) => c === node).length).toBe(calls.filter((c) => c === null).length);
+  });
+
+  test.skipIf(!isReact19)("정리 함수를 돌려주는 ref는 null 대신 정리 함수가 불린다", () => {
+    const setups: (HTMLElement | null)[] = [];
+    const cleanup = vi.fn();
+    const ref = (node: HTMLElement | null) => {
+      setups.push(node);
+      return cleanup;
+    };
+    render(<IsoKpi ref={ref} value={1} />);
+    const node = el("iso-kpi");
+    expect(setups).not.toContain(null);
+    expect(setups.length - cleanup.mock.calls.length).toBe(1);
+
+    render(null);
+    expect(setups).not.toContain(null);
+    expect(setups.every((s) => s === node)).toBe(true);
+    expect(cleanup).toHaveBeenCalledTimes(setups.length);
   });
 });
