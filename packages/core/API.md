@@ -163,6 +163,10 @@ SVG 경로에서 다른 것:
   layout source scale sel`)은 빌드에서 짧은 이름으로 바뀐다(`mangleProps`). 이 이름들은 점 표기로만 쓴다
   (`s.zi`는 되고 `s["zi"]`는 바뀌지 않아 빌드본에서 깨진다). 목록에 이름을 더할 때는 DOM·데이터 JSON·이벤트에
   같은 이름이 없는지 확인한다(`key`, `detail`, `value`, `name`, `rows`, `floor`는 그래서 뺐다).
+- 그래서 `IsoElement`는 공개 확장 API가 아니다. 빌드본(`dist`)의 `IsoElement`를 상속해 `validate`·`layout`
+  등을 구현해도 이름이 줄어든 쪽만 호출되므로 동작하지 않는다. 새 엘리먼트는 이 저장소 안에서 소스로
+  만들어 같은 빌드에 넣는다. `edu.ts`가 임시로 내보내는 `IsoElement`·`define`은 공유 청크 모양을 맞추기 위한
+  자리 표시이며 첫 교육용 엘리먼트가 들어오면 지운다.
 
 크기 예산(`.size-limit.json`, `npm run size`). gzip 레벨 9로 **파일마다 따로** 압축해 더한다 — 브라우저가 받는 그대로다.
 
