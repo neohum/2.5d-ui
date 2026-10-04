@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>소개 · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<link rel="stylesheet" href="./site.css">
+<script type="module" src="/packages/core/src/index.ts"></script>
+<script type="module" src="./site.ts"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html" aria-current="page">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">v0.1 준비 중 · MIT</span>
+  <h1>CSS만으로 그리는 등각 2.5D 데이터 컴포넌트</h1>
+  <p class="lede">WebGL도 캔버스도 없이, 블록 200개까지는 면 세 개를 2D <code>matrix()</code> 하나씩으로, 그보다 많으면 인라인 SVG 한 장으로 그립니다. 크롬북처럼 GPU가 약한 기기에서도 가볍게 돌고, 값이 바뀔 때가 아니면 CPU를 쓰지 않습니다.</p>
+</section>
+
+<section aria-labelledby="hero-title">
+  <div class="card">
+    <h2 id="hero-title">앱별 메모리 사용량 <span class="muted">MB · 예시 데이터</span></h2>
+    <div class="example" data-log>
+      <script type="text/html">
+        <iso-bars label="앱별 메모리 사용량 (MB)" data='[{"k":"문서","v":180},{"k":"시트","v":240},{"k":"화상회의","v":410},{"k":"클래스","v":150},{"k":"동영상","v":320},{"k":"그림판","v":90}]'></iso-bars>
+      </script>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="why">
+  <h2 id="why">이렇게 만듭니다</h2>
+  <ul>
+    <li><b>2D 변환만.</b> <code>preserve-3d</code>, 캔버스, 렌더 루프를 쓰지 않습니다.</li>
+    <li><b>색 하나로 세 면.</b> 옆면 음영은 <code>color-mix(in oklch)</code>로 만들어, <code>--iso-c</code> 하나만 바꾸면 블록 전체가 바뀝니다.</li>
+    <li><b>텍스트는 DOM.</b> 값과 이름은 일반 텍스트라 선택·복사·번역·스크린 리더가 그대로 동작합니다. 모든 값을 담은 숨김 표도 함께 만듭니다.</li>
+    <li><b>테마와 동작 줄이기.</b> 다크 모드(<code>prefers-color-scheme</code>, <code>data-theme</code>)와 <code>prefers-reduced-motion</code>을 토큰 단계에서 따릅니다.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="render">
+  <h2 id="render">렌더링 방식</h2>
+  <p>엘리먼트는 두 경로 중 하나로 그립니다. 고르는 것은 <code>renderer</code> 속성(React는 <code>renderer</code> prop)이고, 기본값 <code>auto</code>는 블록 수로 고릅니다. 기준은 측정으로 정했습니다(<code>docs/adr/0001-render-approach.md</code>).</p>
+  <div class="table"><table>
+    <thead><tr><th>경로</th><th>언제</th><th>그리는 법</th></tr></thead>
+    <tbody>
+      <tr><td>CSS 면</td><td><code>auto</code>에서 블록 200개(<code>SVG_THRESHOLD</code>) 이하, 또는 <code>renderer="css"</code></td><td>블록마다 <code>div</code>와 면 세 개, 2D <code>matrix()</code>. <a href="primitives.html">CSS 프리미티브</a>와 같은 구조</td></tr>
+      <tr><td>SVG</td><td><code>auto</code>에서 200개 초과, 또는 <code>renderer="svg"</code></td><td>장면 하나에 인라인 <code>&lt;svg&gt;</code> 한 장, 블록마다 다각형 세 개. 호버는 블록 1000개까지 예산 안입니다. 첫 렌더는 500개에서 예산 안이고, 1000개에서는 측정 방법에 따라 90–106ms로 예산(100ms) 경계에 걸립니다. 1000개를 넘어도 그리지만 예산은 보장하지 않습니다</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>두 경로에서 같은 것:</b> <code>iso-select</code> 이벤트(클릭·Enter·Space), 키보드 탭 순서와 포커스 유지, 블록의 <code>role</code>·<code>aria-label</code>, 숨김 접근성 표, 색 검사와 빈·오류 상태, 다크 테마·팔레트 토큰, 호버·포커스 들림과 동작 줄이기.</p>
+  <p><b>알려진 한계 (v0.1)</b></p>
+  <ul>
+    <li>값이 바뀔 때의 높이 애니메이션은 두 경로 모두 프레임 예산(표시 프레임 드롭 ≤ 5%)을 지키지 못합니다. 개선은 v0.2로 미뤘습니다.</li>
+    <li>SVG 경로는 값 변경을 움직이지 않고 새 높이로 바로 바꿉니다(<code>iso-ledger</code>의 빼냄도 바로 옮깁니다).</li>
+    <li>블록마다 <code>--iso-x</code>·<code>-y</code>·<code>-w</code>·<code>-d</code>·<code>-h</code>·<code>-z</code>를 CSS로 덮어쓰는 것은 CSS 경로에서만 듣습니다. SVG 경로는 좌표를 JS가 다각형에 직접 씁니다. 색 <code>--iso-c</code>는 두 경로 모두 듣습니다.</li>
+  </ul>
+  <pre data-copy><code>&lt;!-- 블록 수와 무관하게 SVG로 --&gt;
+&lt;iso-heatmap renderer="svg" data='…'&gt;&lt;/iso-heatmap&gt;
+
+// React
+&lt;IsoHeatmap renderer="svg" data={data} /&gt;</code></pre>
+</section>
+
+<section aria-labelledby="install">
+  <h2 id="install">설치</h2>
+  <p class="note">아직 공개된 패키지가 없습니다. <b>npm 패키지 이름은 정해지지 않았고(TBD)</b>, 맨 아래 이름과 CDN 주소는 자리 표시용입니다. 지금은 저장소를 받아 아래 두 방법 중 하나로 쓰세요.</p>
+  <h3>1. 문서 사이트를 띄워 소스 그대로 보기</h3>
+  <p class="muted">이 사이트는 TypeScript 소스(<code>/packages/core/src/index.ts</code>)를 그대로 불러옵니다. 브라우저는 <code>.ts</code>를 직접 실행하지 못하므로, 변환해 주는 vite 개발 서버로 열어야 합니다.</p>
+  <pre data-copy><code>npm ci
+npm run site
+# 터미널에 나온 주소(기본 http://localhost:5173/)를 엽니다</code></pre>
+  <h3>2. 빌드 파일을 내 페이지에 넣기</h3>
+  <p class="muted"><code>npm run build</code>가 <code>packages/core/dist/</code>에 <code>iso.min.css</code>와 ES 모듈 <code>iso.min.js</code>를 만듭니다. 두 파일을 페이지 옆에 복사해 씁니다. 모듈 스크립트라 <code>file://</code>로는 열리지 않으니 아무 정적 서버로 여세요(예: <code>npx vite</code>).</p>
+  <pre data-copy><code>npm ci
+npm run build
+cp packages/core/dist/iso.min.css packages/core/dist/iso.min.js 내-페이지-폴더/</code></pre>
+  <pre data-copy><code>&lt;link rel="stylesheet" href="iso.min.css"&gt;
+&lt;script type="module" src="iso.min.js"&gt;&lt;/script&gt;</code></pre>
+  <h3>공개 뒤 (자리 표시: 이름·주소 미정)</h3>
+  <pre data-copy><code>npm install &lt;패키지-이름-미정&gt;
+&lt;link rel="stylesheet" href="https://cdn.example/&lt;패키지-이름-미정&gt;/iso.min.css"&gt;
+&lt;script type="module" src="https://cdn.example/&lt;패키지-이름-미정&gt;/iso.min.js"&gt;&lt;/script&gt;</code></pre>
+</section>
+
+<section aria-labelledby="components">
+  <h2 id="components">구성 요소</h2>
+  <ul class="links">
+    <li><a class="card" href="primitives.html"><b>CSS 프리미티브</b><span>JS 없이 블록·바닥판·라벨을 직접 배치</span></a></li>
+    <li><a class="card" href="bars.html"><b>&lt;iso-bars&gt;</b><span>한 줄 막대</span></a></li>
+    <li><a class="card" href="stack.html"><b>&lt;iso-stack&gt;</b><span>기둥 안에 계열을 쌓는 적층 막대</span></a></li>
+    <li><a class="card" href="heatmap.html"><b>&lt;iso-heatmap&gt;</b><span>행×열 격자, 셀 높이로 값</span></a></li>
+    <li><a class="card" href="ledger.html"><b>&lt;iso-ledger&gt;</b><span>장부처럼 쌓은 기록, 한 장을 앞으로</span></a></li>
+    <li><a class="card" href="kpi.html"><b>&lt;iso-kpi&gt;</b><span>지표 하나를 채움 높이로</span></a></li>
+    <li><a class="card" href="playground.html"><b>플레이그라운드</b><span>JSON과 속성을 바꿔 가며 바로 확인</span></a></li>
+  </ul>
+</section>
+
+<section aria-labelledby="templates">
+  <h2 id="templates">템플릿</h2>
+  <p class="muted">여러 컴포넌트를 함께 쓴 화면 예시입니다. 모든 값은 예시 데이터입니다.</p>
+  <ul class="links">
+    <li><a class="card" href="tpl-resources.html"><b>자원 대시보드</b><span>기기 자원 사용량을 한 화면에</span></a></li>
+    <li><a class="card" href="tpl-kpi.html"><b>KPI 보드</b><span>핵심 지표 여섯 개와 비교 막대</span></a></li>
+    <li><a class="card" href="tpl-versions.html"><b>버전 기록 뷰어</b><span>릴리스 장부에서 한 버전 살펴보기</span></a></li>
+  </ul>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>템플릿 · 버전 기록 뷰어 · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<link rel="stylesheet" href="./site.css">
+<script type="module" src="/packages/core/src/index.ts"></script>
+<script type="module" src="./site.ts"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">템플릿</span>
+  <h1>버전 기록 뷰어</h1>
+  <p class="lede">수업용 앱 하나의 릴리스 기록을 장부로 쌓았습니다. 가장 최근 버전이 맨 위에 놓입니다. 목록이나 장부에서 버전을 고르면 그 장이 오른쪽으로 빠져나오고 내용이 아래에 보입니다. 장부에서 같은 장을 한 번 더 누르면 선택이 풀립니다.</p>
+  <span class="badge">예시 데이터 · 실제 릴리스가 아닙니다</span>
+</section>
+
+<div class="grid">
+  <section class="card" aria-labelledby="book">
+    <h2 id="book">릴리스 장부</h2>
+    <div class="preview">
+      <iso-ledger id="ledger" selected="4" label="릴리스 기록"></iso-ledger>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="list">
+    <h2 id="list">버전</h2>
+    <ul class="versions" id="versions"></ul>
+  </section>
+</div>
+
+<section class="card" aria-labelledby="detail-title" aria-live="polite">
+  <h2 id="detail-title">v2.0</h2>
+  <p class="muted" id="detail-date"></p>
+  <p id="detail-note"></p>
+</section>
+
+<script type="module">
+  // 예시 데이터
+  const releases = [
+    // short는 장부 라벨용 짧은 요약(좁은 화면에서도 라벨 열이 잘리지 않게), note는 상세용.
+    { k: "v1.0", short: "첫 공개", note: "첫 공개. 막대 그래프와 다크 테마", date: "2026-03-02" },
+    { k: "v1.1", short: "키보드", note: "키보드로 막대 사이를 옮겨 다니기", date: "2026-03-30" },
+    { k: "v1.2", short: "적층 막대", note: "적층 막대 추가, 계열 색 지정", date: "2026-05-11" },
+    { k: "v1.3", short: "속도", note: "저사양 기기에서 첫 렌더 40% 단축", date: "2026-07-06" },
+    { k: "v2.0", short: "React", note: "React 래퍼와 히트맵, 장부, KPI 컴포넌트", date: "2026-09-21" },
+  ];
+  const ledger = document.getElementById("ledger");
+  const list = document.getElementById("versions");
+  ledger.setAttribute("data", JSON.stringify(releases.map(({ k, short }) => ({ k, note: short }))));
+
+  const buttons = releases.map((r, i) => {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = `${r.k} — ${r.note}`;
+    b.addEventListener("click", () => select(i));
+    li.append(b);
+    list.append(li);
+    return b;
+  });
+
+  function select(i) {
+    const r = releases[i];
+    ledger.setAttribute("selected", String(i));
+    buttons.forEach((b, j) => b.setAttribute("aria-pressed", String(i === j)));
+    document.getElementById("detail-title").textContent = r.k;
+    document.getElementById("detail-date").textContent = `배포일 ${r.date}`;
+    document.getElementById("detail-note").textContent = r.note;
+  }
+
+  // 장부는 iso-select로 selected를 먼저 스스로 바꾼다(같은 장을 다시 누르면 해제).
+  // 그 결과를 읽어 목록과 상세를 맞춘다.
+  ledger.addEventListener("iso-select", () => {
+    const s = ledger.getAttribute("selected");
+    if (s == null) clear();
+    else select(+s);
+  });
+
+  function clear() {
+    buttons.forEach((b) => b.setAttribute("aria-pressed", "false"));
+    document.getElementById("detail-title").textContent = "선택한 버전 없음";
+    document.getElementById("detail-date").textContent = "";
+    document.getElementById("detail-note").textContent = "장부나 목록에서 버전을 고르세요.";
+  }
+  select(releases.length - 1);
+</script>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

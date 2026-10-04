@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iso-heatmap · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<link rel="stylesheet" href="./site.css">
+<script type="module" src="/packages/core/src/index.ts"></script>
+<script type="module" src="./site.ts"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html" aria-current="page">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">Web Component</span>
+  <h1>&lt;iso-heatmap&gt;</h1>
+  <p class="lede">행×열 격자의 각 칸을 블록으로 세우고, 값을 블록 높이와 색 진하기로 함께 나타냅니다. 요일×시간처럼 두 축으로 나뉜 수치를 한눈에 비교할 때 씁니다.</p>
+</section>
+
+<section aria-labelledby="ex">
+  <h2 id="ex">예시</h2>
+  <p class="muted">요일·시간대별 기기 접속 수 (예시 데이터). 행 이름은 오른쪽 앞 모서리, 열 이름은 왼쪽 앞 모서리를 따라 붙습니다.</p>
+  <div class="card example" data-log>
+    <script type="text/html">
+      <iso-heatmap label="요일·시간대별 기기 접속 수" height-units="3" data='{"rows":["월","화","수","목","금"],"cols":["9시","11시","13시","15시"],"values":[[42,38,12,30],[45,40,15,28],[39,35,10,33],[44,41,14,31],[30,26,8,18]]}'></iso-heatmap>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="ex-big">
+  <h2 id="ex-big">큰 격자 — 자동 SVG</h2>
+  <p class="muted">20행 × 25열 = 500칸(예시 데이터). 블록이 200개를 넘어 <code>renderer</code>를 따로 주지 않아도 SVG 경로로 그립니다. 이벤트·키보드·숨김 표는 위 예시와 같습니다. 칸 한 변이 12px이라 행·열 이름이 서로 겹치므로, 이 예시는 페이지 CSS로 화면 라벨만 숨겼습니다(<code>.dense .iso-label { display: none }</code>). 이름은 각 칸의 <code>aria-label</code>과 숨김 표에 그대로 남습니다.</p>
+  <div class="card">
+    <div class="preview dense">
+      <iso-heatmap id="big" unit="12" height-units="3" label="20일 × 25구역 접속 지수"></iso-heatmap>
+    </div>
+    <p class="log" id="big-path" aria-live="polite"></p>
+  </div>
+</section>
+
+<section aria-labelledby="attrs">
+  <h2 id="attrs">속성</h2>
+  <div class="table"><table>
+    <thead><tr><th>속성</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>data</code></td><td>JSON</td><td><code>{ rows, cols, values }</code>. 잘못된 JSON이나 모양이 맞지 않는 데이터면 그리지 않고 <code>console.error</code> 후 오류 문구를 보인다</td></tr>
+      <tr><td><code>max</code></td><td>숫자</td><td>축척 최댓값. 없으면 가장 큰 칸 값. 넘는 값은 꽉 찬 높이</td></tr>
+      <tr><td><code>unit</code></td><td>숫자(px)</td><td><code>--iso-u</code> 값(칸 한 변). 기본 24</td></tr>
+      <tr><td><code>height-units</code></td><td>숫자</td><td>최댓값이 차지하는 블록 높이. 기본 5. 칸이 많으면 3 안팎이 읽기 좋다</td></tr>
+      <tr><td><code>label</code></td><td>문자열</td><td>접근성 캡션(<code>aria-label</code>과 숨김 표 <code>caption</code>)</td></tr>
+      <tr><td><code>renderer</code></td><td><code>css</code> | <code>svg</code> | <code>auto</code></td><td>그리는 방식. 기본 <code>auto</code>(그 밖의 값도 같음): 블록 200개 이하면 CSS 면, 넘으면 SVG. <code>css</code>·<code>svg</code>는 블록 수와 무관하게 고정. <a href="index.html#render">렌더링 방식</a></td></tr>
+    </tbody>
+  </table></div>
+  <h3>data 형식</h3>
+  <div class="table"><table>
+    <thead><tr><th>키</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>rows</code></td><td>문자열 배열</td><td>행 이름</td></tr>
+      <tr><td><code>cols</code></td><td>문자열 배열</td><td>열 이름</td></tr>
+      <tr><td><code>values</code></td><td>숫자 2차원 배열</td><td><code>values[행][열]</code>, 0 이상. 행 수는 <code>rows</code>, 각 행의 길이는 <code>cols</code>와 같아야 한다(다르면 오류 상태)</td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted">칸 색은 범주 팔레트가 아니라 <code>--iso-color-1</code>을 바닥색(<code>--iso-floor</code>)과 섞은 한 가지 색이며, 값이 낮을수록 바닥색에 가깝습니다. 행·열이 비면 빈 상태 문구를 보입니다.</p>
+</section>
+
+<section aria-labelledby="events">
+  <h2 id="events">이벤트</h2>
+  <p>칸을 누르거나 Enter·Space를 누르면 <code>iso-select</code>가 버블링됩니다. <code>detail</code>은 <code>{ index, item: { row, col, v } }</code>이고 <code>index</code>는 <code>행 번호 × 열 수 + 열 번호</code>입니다.</p>
+  <pre data-copy><code>document.querySelector("iso-heatmap").addEventListener("iso-select", (e) => {
+  const { row, col, v } = e.detail.item;
+  console.log(`${row} ${col}: ${v}`);
+});</code></pre>
+</section>
+
+<section aria-labelledby="a11y">
+  <h2 id="a11y">접근성</h2>
+  <ul>
+    <li>칸마다 포커스를 받고 이름은 <code>"행 열: 값"</code>입니다(예: "월 9시: 42").</li>
+    <li>숨김 표가 첫 열에 행 이름, 첫 행에 열 이름을 두고 모든 값을 담습니다.</li>
+    <li>칸이 많으면 Tab 이동이 길어집니다. 행·열을 꼭 필요한 만큼으로 줄이고 <code>label</code>로 무엇을 세었는지 밝히세요.</li>
+  </ul>
+</section>
+
+<script type="module">
+  // 500칸 예시 데이터: 결정적인 물결 모양(새로 고쳐도 같은 그림).
+  const rows = Array.from({ length: 20 }, (_, i) => i + 1 + "일");
+  const cols = Array.from({ length: 25 }, (_, j) => "구역 " + (j + 1));
+  const values = rows.map((_, i) => cols.map((_, j) => Math.round(50 + 40 * Math.sin(i / 3) * Math.cos(j / 4))));
+  const big = document.getElementById("big");
+  big.setAttribute("data", JSON.stringify({ rows, cols, values }));
+  const svg = big.querySelector(".iso-svg");
+  document.getElementById("big-path").textContent =
+    `블록 ${big.querySelectorAll(".iso-block").length}개 → ${svg ? "SVG" : "CSS 면"} 경로로 그림`;
+</script>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>
