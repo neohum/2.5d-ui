@@ -9,9 +9,8 @@ const PAGE = "/packages/core/demo/grid.html";
  * 레이아웃을 포함하고 페인트는 뺀다. 페이지를 새로 열어 그 페이지의 첫 500블록 렌더만
  * 잰다(같은 데이터 반복 렌더는 Blink 스타일 캐시가 데워져 실제보다 빠르게 나온다).
  * 카드 예산 그대로 100 ms. 단독 실행(`--workers=1` 또는 이 테스트만)은 84–93 ms로 지킨다.
- * 전체 스위트를 병렬로 돌리면 다른 워커·호스트 부하와 CPU를 다퉈 96–115 ms까지 흔들린다 —
- * 측정 환경 문제라 예산을 늘리지 않는다(playwright.config.ts에서 이 테스트를 워커 1개
- * 프로젝트로 분리하는 것이 해법).
+ * 전체 스위트와 병렬로 돌리면 다른 워커와 CPU를 다퉈 96–115 ms까지 흔들렸다. 그래서 이 테스트는
+ * playwright.config.ts의 perf 프로젝트에서 화면 테스트가 모두 끝난 뒤 혼자 돈다.
  */
 const RENDER_BUDGET_MS = 100;
 
@@ -86,8 +85,7 @@ test("색 검사(실제 브라우저, CSS.supports 포함): 올바른 색은 그
   ]);
 });
 
-test("성능: 25×20 히트맵 첫 렌더 (CPU 6배 감속)", async ({ browser }, info) => {
-  test.skip(info.project.name != "light", "한 프로젝트에서만 측정");
+test("성능: 25×20 히트맵 첫 렌더 (CPU 6배 감속) @perf", async ({ browser }, info) => {
   const runs: number[] = [];
   // 새 페이지 3번, 각 페이지의 첫 렌더만(모두 진짜 첫 렌더). 판정은 중앙값 — 전체 스위트를
   // 병렬로 돌리면 다른 워커와 CPU를 다퉈 한 번씩 튀므로. 세 값은 모두 로그에 남긴다.
