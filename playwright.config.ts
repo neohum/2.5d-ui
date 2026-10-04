@@ -10,8 +10,10 @@ export default defineConfig({
   use: { baseURL: `http://localhost:${port}` },
   webServer: { command: `npx vite --port ${port} --strictPort`, url: `http://localhost:${port}/packages/core/demo/primitives.html`, reuseExistingServer: false },
   projects: [
-    { name: "light", use: { ...devices["Desktop Chrome"], colorScheme: "light" } },
-    { name: "dark", use: { ...devices["Desktop Chrome"], colorScheme: "dark" } },
-    { name: "mobile", use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 }, colorScheme: "light" } },
+    { name: "light", grepInvert: /@perf/, use: { ...devices["Desktop Chrome"], colorScheme: "light" } },
+    { name: "dark", grepInvert: /@perf/, use: { ...devices["Desktop Chrome"], colorScheme: "dark" } },
+    { name: "mobile", grepInvert: /@perf/, use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 }, colorScheme: "light" } },
+    // 성능 측정은 다른 워커와 CPU를 나눠 쓰면 값이 흔들린다. 화면 테스트가 모두 끝난 뒤 혼자 돈다.
+    { name: "perf", grep: /@perf/, dependencies: ["light", "dark", "mobile"], use: { ...devices["Desktop Chrome"], colorScheme: "light" } },
   ],
 });

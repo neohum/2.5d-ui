@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2.5d-ui · iso-heatmap / iso-ledger / iso-kpi 데모</title>
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<style>
+  /* 데모 페이지 꾸밈만. 다크 테마에서 페이지 배경도 어둡게(bars.html과 같은 방식). */
+  :root { color-scheme: light; --page-bg: #f2f4f7; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { color-scheme: dark; --page-bg: #11151b; }
+  }
+  [data-theme="dark"] { color-scheme: dark; --page-bg: #11151b; }
+  body {
+    margin: 0; padding: 24px; background: var(--page-bg); color: var(--iso-ink);
+    font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  }
+  main { display: grid; gap: 32px; max-width: 960px; }
+  figure { margin: 0; display: grid; gap: 8px; overflow-x: auto; }
+  figcaption { font-weight: 600; }
+  .row { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; }
+</style>
+<script type="module" src="/packages/core/src/index.ts"></script>
+</head>
+<body>
+<main>
+  <figure id="heatmap">
+    <figcaption>요일·시간대별 접속 수</figcaption>
+    <iso-heatmap label="요일·시간대별 접속 수" height-units="3" data='{"rows":["월","화","수","목","금"],"cols":["8시","10시","12시","14시","16시","18시"],"values":[[3,8,12,9,6,2],[4,9,14,11,7,3],[2,7,10,13,8,4],[5,10,15,12,9,5],[1,6,9,8,5,0]]}'></iso-heatmap>
+  </figure>
+
+  <figure id="ledger">
+    <figcaption>배포 장부 (selected=1, 마지막 항목이 맨 위)</figcaption>
+    <iso-ledger label="배포 장부" selected="1" data='[{"k":"v1.0","note":"첫 배포"},{"k":"v1.1","note":"오프라인 모드"},{"k":"v1.2","note":"접근성 표"},{"k":"v1.3"}]'></iso-ledger>
+  </figure>
+
+  <figure id="kpi">
+    <figcaption>지표 상자</figcaption>
+    <div class="row">
+      <iso-kpi label="출석률" value="87" max="100" suffix="%"></iso-kpi>
+      <iso-kpi label="저장 공간" value="12.5" max="32" suffix=" GB" height-units="4"></iso-kpi>
+      <iso-kpi label="초과" value="140" max="100" suffix="%"></iso-kpi>
+    </div>
+  </figure>
+
+  <figure id="empty">
+    <figcaption>빈 데이터 / 잘못된 데이터</figcaption>
+    <iso-heatmap data='{"rows":[],"cols":[],"values":[]}'></iso-heatmap>
+    <iso-heatmap data='{"rows":["a"],"cols":["b","c"],"values":[[1]]}'></iso-heatmap>
+    <iso-kpi label="잘못된 값" value="abc"></iso-kpi>
+  </figure>
+</main>
+</body>
+</html>
