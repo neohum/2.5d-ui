@@ -1,0 +1,387 @@
+<title>2.5d-ui 교육용 템플릿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 단일 읽기 컬럼(약 68ch) + 표·데모만 넓게. 등각 블록 데모가 첫 화면에서 개념을 증명한다. */
+:root {
+  --bg: #f2f4f7;
+  --surface: #ffffff;
+  --ink: #18212c;
+  --muted: #586474;
+  --line: #d4dbe3;
+  --accent: #2c64c9;
+  --block: #3f7be0;
+  --floor: #dfe5ec;
+  --desk: #8a94a3;
+  --ok: #1f7a4d;
+  --warn: #a35a00;
+  --f-display: "Black Han Sans", "IBM Plex Sans KR", "Apple SD Gothic Neo", sans-serif;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #11151b; --surface: #19202a; --ink: #e5eaf0; --muted: #9aa6b5;
+    --line: #2b3542; --accent: #79a3f2; --block: #4f86e8; --floor: #222b37; --desk: #5d6878;
+    --ok: #5cc28e; --warn: #e3a248;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #11151b; --surface: #19202a; --ink: #e5eaf0; --muted: #9aa6b5;
+  --line: #2b3542; --accent: #79a3f2; --block: #4f86e8; --floor: #222b37; --desk: #5d6878;
+  --ok: #5cc28e; --warn: #e3a248;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.7;
+  padding-inline: 20px;
+}
+main { max-width: 68ch; margin-inline: auto; padding-block: 48px 96px; display: grid; gap: 56px; }
+.wide { width: min(1040px, calc(100vw - 40px)); justify-self: center; }
+
+h1, h2, h3 { text-wrap: balance; line-height: 1.25; margin: 0; }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -0.01em; }
+h2 { font-size: 1.45rem; font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 700; }
+p { margin: 0; }
+section { display: grid; gap: 16px; }
+.eyebrow { font-family: var(--f-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 1.12rem; color: var(--muted); }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 20px; font-family: var(--f-mono); font-size: 0.8rem; color: var(--muted); }
+code, .mono { font-family: var(--f-mono); font-size: 0.9em; }
+:not(pre) > code { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+ul, ol { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header.top { display: grid; gap: 14px; }
+
+/* ---------- 데모: 순수 CSS 등각 블록 (본 계획의 핵심 가설) ---------- */
+.demo { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 12px; }
+.demo-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline; }
+.demo-head small { font-family: var(--f-mono); color: var(--muted); font-size: 0.75rem; }
+.iso { --u: 26px; position: relative; height: 310px; overflow: hidden; }
+.iso-stage { position: absolute; left: 50%; top: 168px; margin-left: -80px; }
+.blk {
+  --w: 1; --d: 1; --h: 1; --x: 0; --y: 0; --i: 0; --c: var(--block);
+  position: absolute;
+  left: calc((var(--x) - var(--y)) * 0.866 * var(--u));
+  top: calc((var(--x) + var(--y)) * 0.5 * var(--u));
+  z-index: var(--i);
+  transition: transform 0.18s ease-out;
+}
+.blk > i { position: absolute; left: 0; top: 0; display: block; transform-origin: 0 0; }
+.blk .t {
+  width: calc(var(--w) * var(--u)); height: calc(var(--d) * var(--u));
+  background: var(--c);
+  transform: translateY(calc(var(--h) * var(--u) * -1)) matrix(0.866, 0.5, -0.866, 0.5, 0, 0);
+}
+.blk .l {
+  width: calc(var(--w) * var(--u)); height: calc(var(--h) * var(--u));
+  background: color-mix(in oklch, var(--c), black 18%);
+  transform: translate(calc(var(--d) * var(--u) * -0.866), calc((var(--d) * 0.5 - var(--h)) * var(--u))) matrix(0.866, 0.5, 0, 1, 0, 0);
+}
+.blk .r {
+  width: calc(var(--d) * var(--u)); height: calc(var(--h) * var(--u));
+  background: color-mix(in oklch, var(--c), black 34%);
+  transform: translate(calc(var(--w) * var(--u) * 0.866), calc((var(--w) * 0.5 - var(--h)) * var(--u))) matrix(-0.866, 0.5, 0, 1, 0, 0);
+}
+.blk .v, .blk .k {
+  position: absolute; white-space: nowrap; font-family: var(--f-mono); font-size: 11px; line-height: 1;
+  font-variant-numeric: tabular-nums; color: var(--ink);
+}
+.blk .v { left: calc((var(--w) - var(--d)) * 0.433 * var(--u)); top: calc(((var(--w) + var(--d)) * 0.25 - var(--h)) * var(--u)); transform: translate(-50%, -150%); font-weight: 500; }
+.blk .k { left: calc((var(--w) - var(--d)) * 0.866 * var(--u)); top: calc((var(--w) + var(--d)) * 0.5 * var(--u)); transform: translate(-30%, 6px); color: var(--muted); }
+.blk:not(.floor):hover { transform: translateY(-6px); }
+.blk.floor { pointer-events: none; }
+.blk.floor .t { background: var(--floor); }
+.blk.hot { --c: #d9772b; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.demo-note { font-size: 0.88rem; color: var(--muted); }
+
+/* ---------- 표 ---------- */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; min-width: 620px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: color-mix(in oklch, var(--surface), var(--bg) 60%); }
+td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill { display: inline-block; font-family: var(--f-mono); font-size: 0.72rem; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.pill.ok { color: var(--ok); }
+.pill.warn { color: var(--warn); }
+.pill.mute { color: var(--muted); }
+
+/* ---------- 원칙 목록 ---------- */
+.rules { list-style: none; padding: 0; display: grid; gap: 14px; }
+.rules li { display: grid; gap: 2px; padding-left: 14px; border-left: 2px solid var(--line); }
+.rules b { font-weight: 700; }
+
+/* ---------- 단계(실제 순서가 있는 내용이므로 번호 사용) ---------- */
+.phases { list-style: none; padding: 0; display: grid; gap: 0; counter-reset: ph; }
+.phase { display: grid; grid-template-columns: 64px 1fr; gap: 16px; padding-block: 20px; border-top: 1px solid var(--line); }
+.phase:last-child { border-bottom: 1px solid var(--line); }
+.phase .no { font-family: var(--f-mono); font-size: 0.85rem; color: var(--accent); padding-top: 3px; }
+.phase .body { display: grid; gap: 8px; }
+.phase .dur { font-family: var(--f-mono); font-size: 0.78rem; color: var(--muted); }
+.phase .ac { font-size: 0.9rem; }
+.phase .ac b { font-family: var(--f-mono); font-size: 0.78rem; font-weight: 500; color: var(--muted); margin-right: 6px; }
+
+pre { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-family: var(--f-mono); font-size: 0.82rem; line-height: 1.6; }
+
+.callout { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: grid; gap: 8px; }
+
+@media (max-width: 520px) {
+  .phase { grid-template-columns: 1fr; gap: 6px; }
+  .iso { --u: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .blk { transition: none; }
+  .blk:not(.floor):hover { transform: none; }
+}
+
+/* ---------- 교실 좌석표 미리보기 (iso-map 가안) ---------- */
+.iso.room { --u: 22px; height: calc(var(--u) * 11.6); }
+.room .iso-stage { top: calc(var(--u) * 3.6); margin-left: calc(var(--u) * -1.6); }
+.blk.desk { --c: var(--desk); }
+.blk.absent .t { background: color-mix(in oklch, var(--block), var(--floor) 75%); outline: 1.5px dashed var(--muted); outline-offset: -1.5px; }
+.blk .v { opacity: 0; transition: opacity .12s; }
+.blk:hover .v, .blk:focus-visible .v { opacity: 1; }
+.blk:focus-visible { outline: none; }
+.blk:focus-visible .t { outline: 2px solid var(--ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.82rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 2px; background: var(--block); display: inline-block; }
+.sw.desk { background: var(--desk); }
+.sw.absent { background: transparent; outline: 1.5px dashed var(--muted); outline-offset: -1.5px; }
+main { grid-template-columns: minmax(0, 1fr); }
+.demo { box-sizing: border-box; }
+.el dd code { overflow-wrap: anywhere; }
+table.sr-only { display: block; }
+.els { display: grid; gap: 28px; }
+.el { display: grid; gap: 10px; }
+.el h3 code { font-size: 1em; }
+.el dl { display: grid; grid-template-columns: 7.5em 1fr; gap: 6px 14px; margin: 0; font-size: 0.95rem; }
+.el dt { color: var(--muted); }
+.el dd { margin: 0; }
+@media (max-width: 520px) {
+  .iso.room { --u: 17px; }
+  .el dl { grid-template-columns: 1fr; gap: 2px; }
+  .el dd { margin-bottom: 8px; }
+}
+</style>
+<main>
+  <header class="top">
+    <span class="eyebrow">계획서 · 승인 · 2026-10-05 · v0.2</span>
+    <h1>2.5d-ui 교육용 템플릿</h1>
+    <p class="lede">학교 데이터를 "어디에 있는가"와 "어떻게 쌓여 있는가"로 보여 주는 등각 엘리먼트 세 개(iso-map, iso-layers, iso-city)와 교육용 템플릿 4종을 만든다.</p>
+    <div class="meta"><span>하네스 계획 plans/iso-edu-v0-2.plan.md</span><span>카드 6장 · 3 wave</span><span>상태 승인 · 진행 중</span></div>
+  </header>
+
+  <figure class="demo wide" style="margin:0">
+    <div class="demo-head">
+      <h3>3학년 2반 좌석표 · 이번 주 과제 제출 횟수</h3>
+      <small>가상 데이터 · 학생은 번호만 · iso-map 미리보기</small>
+    </div>
+    <div class="iso room" role="img" aria-label="교실 좌석 20개의 과제 제출 횟수 등각 좌석표. 아래 숨김 표와 같은 값.">
+      <div class="iso-stage" id="room"></div>
+    </div>
+    <table class="sr-only" id="room-table"><caption>좌석별 과제 제출 횟수(가상 데이터)</caption></table>
+    <div class="legend">
+      <span><i class="sw"></i>좌석, 높이 = 제출 횟수(0–8회)</span>
+      <span><i class="sw absent"></i>결석(높이 0, 점선)</span>
+      <span><i class="sw desk"></i>교탁</span>
+      <span>좌석에 마우스를 올리거나 Tab으로 이동하면 번호와 횟수가 보입니다</span>
+    </div>
+    <figcaption class="demo-note">지금 코어의 CSS 블록으로 그린 미리보기입니다. 교탁(3×0.9)과 좌석(1×1)처럼 크기가 다른 칸이 한 바닥에 섞이는 것이 iso-map의 핵심이고, 그래서 v0.1에서 미뤄 둔 불규칙 배치 깊이 정렬을 이번에 풉니다.</figcaption>
+  </figure>
+
+  <section>
+    <span class="eyebrow">왜 이 세 가지인가</span>
+    <h2>깊이가 장식이 아니라 정보가 되는 경우</h2>
+    <p>높이를 값 하나에만 쓰는 2.5D 막대는 2D 막대보다 정확하지 않습니다. 이번 세 엘리먼트는 바닥의 위치나 위아래 순서 자체가 데이터인 경우만 다룹니다.</p>
+  </section>
+  <div class="table-wrap wide">
+    <table>
+      <thead><tr><th>엘리먼트</th><th>바닥·깊이가 뜻하는 것</th><th>학교에서 답하는 질문</th></tr></thead>
+      <tbody>
+        <tr><td><code>iso-map</code></td><td>실제 배치(좌석, 교실, 구역)</td><td>어느 자리, 어느 교실에서 문제가 몰려 있나?</td></tr>
+        <tr><td><code>iso-layers</code></td><td>위아래 순서(학년, 위계, 단계)</td><td>어느 학년·단원에서 성취가 꺾이나?</td></tr>
+        <tr><td><code>iso-city</code></td><td>위계와 크기(구역 = 학년, 밑면 = 학생 수)</td><td>큰 학급인데 지표가 낮은 곳은 어디인가?</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section>
+    <span class="eyebrow">엘리먼트</span>
+    <h2>세 엘리먼트 설계</h2>
+    <div class="els">
+      <div class="el">
+        <h3><code>&lt;iso-map&gt;</code> 평면 배치</h3>
+        <dl>
+          <dt>그리는 것</dt><dd>바닥 평면 위에 위치·크기가 제각각인 칸을 놓고, 값을 높이나 색으로 보여 줍니다.</dd>
+          <dt>데이터</dt><dd><code>{ "floor": {"w": 8, "d": 9}, "items": [{ "k": "7번", "x": 3, "y": 1.5, "w"?: 1, "d"?: 1, "v"?: 6, "state"?: "absent" }] }</code></dd>
+          <dt>핵심 동작</dt><dd>겹치지 않는 임의 크기 칸의 앞뒤 순서를 계산합니다. 칸이 겹치면 오류 상태입니다. <code>state</code>(결석·빈자리·공사 중)는 높이 0과 점선으로 구분합니다.</dd>
+          <dt>접근성</dt><dd>숨김 표에 칸 이름, 값, 위치(행·열)를 함께 넣습니다.</dd>
+          <dt>템플릿</dt><dd>교실 좌석표, 학교 평면도(층은 탭으로 전환)</dd>
+        </dl>
+      </div>
+      <div class="el">
+        <h3><code>&lt;iso-layers&gt;</code> 층 구조</h3>
+        <dl>
+          <dt>그리는 것</dt><dd>판을 위아래로 쌓고, 판마다 항목 블록을 올립니다. ledger와 달리 판 안에 내용이 있습니다.</dd>
+          <dt>데이터</dt><dd><code>[{ "k": "4학년", "items": [{ "k": "분수", "v": 72 }] }]</code></dd>
+          <dt>핵심 동작</dt><dd><code>open</code> 속성으로 한 층을 펼치면 그 위 층들이 들려 올라가 항목이 가리지 않습니다. 위·아래 키로 층을, 좌·우 키로 항목을 이동합니다.</dd>
+          <dt>이벤트</dt><dd><code>iso-select</code>의 <code>detail</code>은 <code>{ layer, index, item }</code>입니다.</dd>
+          <dt>템플릿</dt><dd>성취기준 층 구조(학년 판 위에 단원 블록, 높이 = 평균 성취도)</dd>
+        </dl>
+      </div>
+      <div class="el">
+        <h3><code>&lt;iso-city&gt;</code> 위계를 건물로</h3>
+        <dl>
+          <dt>그리는 것</dt><dd>트리맵으로 바닥을 구역으로 나누고, 그 위에 건물을 세웁니다. 밑면은 <code>size</code>, 높이는 <code>v</code>입니다.</dd>
+          <dt>데이터</dt><dd><code>{ "k": "학교", "children": [{ "k": "1학년", "children": [{ "k": "1반", "size": 27, "v": 64 }] }] }</code></dd>
+          <dt>핵심 동작</dt><dd>squarified 트리맵으로 구역과 건물 밑면을 정하고, iso-map과 같은 깊이 정렬로 그립니다. 라벨이 많아지므로 구역 이름은 항상, 건물 이름은 호버·포커스 때만 보입니다.</dd>
+          <dt>성능</dt><dd>건물 300개 첫 렌더 100ms 이하(CPU 6× 감속)를 목표로 합니다. 200개를 넘으면 SVG 경로로 전환합니다.</dd>
+          <dt>템플릿</dt><dd>학교 도시(구역 = 학년, 건물 = 학급, 밑면 = 학생 수, 높이 = 독서량 같은 지표)</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">템플릿</span>
+    <h2>교육용 템플릿 4종</h2>
+    <p>모든 템플릿은 가상 데이터로 열리고, 교사가 자기 데이터(JSON)를 붙여 넣어 바로 바꿔 볼 수 있습니다.</p>
+  </section>
+  <div class="table-wrap wide">
+    <table>
+      <thead><tr><th>템플릿</th><th>엘리먼트</th><th>화면</th><th>예시 데이터</th></tr></thead>
+      <tbody>
+        <tr><td>교실 좌석표</td><td><code>iso-map</code></td><td>좌석 20–30개, 교탁, 결석 표시. 좌석을 누르면 옆에 그 번호의 주간 기록이 나옴</td><td>과제 제출 횟수, 발표 참여 횟수</td></tr>
+        <tr><td>학교 평면도</td><td><code>iso-map</code></td><td>층 탭(1–4층), 교실·특별실·복도 칸, 칸 크기가 실제 비율</td><td>교실별 크롬북 사용 시간, 특별실 예약률</td></tr>
+        <tr><td>성취기준 층 구조</td><td><code>iso-layers</code></td><td>학년 판 4–6장, 판 위 단원 블록. 한 학년을 펼쳐 단원을 비교</td><td>단원별 평균 성취도(%)</td></tr>
+        <tr><td>학교 도시</td><td><code>iso-city</code></td><td>학년 구역 6개, 학급 건물 20–30개</td><td>밑면 = 학생 수, 높이 = 1인당 월 독서량</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section>
+    <span class="eyebrow">공통 기반</span>
+    <h2>먼저 고정할 세 가지</h2>
+    <ul class="rules">
+      <li><b>교육용 엔트리를 따로 낸다.</b> 코어 JS가 4.68KB로 예산 5KB에 거의 닿아 있습니다. 세 엘리먼트는 <code>2.5d-ui/edu</code>(<code>iso-edu.min.js</code>)로 따로 빌드하고 공통 기반(base)은 공유 청크로 나눕니다. 예산은 코어 5KB를 그대로 두고 교육용 엔트리에 3KB(gzip)를 새로 둡니다.</li>
+      <li><b>불규칙 배치 깊이 정렬(order.ts).</b> 서로 겹치지 않는 축 정렬 칸은 "앞에 있다" 관계로 위상 정렬하면 순서가 정해집니다. 무작위 배치 1000건 속성 테스트로 앞뒤를 어기는 쌍이 0개인지 확인합니다. CSS 경로는 이 순서를 <code>--iso-z</code>로, SVG 경로는 DOM 순서로 씁니다.</li>
+      <li><b>트리맵(treemap.ts).</b> squarified 배치를 직접 구현합니다(의존성 없음). 면적 비례 오차 1% 이내, 평균 종횡비 3 이하를 테스트로 확인합니다.</li>
+    </ul>
+  </section>
+
+  <section class="callout">
+    <h2>학생 개인정보 원칙</h2>
+    <ul>
+      <li>템플릿과 예제의 데이터는 모두 가상입니다. 학생은 번호로만 표시합니다.</li>
+      <li>라이브러리는 데이터를 어디에도 보내지 않습니다. 화면에 그리는 것만 합니다. 이 점을 문서에 적습니다.</li>
+      <li>숨김 접근성 표에도 화면과 같은 내용만 들어갑니다. 이름을 넣으면 스크린 리더가 읽는다는 점을 템플릿 안내에 적습니다.</li>
+      <li>학사 시스템 연동이나 파일 가져오기는 이번 범위가 아닙니다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <span class="eyebrow">일정</span>
+    <h2>단계별 계획</h2>
+    <p>하네스 계획서의 6단계입니다. 2–4단계와 5–6단계는 각각 같은 wave에서 병렬로 진행합니다. 기간은 이번 v0.1 진행 속도를 기준으로 한 추정치입니다.</p>
+    <ol class="phases">
+      <li class="phase"><span class="no">W1</span><div class="body">
+        <h3>공통 기반 <span class="mono" style="font-weight:400;color:var(--muted)">iso-edu-foundation</span></h3><span class="dur">단독 · 반나절</span>
+        <p>교육용 엔트리 분리 빌드, order.ts, treemap.ts, 세 엘리먼트의 API 규격.</p>
+        <p class="ac"><b>AC</b>코어 5KB·교육용 3KB 예산 강제 · 깊이 정렬 속성 테스트 1000건 위반 0 · 트리맵 면적 오차 1% 이내</p>
+      </div></li>
+      <li class="phase"><span class="no">W2</span><div class="body">
+        <h3>iso-map · iso-layers · iso-city</h3><span class="dur">병렬 3팀 · 하루</span>
+        <p>각 엘리먼트, 데모, 단위·화면 테스트. 세 팀 모두 W1의 API 규격을 기준으로 합니다.</p>
+        <p class="ac"><b>AC</b>크기가 섞인 평면도의 가림 정확 · 층 펼치기와 키보드 이동 · 건물 300개 첫 렌더 100ms 이하</p>
+      </div></li>
+      <li class="phase"><span class="no">W3</span><div class="body">
+        <h3>React 래퍼 · 템플릿과 문서</h3><span class="dur">병렬 2팀 · 반나절</span>
+        <p><code>IsoMap</code>, <code>IsoLayers</code>, <code>IsoCity</code> 추가. 문서 사이트에 엘리먼트 페이지 3개와 교육용 템플릿 4종.</p>
+        <p class="ac"><b>AC</b>React 18·19 통과 · 템플릿 콘솔 오류 0 · 390px 가로 스크롤 없음 · 예시 데이터는 모두 가상, 번호 표시</p>
+      </div></li>
+    </ol>
+    <p>각 카드는 v0.1과 같은 방식으로 진행합니다. 작업 폴더에서 빌드하고, Codex 독립 리뷰를 통과하면 PR로 스쿼시 머지합니다.</p>
+  </section>
+
+  <section>
+    <span class="eyebrow">위험</span>
+    <h2>위험과 대응</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>위험</th><th>대응</th></tr></thead>
+        <tbody>
+          <tr><td>크기가 다른 칸의 앞뒤 순서 오류</td><td>위상 정렬과 속성 테스트, 겹치는 배치는 오류로 거부, 화면 기준 이미지로 확인</td></tr>
+          <tr><td>iso-city 라벨 겹침</td><td>건물 이름은 호버·포커스 때만 표시, 구역 이름만 항상 표시, 모든 이름은 숨김 표에 포함</td></tr>
+          <tr><td>교육용 엔트리 크기 초과</td><td>엔트리별 size-limit, 공유 청크로 base 중복 제거, 초과 시 기능을 줄이고 보고</td></tr>
+          <tr><td>iso-layers 펼침 애니메이션이 값 변경 애니메이션과 같은 한계에 걸림</td><td>펼침은 판 위치(transform)만 움직여 컴포지터에서 처리, 측정 후 결과 보고</td></tr>
+          <tr><td>교육 데이터 개인정보</td><td>가상 데이터와 번호 표시, 외부 전송 없음 명시, 템플릿 안내문</td></tr>
+          <tr><td>크롬북 실기기 미측정(v0.1부터 이어짐)</td><td>W3 이후 실기기에서 템플릿 4종의 첫 렌더·호버 측정</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="callout">
+    <h2>결정 사항 <span class="pill ok" style="vertical-align:middle">2026-10-05 확정</span></h2>
+    <ul>
+      <li><b>배포 방식:</b> 같은 패키지의 하위 경로 <code>2.5d-ui/edu</code>(<code>iso-edu.min.js</code>)로 낸다</li>
+      <li><b>학교 평면도의 층 표현:</b> 이번 범위는 층 탭 전환이다. 층을 쌓은 단면도는 다음 범위로 넘긴다</li>
+      <li><b>순서:</b> v0.2 교육용 작업을 먼저 진행한다. v0.1 npm 공개는 패키지 이름을 정할 때 따로 승인한다</li>
+      <li><b>계획:</b> 승인됨. 하네스 카드 6장을 백로그에 넣고 wave 순서대로 진행한다</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+(() => {
+  // 가상 데이터: 4줄 × 5열, 이번 주 과제 제출 횟수(0–8). null = 결석.
+  const v = [
+    [6, 7, 3, null, 8],
+    [5, 2, 7, 6, 4],
+    [8, 6, null, 5, 7],
+    [3, 7, 6, 8, 1],
+  ];
+  const stage = document.getElementById("room");
+  const table = document.getElementById("room-table");
+  const add = (cls, s, inner) => {
+    const d = document.createElement("div");
+    d.className = "blk " + cls;
+    d.setAttribute("style", s);
+    d.innerHTML = inner;
+    stage.appendChild(d);
+    return d;
+  };
+  const faces = '<i class="l"></i><i class="r"></i><i class="t"></i>';
+  add("floor", "--x:-0.6;--y:-2.6;--w:9;--d:9.3;--h:0;--i:0", '<i class="t"></i>');
+  const desk = add("desk", "--x:2.4;--y:-2.1;--w:3;--d:0.9;--h:0.7;--i:1", faces + '<span class="v">교탁</span>');
+  desk.setAttribute("aria-hidden", "true");
+  const head = table.insertRow();
+  ["번호", "줄", "열", "제출 횟수"].forEach((t) => { const th = document.createElement("th"); th.textContent = t; head.appendChild(th); });
+  let n = 0;
+  v.forEach((row, r) => row.forEach((val, c) => {
+    n++;
+    const x = c * 1.7, y = r * 1.7;
+    const h = val == null ? 0 : val * 0.3;
+    const label = val == null ? n + "번 결석" : n + "번 " + val + "회";
+    const el = add(val == null ? "absent" : "", `--x:${x};--y:${y};--h:${h};--i:${2 + Math.round((x + y) * 2)}`, faces + `<span class="v">${label}</span>`);
+    el.tabIndex = 0;
+    el.setAttribute("role", "img");
+    el.setAttribute("aria-label", label);
+    const tr = table.insertRow();
+    [n + "번", r + 1, c + 1, val == null ? "결석" : val + "회"].forEach((t) => { tr.insertCell().textContent = t; });
+  }));
+})();
+</script>
