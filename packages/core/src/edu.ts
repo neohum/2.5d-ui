@@ -4,4 +4,5 @@
  * 엘리먼트를 더하는 방법: API.md "엘리먼트 엔트리 추가".
  */
 export * from "./edu/city.ts";
+export * from "./edu/layers.ts";
 export * from "./edu/map.ts";

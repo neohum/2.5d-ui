@@ -5,6 +5,8 @@
  * (`iso-map …`, `iso-layers …`, `iso-city …`)만 더한다. 코어 클래스·토큰은 여기서 바꾸지 않는다.
  */
 
+/* ---------- iso-city ---------- */
+
 /* iso-city 구역 판: 장식이다(누를 수 없고 호버로 들리지 않는다). 색은 JS 대신 여기서 정한다. */
 iso-city .iso-block[data-district] {
   --iso-c: color-mix(in oklch, var(--iso-floor), var(--iso-ink) 12%);
@@ -126,4 +128,71 @@ iso-map [data-state] > .iso-top {
   stroke: var(--iso-ink-muted);
   stroke-width: 1.5px;
   stroke-dasharray: 4px 3px;
+}
+
+/* ---------- iso-layers ---------- */
+
+/* iso-layers: 펼침은 transform만 움직인다(API.md 알려진 한계 — 값 변경 애니메이션은 컴포지터 밖).
+   펼친 층보다 위 블록(data-up)을 --iso-up(px, 엘리먼트가 쓴다)만큼 올린다. 블록 자체의 translate라
+   면의 호버 들림(면 translate)과 겹치지 않는다. 항목 높이(--iso-h)는 트랜지션 없이 바로 바뀌고, 위 판이
+   들리면서 드러난다. 모션 감소면 --iso-duration이 0ms라 바로 옮긴다. SVG 경로(g)도 같은 규칙이다. */
+iso-layers .iso-block {
+  transition: translate var(--iso-duration) ease-out;
+}
+
+iso-layers .iso-block[data-up] {
+  translate: 0 calc(var(--iso-up) * -1);
+}
+
+/* 장면 크기를 펼침과 무관하게 고정하려고 들린 자리까지 덮는 바닥판. 그리지 않는다. */
+iso-layers .iso-floor {
+  visibility: hidden;
+}
+
+/* 판: 바닥색에 잉크를 섞은 무채색, 펼친 판은 더 진하게. 판 이름은 늘 보이는 옆 라벨 한 열. */
+iso-layers .iso-block[aria-expanded] {
+  --iso-c: color-mix(in oklch, var(--iso-floor), var(--iso-ink) 14%);
+}
+
+iso-layers .iso-block[aria-expanded="true"] {
+  --iso-c: color-mix(in oklch, var(--iso-floor), var(--iso-ink) 30%);
+}
+
+/* 판(w × 2, 높이 0.2) 오른쪽 꼭짓점 + 8px, 판 두께 가운데. 모든 판의 w가 같아 한 열이 된다. */
+iso-layers .iso-label--side {
+  left: calc(var(--iso-w) * 0.866 * var(--iso-u) + 8px);
+  top: calc((var(--iso-w) * 0.5 - 0.1) * var(--iso-u));
+}
+
+/* SVG 경로: 바닥 라벨 자리(앞 바닥 꼭짓점, 줄 가운데)에서 같은 자리로 옮긴다(d = 2). */
+iso-layers .iso-svg .iso-label--side {
+  translate: calc(1.732 * var(--iso-u) + 8px) calc(-1.1 * var(--iso-u) - 6px);
+}
+
+iso-layers .iso-scene .iso-block[aria-expanded="true"] > .iso-label {
+  font-weight: 600;
+  color: var(--iso-ink);
+}
+
+/* 항목 이름: 앞 바닥 꼭짓점 아래가 아니라 판 앞 아래 모서리 아래(0.5 앞 + 판 두께 0.2), 가운데 맞춤.
+   바닥 꼭짓점 자리는 오른쪽 이웃 항목(더 앞이라 위에 그려진다)에 가린다. 이웃 이름과는 18px씩
+   어긋나 겹치지 않는다. CSS·SVG 경로 모두 바닥 라벨 자리에서 같은 거리만큼 옮긴다. 아래 층 블록 위에
+   놓이므로 바닥색 바탕을 깐다(SVG 경로는 같은 색 테두리). */
+iso-layers .iso-label--ground:not(.iso-label--side) {
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: var(--iso-floor);
+  transform: translate(-50%, calc(0.7 * var(--iso-u) + 2px));
+}
+
+iso-layers .iso-svg .iso-label--ground:not(.iso-label--side) {
+  paint-order: stroke;
+  stroke: var(--iso-floor);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+/* 펼친 층이 아닌 항목의 값·이름 라벨은 호버·포커스 때만(숨김 표에는 늘 있다). */
+iso-layers .iso-scene .iso-block:not([data-open], [aria-expanded], :hover, :focus-visible) > .iso-label {
+  opacity: 0;
 }

@@ -101,7 +101,11 @@ test.describe("빌드본", () => {
   test("교육용: 소스와 같은 DOM을 그린다(전체 엔트리, 엘리먼트별 엔트리 둘 다)", async ({ page }) => {
     const src = await render(page, "/packages/core/src/edu.ts", EDU);
     const all = await render(page, "/packages/core/dist/iso-edu.min.js", EDU);
-    const each = await render(page, ["/packages/core/dist/iso-edu-map.min.js", "/packages/core/dist/iso-edu-city.min.js"], EDU);
+    const each = await render(
+      page,
+      ["/packages/core/dist/iso-edu-map.min.js", "/packages/core/dist/iso-edu-city.min.js", "/packages/core/dist/iso-edu-layers.min.js"],
+      EDU,
+    );
     expect(src.length).toBe(10);
     // 장면을 그린 것은 다섯(map·city × css·svg, 한 칸 SVG map). 나머지 다섯은 오류(겹친 칸, 빈 구역)·빈 상태.
     expect(src.filter((h) => h.includes("iso-block")).length).toBe(5);
@@ -136,10 +140,11 @@ test.describe("빌드본", () => {
     expect(await run(["/packages/core/dist/iso-edu-map.min.js", "/packages/core/dist/iso-edu-city.min.js"])).toEqual(src);
   });
 
-  for (const [n, other] of [
-    ["map", "city"],
-    ["city", "map"],
-  ]) {
+  for (const [n, key, files] of [
+    ["map", "IsoMap", ["iso-base.min.js", "iso-edu-map.min.js", "iso-edu-order.min.js"]],
+    ["city", "IsoCity", ["iso-base.min.js", "iso-edu-city.min.js", "iso-edu-order.min.js"]],
+    ["layers", "IsoLayers", ["iso-base.min.js", "iso-edu-layers.min.js"]],
+  ] as const) {
     test(`엘리먼트별 엔트리 edu/${n}: iso-${n}만 등록하고 필요한 파일만 받는다`, async ({ page }) => {
       await page.goto(BLANK);
       const r = await page.evaluate(async (n) => {
@@ -154,22 +159,21 @@ test.describe("빌드본", () => {
         }
       }, n);
       expect(r.defined).toEqual([`iso-${n}`]);
-      expect(r.keys).toEqual([n == "map" ? "IsoMap" : "IsoCity"]);
-      expect(r.files).toEqual(["iso-base.min.js", `iso-edu-${n}.min.js`, "iso-edu-order.min.js"].sort());
-      expect(r.files).not.toContain(`iso-edu-${other}.min.js`);
+      expect(r.keys).toEqual([key]);
+      expect(r.files).toEqual([...files].sort());
     });
   }
 
-  test("코어 + map + city + 전체 엔트리를 한 페이지에서 불러도 공유 코드는 한 번씩만 받는다", async ({ page }) => {
+  test("코어 + map + city + layers + 전체 엔트리를 한 페이지에서 불러도 공유 코드는 한 번씩만 받는다", async ({ page }) => {
     await page.goto(BLANK);
     const files = await page.evaluate(async () => {
-      for (const m of ["iso.min.js", "iso-edu-map.min.js", "iso-edu-city.min.js", "iso-edu.min.js"]) await import(`/packages/core/dist/${m}`);
+      for (const m of ["iso.min.js", "iso-edu-map.min.js", "iso-edu-city.min.js", "iso-edu-layers.min.js", "iso-edu.min.js"]) await import(`/packages/core/dist/${m}`);
       return performance
         .getEntriesByType("resource")
         .map((e) => e.name.split("/").pop()!)
         .filter((f) => f.endsWith(".min.js"))
         .sort();
     });
-    expect(files).toEqual(["iso-base.min.js", "iso-edu-city.min.js", "iso-edu-map.min.js", "iso-edu-order.min.js", "iso-edu.min.js", "iso.min.js"]);
+    expect(files).toEqual(["iso-base.min.js", "iso-edu-city.min.js", "iso-edu-layers.min.js", "iso-edu-map.min.js", "iso-edu-order.min.js", "iso-edu.min.js", "iso.min.js"]);
   });
 });
