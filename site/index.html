@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>소개 · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<link rel="stylesheet" href="./site.css">
+<script type="module" src="/packages/core/src/index.ts"></script>
+<script type="module" src="./site.ts"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html" aria-current="page">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">v0.1 준비 중 · MIT</span>
+  <h1>CSS만으로 그리는 등각 2.5D 데이터 컴포넌트</h1>
+  <p class="lede">WebGL도 캔버스도 없이, 블록의 면 세 개를 2D <code>matrix()</code> 하나씩으로 그립니다. 크롬북처럼 GPU가 약한 기기에서도 가볍게 돌고, 값이 바뀔 때가 아니면 CPU를 쓰지 않습니다.</p>
+</section>
+
+<section aria-labelledby="hero-title">
+  <div class="card">
+    <h2 id="hero-title">앱별 메모리 사용량 <span class="muted">MB · 예시 데이터</span></h2>
+    <div class="example" data-log>
+      <script type="text/html">
+        <iso-bars label="앱별 메모리 사용량 (MB)" data='[{"k":"문서","v":180},{"k":"시트","v":240},{"k":"화상회의","v":410},{"k":"클래스","v":150},{"k":"동영상","v":320},{"k":"그림판","v":90}]'></iso-bars>
+      </script>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="why">
+  <h2 id="why">이렇게 만듭니다</h2>
+  <ul>
+    <li><b>2D 변환만.</b> <code>preserve-3d</code>, 캔버스, 렌더 루프를 쓰지 않습니다.</li>
+    <li><b>색 하나로 세 면.</b> 옆면 음영은 <code>color-mix(in oklch)</code>로 만들어, <code>--iso-c</code> 하나만 바꾸면 블록 전체가 바뀝니다.</li>
+    <li><b>텍스트는 DOM.</b> 값과 이름은 일반 텍스트라 선택·복사·번역·스크린 리더가 그대로 동작합니다. 모든 값을 담은 숨김 표도 함께 만듭니다.</li>
+    <li><b>테마와 동작 줄이기.</b> 다크 모드(<code>prefers-color-scheme</code>, <code>data-theme</code>)와 <code>prefers-reduced-motion</code>을 토큰 단계에서 따릅니다.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="install">
+  <h2 id="install">설치</h2>
+  <p class="note">아직 공개된 패키지가 없습니다. <b>npm 패키지 이름은 정해지지 않았고(TBD)</b>, 아래 이름과 CDN 주소는 자리 표시용입니다. 지금은 저장소를 받아 소스에서 바로 불러 쓰세요.</p>
+  <pre data-copy><code>&lt;!-- 소스에서 바로 (지금 쓸 수 있는 방법) --&gt;
+&lt;link rel="stylesheet" href="/packages/core/src/css/index.css"&gt;
+&lt;script type="module" src="/packages/core/src/index.ts"&gt;&lt;/script&gt;
+
+&lt;!-- 공개 뒤 (자리 표시: 이름·주소 미정) --&gt;
+npm install &lt;패키지-이름-미정&gt;
+&lt;link rel="stylesheet" href="https://cdn.example/&lt;패키지-이름-미정&gt;/iso.min.css"&gt;
+&lt;script type="module" src="https://cdn.example/&lt;패키지-이름-미정&gt;/iso.min.js"&gt;&lt;/script&gt;</code></pre>
+</section>
+
+<section aria-labelledby="components">
+  <h2 id="components">구성 요소</h2>
+  <ul class="links">
+    <li><a class="card" href="primitives.html"><b>CSS 프리미티브</b><span>JS 없이 블록·바닥판·라벨을 직접 배치</span></a></li>
+    <li><a class="card" href="bars.html"><b>&lt;iso-bars&gt;</b><span>한 줄 막대</span></a></li>
+    <li><a class="card" href="stack.html"><b>&lt;iso-stack&gt;</b><span>기둥 안에 계열을 쌓는 적층 막대</span></a></li>
+    <li><a class="card" href="heatmap.html"><b>&lt;iso-heatmap&gt;</b><span>행×열 격자, 셀 높이로 값</span></a></li>
+    <li><a class="card" href="ledger.html"><b>&lt;iso-ledger&gt;</b><span>장부처럼 쌓은 기록, 한 장을 앞으로</span></a></li>
+    <li><a class="card" href="kpi.html"><b>&lt;iso-kpi&gt;</b><span>지표 하나를 채움 높이로</span></a></li>
+    <li><a class="card" href="playground.html"><b>플레이그라운드</b><span>JSON과 속성을 바꿔 가며 바로 확인</span></a></li>
+  </ul>
+</section>
+
+<section aria-labelledby="templates">
+  <h2 id="templates">템플릿</h2>
+  <p class="muted">여러 컴포넌트를 함께 쓴 화면 예시입니다. 모든 값은 예시 데이터입니다.</p>
+  <ul class="links">
+    <li><a class="card" href="tpl-resources.html"><b>자원 대시보드</b><span>기기 자원 사용량을 한 화면에</span></a></li>
+    <li><a class="card" href="tpl-kpi.html"><b>KPI 보드</b><span>핵심 지표 여섯 개와 비교 막대</span></a></li>
+    <li><a class="card" href="tpl-versions.html"><b>버전 기록 뷰어</b><span>릴리스 장부에서 한 버전 살펴보기</span></a></li>
+  </ul>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

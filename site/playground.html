@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>플레이그라운드 · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<link rel="stylesheet" href="./site.css">
+<script type="module" src="/packages/core/src/index.ts"></script>
+<script type="module" src="./site.ts"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="playground.html" aria-current="page">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">브라우저만으로</span>
+  <h1>플레이그라운드</h1>
+  <p class="lede">JSON과 속성을 고치면 오른쪽(좁은 화면에서는 아래) 엘리먼트가 바로 바뀝니다. JSON을 일부러 망가뜨리면 엘리먼트의 오류 상태를 볼 수 있습니다.</p>
+</section>
+
+<div class="play">
+  <form class="card" id="play-form" aria-label="입력">
+    <div class="controls">
+      <label>엘리먼트
+        <select id="pg-type">
+          <option value="iso-bars">iso-bars</option>
+          <option value="iso-stack">iso-stack</option>
+          <option value="iso-heatmap">iso-heatmap</option>
+          <option value="iso-ledger">iso-ledger</option>
+          <option value="iso-kpi">iso-kpi</option>
+        </select>
+      </label>
+      <label>max <input id="pg-max" type="number" min="0" step="any" inputmode="decimal" placeholder="데이터 최댓값"></label>
+      <label>unit (px) <input id="pg-unit" type="number" min="1" step="1" inputmode="numeric" placeholder="24"></label>
+      <label>height-units <input id="pg-height-units" type="number" min="0" step="any" inputmode="decimal" placeholder="5"></label>
+      <label>label <input id="pg-label" type="text"></label>
+    </div>
+    <label for="pg-data" id="pg-data-label">data (JSON)</label>
+    <textarea id="pg-data" spellcheck="false" aria-describedby="pg-status"></textarea>
+    <p class="status" id="pg-status" role="status"></p>
+    <button class="btn" type="button" id="pg-reset">예시 데이터로 되돌리기</button>
+  </form>
+
+  <section class="card" aria-labelledby="pg-out">
+    <h2 id="pg-out">결과</h2>
+    <div class="preview" id="pg-stage"></div>
+    <pre data-copy><code id="pg-code"></code></pre>
+  </section>
+</div>
+
+<script type="module" src="./playground.ts"></script>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

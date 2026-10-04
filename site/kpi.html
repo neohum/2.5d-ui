@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iso-kpi · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<link rel="stylesheet" href="./site.css">
+<script type="module" src="/packages/core/src/index.ts"></script>
+<script type="module" src="./site.ts"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html" aria-current="page">iso-kpi</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">Web Component</span>
+  <h1>&lt;iso-kpi&gt;</h1>
+  <p class="lede">지표 하나를 블록의 채움 높이로 보여 줍니다. <code>data</code> 대신 <code>value</code>, <code>max</code>, <code>label</code>, <code>suffix</code> 속성을 씁니다.</p>
+</section>
+
+<section aria-labelledby="ex">
+  <h2 id="ex">예시</h2>
+  <p class="muted">예시 데이터</p>
+  <div class="grid">
+    <div class="card example" data-log>
+      <script type="text/html">
+        <iso-kpi value="72" max="100" suffix="%" label="배터리 평균 잔량"></iso-kpi>
+      </script>
+    </div>
+    <div class="card example">
+      <script type="text/html">
+        <iso-kpi value="318" max="400" suffix="대" label="오늘 접속한 기기"></iso-kpi>
+      </script>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="attrs">
+  <h2 id="attrs">속성</h2>
+  <div class="table"><table>
+    <thead><tr><th>속성</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>value</code></td><td>숫자</td><td>지표 값. 0 이상</td></tr>
+      <tr><td><code>max</code></td><td>숫자</td><td>꽉 찬 높이에 해당하는 값</td></tr>
+      <tr><td><code>label</code></td><td>문자열</td><td>지표 이름이자 접근성 캡션</td></tr>
+      <tr><td><code>suffix</code></td><td>문자열</td><td>값 뒤에 붙는 단위(예: <code>%</code>, <code>대</code>)</td></tr>
+      <tr><td><code>unit</code></td><td>숫자(px)</td><td><code>--iso-u</code> 값. 기본 24</td></tr>
+      <tr><td><code>height-units</code></td><td>숫자</td><td>꽉 찬 높이. 기본 5</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section aria-labelledby="events">
+  <h2 id="events">이벤트</h2>
+  <p>블록을 누르거나 Enter·Space를 누르면 공통 규격대로 <code>iso-select</code>가 버블링됩니다. 지표 상세 화면으로 넘어가는 데 쓰세요.</p>
+  <pre data-copy><code>document.querySelector("iso-kpi").addEventListener("iso-select", () => {
+  location.href = "/battery";
+});</code></pre>
+</section>
+
+<section aria-labelledby="a11y">
+  <h2 id="a11y">접근성</h2>
+  <ul>
+    <li><code>label</code>을 꼭 지정하세요. 값·단위와 함께 블록의 접근 가능한 이름이 됩니다.</li>
+    <li>채움 높이만으로는 정확한 값을 읽기 어려우므로 값 라벨이 함께 보입니다.</li>
+  </ul>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

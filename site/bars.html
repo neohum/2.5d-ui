@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iso-bars · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<link rel="stylesheet" href="./site.css">
+<script type="module" src="/packages/core/src/index.ts"></script>
+<script type="module" src="./site.ts"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html" aria-current="page">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">Web Component</span>
+  <h1>&lt;iso-bars&gt;</h1>
+  <p class="lede">항목마다 막대 하나를 한 줄로 세웁니다. 막대는 왼쪽 아래 방향으로 늘어서므로 이름 라벨이 다음 막대에 가려지지 않습니다.</p>
+</section>
+
+<section aria-labelledby="ex">
+  <h2 id="ex">예시</h2>
+  <div class="card example" data-log>
+    <script type="text/html">
+      <iso-bars label="앱별 메모리 사용량 (MB)" data='[{"k":"문서","v":180},{"k":"시트","v":240},{"k":"화상회의","v":410,"c":"#e0a800"},{"k":"클래스","v":150},{"k":"동영상","v":320},{"k":"그림판","v":90}]'></iso-bars>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="ex-scale">
+  <h2 id="ex-scale">축척 고정과 크기</h2>
+  <p class="muted"><code>max="500"</code>이면 500이 꽉 찬 높이(<code>height-units</code>)가 되어, 데이터가 바뀌어도 여러 그래프의 축척이 같습니다. <code>max</code>를 넘는 값은 꽉 찬 높이로 잘립니다.</p>
+  <div class="card example">
+    <script type="text/html">
+      <iso-bars max="500" height-units="4" unit="20" label="분기별 신규 기기 (대)" data='[{"k":"1분기","v":120},{"k":"2분기","v":260},{"k":"3분기","v":500}]'></iso-bars>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="ex-update">
+  <h2 id="ex-update">값 바꾸기</h2>
+  <p class="muted">같은 항목의 값만 바뀌면 블록을 새로 만들지 않고 <code>--iso-h</code>만 바꿔 높이가 부드럽게 변합니다(동작 줄이기 설정에서는 바로 바뀝니다).</p>
+  <div class="card">
+    <iso-bars id="live" max="100" label="교실별 출석률 (%)" data='[{"k":"1반","v":92},{"k":"2반","v":85},{"k":"3반","v":97},{"k":"4반","v":78}]'></iso-bars>
+    <button class="btn" type="button" id="shuffle">다른 날 출석률 보기</button>
+  </div>
+  <pre data-copy><code>const el = document.querySelector("iso-bars");
+el.setAttribute("data", JSON.stringify([{ k: "1반", v: 88 }, { k: "2반", v: 91 }]));</code></pre>
+</section>
+
+<section aria-labelledby="attrs">
+  <h2 id="attrs">속성</h2>
+  <div class="table"><table>
+    <thead><tr><th>속성</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>data</code></td><td>JSON</td><td>막대 배열. 잘못된 JSON이면 그리지 않고 <code>console.error</code> 후 오류 문구를 보인다</td></tr>
+      <tr><td><code>max</code></td><td>숫자</td><td>축척 최댓값. 없으면 데이터 최댓값</td></tr>
+      <tr><td><code>unit</code></td><td>숫자(px)</td><td><code>--iso-u</code> 값. 기본 24</td></tr>
+      <tr><td><code>height-units</code></td><td>숫자</td><td>최댓값이 차지하는 블록 높이. 기본 5</td></tr>
+      <tr><td><code>label</code></td><td>문자열</td><td>접근성 캡션(<code>aria-label</code>과 숨김 표 <code>caption</code>)</td></tr>
+    </tbody>
+  </table></div>
+  <h3>data 항목</h3>
+  <div class="table"><table>
+    <thead><tr><th>키</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>k</code></td><td>문자열 · 필수</td><td>항목 이름(바닥 라벨)</td></tr>
+      <tr><td><code>v</code></td><td>0 이상 숫자 · 필수</td><td>값. 음수면 그래프 전체를 그리지 않는다</td></tr>
+      <tr><td><code>c</code></td><td>CSS 색 · 선택</td><td>이 막대의 색. 없으면 범주 팔레트 순서</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section aria-labelledby="events">
+  <h2 id="events">이벤트</h2>
+  <p>블록을 누르거나 포커스 후 Enter·Space를 누르면 <code>iso-select</code>가 버블링됩니다. <code>detail</code>은 <code>{ index, item }</code>입니다.</p>
+  <pre data-copy><code>document.querySelector("iso-bars").addEventListener("iso-select", (e) => {
+  const { index, item } = e.detail;
+  console.log(index, item.k, item.v);
+});</code></pre>
+</section>
+
+<section aria-labelledby="states">
+  <h2 id="states">빈 상태와 오류</h2>
+  <p class="muted">데이터가 비면 "표시할 데이터가 없습니다", JSON이 잘못됐거나 값이 음수면 "데이터를 표시할 수 없습니다"를 보입니다. 오류 상태는 <a href="playground.html">플레이그라운드</a>에서 JSON을 망가뜨려 확인할 수 있습니다.</p>
+  <div class="card example">
+    <script type="text/html">
+      <iso-bars data="[]"></iso-bars>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="a11y">
+  <h2 id="a11y">접근성</h2>
+  <ul>
+    <li>장면은 <code>role="group"</code>이고 <code>label</code>이 그 이름이 됩니다. 꼭 지정하세요.</li>
+    <li>막대마다 <code>tabindex="0"</code>, <code>role="button"</code>, <code>aria-label="이름: 값"</code>이 붙어 Tab으로 차례로 옮겨 다닐 수 있습니다.</li>
+    <li>모든 값을 담은 숨김 표(<code>.iso-sr-only</code>)를 함께 만들어 스크린 리더가 표로 읽을 수 있습니다.</li>
+    <li>값을 바꿔 다시 그려도 포커스는 그 막대에 남습니다.</li>
+  </ul>
+</section>
+
+<script type="module">
+  const el = document.getElementById("live");
+  const days = [
+    [92, 85, 97, 78],
+    [88, 91, 80, 95],
+    [76, 83, 90, 89],
+  ];
+  let day = 0;
+  document.getElementById("shuffle").addEventListener("click", () => {
+    day = (day + 1) % days.length;
+    el.setAttribute("data", JSON.stringify(days[day].map((v, i) => ({ k: i + 1 + "반", v }))));
+  });
+</script>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

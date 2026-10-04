@@ -1,0 +1,145 @@
+/* 문서 사이트 꾸밈만. 블록·색·글자색은 코어 토큰(--iso-*)을 그대로 쓴다. */
+:root {
+  color-scheme: light;
+  --bg: #f2f4f7;
+  --surface: #fff;
+  --line: #d4dbe3;
+  --accent: #2c64c9;
+  --bad: #b42335;
+  --f-body: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  --f-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #11151b;
+    --surface: #19202a;
+    --line: #2b3542;
+    --accent: #79a3f2;
+    --bad: #f08a98;
+  }
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #11151b;
+  --surface: #19202a;
+  --line: #2b3542;
+  --accent: #79a3f2;
+  --bad: #f08a98;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--iso-ink);
+  font: 16px/1.7 var(--f-body);
+}
+
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+h1, h2, h3 { line-height: 1.25; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.9rem, 6vw, 2.8rem); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: 1.3rem; }
+h3 { font-size: 1.02rem; }
+p { margin: 0; }
+ul { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; }
+code { font-family: var(--f-mono); font-size: 0.88em; }
+:not(pre) > code { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere; }
+
+/* ---------- 머리글 ---------- */
+.top {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px;
+  padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--surface);
+}
+.brand { font-weight: 800; color: var(--iso-ink); text-decoration: none; letter-spacing: -0.01em; }
+.top nav { display: flex; flex-wrap: wrap; gap: 0 12px; font-size: 0.88rem; flex: 1; }
+.top nav a { color: var(--iso-ink-muted); text-decoration: none; }
+.top nav a:hover, .top nav a[aria-current="page"] { color: var(--iso-ink); text-decoration: underline; text-underline-offset: 4px; }
+@media (max-width: 600px) {
+  .top { justify-content: space-between; }
+  .top nav { order: 3; flex-basis: 100%; }
+}
+.theme { font: inherit; font-size: 0.8rem; color: var(--iso-ink); background: none; border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; cursor: pointer; }
+
+/* ---------- 본문 ---------- */
+main { max-width: 960px; margin-inline: auto; padding: 32px 16px 80px; display: grid; gap: 40px; }
+section { display: grid; gap: 14px; min-width: 0; }
+.head { display: grid; gap: 10px; }
+.eyebrow { font-family: var(--f-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--iso-ink-muted); }
+.lede { font-size: 1.08rem; color: var(--iso-ink-muted); }
+.muted { color: var(--iso-ink-muted); font-size: 0.9rem; }
+.note { border-left: 3px solid var(--accent); padding: 4px 0 4px 12px; font-size: 0.92rem; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 10px; min-width: 0; }
+/* 그리드 항목이 넓은 장면·코드에 밀려 페이지 폭을 넘지 않게 한다(넘치는 쪽이 스스로 스크롤). */
+:is(main, section, .card, .grid, .play) > * { min-width: 0; }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.links { list-style: none; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+.links a { display: grid; gap: 2px; height: 100%; text-decoration: none; color: inherit; }
+.links a:hover { border-color: var(--accent); }
+.links b { color: var(--accent); }
+.links span { font-size: 0.88rem; color: var(--iso-ink-muted); }
+
+/* 예시: 엘리먼트 장면은 데이터로 폭이 정해지므로 넘치면 이 상자 안에서만 가로로 스크롤한다. */
+.preview { overflow-x: auto; display: grid; justify-items: center; padding-block: 4px; }
+.preview > * { max-width: none; }
+:is(iso-bars, iso-stack, iso-heatmap, iso-ledger, iso-kpi) { display: block; }
+
+/* 아직 등록되지 않은 엘리먼트(다른 카드에서 구현 중)는 자리에 안내를 보인다. 등록되면 사라진다. */
+:is(iso-heatmap, iso-ledger, iso-kpi):not(:defined)::before {
+  content: "이 엘리먼트는 아직 이 빌드에 등록되지 않았습니다";
+  display: block; padding: 12px 16px; font-size: 13px; color: var(--iso-ink-muted);
+  border: 1px dashed var(--line); border-radius: 8px;
+}
+
+.log { font-size: 0.82rem; color: var(--iso-ink-muted); min-height: 1.7em; overflow-wrap: anywhere; }
+
+/* ---------- 코드 ---------- */
+.code { position: relative; min-width: 0; }
+pre {
+  margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto; font-family: var(--f-mono); font-size: 0.8rem; line-height: 1.6;
+}
+/* 긴 데이터 한 줄도 접어서 보이고, 복사 버튼 자리를 비운다. */
+.code pre { white-space: pre-wrap; overflow-wrap: anywhere; padding-right: 64px; }
+.copy {
+  position: absolute; top: 8px; right: 8px; font: inherit; font-size: 0.75rem; color: var(--iso-ink);
+  background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0 8px; cursor: pointer;
+}
+
+/* ---------- 표 ---------- */
+.table { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+th, td { text-align: left; vertical-align: top; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 0.75rem; color: var(--iso-ink-muted); font-weight: 600; white-space: nowrap; }
+td:first-child { white-space: nowrap; }
+
+/* ---------- 입력 ---------- */
+label { display: grid; gap: 4px; font-size: 0.85rem; color: var(--iso-ink-muted); }
+input, select, textarea {
+  font: inherit; font-size: 0.9rem; color: var(--iso-ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; min-width: 0;
+}
+textarea { font-family: var(--f-mono); font-size: 0.8rem; line-height: 1.5; min-height: 260px; resize: vertical; width: 100%; }
+textarea[aria-invalid="true"] { border-color: var(--bad); }
+.controls { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); }
+.play { display: grid; gap: 16px; align-items: start; }
+@media (min-width: 860px) { .play { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.status { font-size: 0.85rem; min-height: 1.5em; }
+.status.bad { color: var(--bad); }
+.btn { font: inherit; font-size: 0.85rem; color: var(--iso-ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 12px; cursor: pointer; justify-self: start; }
+
+/* ---------- 템플릿 ---------- */
+.badge { justify-self: start; font-size: 0.75rem; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; color: var(--iso-ink-muted); }
+.kpis { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+.versions { list-style: none; padding: 0; display: grid; gap: 4px; }
+.versions button { width: 100%; text-align: left; font: inherit; font-size: 0.9rem; color: var(--iso-ink); background: none; border: 1px solid transparent; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+.versions button[aria-pressed="true"] { border-color: var(--line); background: var(--bg); font-weight: 600; }
+
+footer { border-top: 1px solid var(--line); padding: 16px; font-size: 0.82rem; color: var(--iso-ink-muted); text-align: center; }
