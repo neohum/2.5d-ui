@@ -1,0 +1,386 @@
+<title>2.5d-ui 구축 계획</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 단일 읽기 컬럼(약 68ch) + 표·데모만 넓게. 등각 블록 데모가 첫 화면에서 개념을 증명한다. */
+:root {
+  --bg: #f2f4f7;
+  --surface: #ffffff;
+  --ink: #18212c;
+  --muted: #586474;
+  --line: #d4dbe3;
+  --accent: #2c64c9;
+  --block: #3f7be0;
+  --floor: #dfe5ec;
+  --ok: #1f7a4d;
+  --warn: #a35a00;
+  --f-display: "Black Han Sans", "IBM Plex Sans KR", "Apple SD Gothic Neo", sans-serif;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #11151b; --surface: #19202a; --ink: #e5eaf0; --muted: #9aa6b5;
+    --line: #2b3542; --accent: #79a3f2; --block: #4f86e8; --floor: #222b37;
+    --ok: #5cc28e; --warn: #e3a248;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #11151b; --surface: #19202a; --ink: #e5eaf0; --muted: #9aa6b5;
+  --line: #2b3542; --accent: #79a3f2; --block: #4f86e8; --floor: #222b37;
+  --ok: #5cc28e; --warn: #e3a248;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.7;
+  padding-inline: 20px;
+}
+main { max-width: 68ch; margin-inline: auto; padding-block: 48px 96px; display: grid; gap: 56px; }
+.wide { width: min(1040px, calc(100vw - 40px)); justify-self: center; }
+
+h1, h2, h3 { text-wrap: balance; line-height: 1.25; margin: 0; }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -0.01em; }
+h2 { font-size: 1.45rem; font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 700; }
+p { margin: 0; }
+section { display: grid; gap: 16px; }
+.eyebrow { font-family: var(--f-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 1.12rem; color: var(--muted); }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 20px; font-family: var(--f-mono); font-size: 0.8rem; color: var(--muted); }
+code, .mono { font-family: var(--f-mono); font-size: 0.9em; }
+:not(pre) > code { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+ul, ol { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header.top { display: grid; gap: 14px; }
+
+/* ---------- 데모: 순수 CSS 등각 블록 (본 계획의 핵심 가설) ---------- */
+.demo { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 12px; }
+.demo-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline; }
+.demo-head small { font-family: var(--f-mono); color: var(--muted); font-size: 0.75rem; }
+.iso { --u: 26px; position: relative; height: 310px; overflow: hidden; }
+.iso-stage { position: absolute; left: 50%; top: 168px; margin-left: -80px; }
+.blk {
+  --w: 1; --d: 1; --h: 1; --x: 0; --y: 0; --i: 0; --c: var(--block);
+  position: absolute;
+  left: calc((var(--x) - var(--y)) * 0.866 * var(--u));
+  top: calc((var(--x) + var(--y)) * 0.5 * var(--u));
+  z-index: var(--i);
+  transition: transform 0.18s ease-out;
+}
+.blk > i { position: absolute; left: 0; top: 0; display: block; transform-origin: 0 0; }
+.blk .t {
+  width: calc(var(--w) * var(--u)); height: calc(var(--d) * var(--u));
+  background: var(--c);
+  transform: translateY(calc(var(--h) * var(--u) * -1)) matrix(0.866, 0.5, -0.866, 0.5, 0, 0);
+}
+.blk .l {
+  width: calc(var(--w) * var(--u)); height: calc(var(--h) * var(--u));
+  background: color-mix(in oklch, var(--c), black 18%);
+  transform: translate(calc(var(--d) * var(--u) * -0.866), calc((var(--d) * 0.5 - var(--h)) * var(--u))) matrix(0.866, 0.5, 0, 1, 0, 0);
+}
+.blk .r {
+  width: calc(var(--d) * var(--u)); height: calc(var(--h) * var(--u));
+  background: color-mix(in oklch, var(--c), black 34%);
+  transform: translate(calc(var(--w) * var(--u) * 0.866), calc((var(--w) * 0.5 - var(--h)) * var(--u))) matrix(-0.866, 0.5, 0, 1, 0, 0);
+}
+.blk .v, .blk .k {
+  position: absolute; white-space: nowrap; font-family: var(--f-mono); font-size: 11px; line-height: 1;
+  font-variant-numeric: tabular-nums; color: var(--ink);
+}
+.blk .v { left: calc((var(--w) - var(--d)) * 0.433 * var(--u)); top: calc(((var(--w) + var(--d)) * 0.25 - var(--h)) * var(--u)); transform: translate(-50%, -150%); font-weight: 500; }
+.blk .k { left: calc((var(--w) - var(--d)) * 0.866 * var(--u)); top: calc((var(--w) + var(--d)) * 0.5 * var(--u)); transform: translate(-30%, 6px); color: var(--muted); }
+.blk:not(.floor):hover { transform: translateY(-6px); }
+.blk.floor { pointer-events: none; }
+.blk.floor .t { background: var(--floor); }
+.blk.hot { --c: #d9772b; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.demo-note { font-size: 0.88rem; color: var(--muted); }
+
+/* ---------- 표 ---------- */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; min-width: 620px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: color-mix(in oklch, var(--surface), var(--bg) 60%); }
+td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill { display: inline-block; font-family: var(--f-mono); font-size: 0.72rem; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.pill.ok { color: var(--ok); }
+.pill.warn { color: var(--warn); }
+.pill.mute { color: var(--muted); }
+
+/* ---------- 원칙 목록 ---------- */
+.rules { list-style: none; padding: 0; display: grid; gap: 14px; }
+.rules li { display: grid; gap: 2px; padding-left: 14px; border-left: 2px solid var(--line); }
+.rules b { font-weight: 700; }
+
+/* ---------- 단계(실제 순서가 있는 내용이므로 번호 사용) ---------- */
+.phases { list-style: none; padding: 0; display: grid; gap: 0; counter-reset: ph; }
+.phase { display: grid; grid-template-columns: 64px 1fr; gap: 16px; padding-block: 20px; border-top: 1px solid var(--line); }
+.phase:last-child { border-bottom: 1px solid var(--line); }
+.phase .no { font-family: var(--f-mono); font-size: 0.85rem; color: var(--accent); padding-top: 3px; }
+.phase .body { display: grid; gap: 8px; }
+.phase .dur { font-family: var(--f-mono); font-size: 0.78rem; color: var(--muted); }
+.phase .ac { font-size: 0.9rem; }
+.phase .ac b { font-family: var(--f-mono); font-size: 0.78rem; font-weight: 500; color: var(--muted); margin-right: 6px; }
+
+pre { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-family: var(--f-mono); font-size: 0.82rem; line-height: 1.6; }
+
+.callout { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: grid; gap: 8px; }
+
+@media (max-width: 520px) {
+  .phase { grid-template-columns: 1fr; gap: 6px; }
+  .iso { --u: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .blk { transition: none; }
+  .blk:not(.floor):hover { transform: none; }
+}
+</style>
+
+<main>
+  <header class="top">
+    <span class="eyebrow">계획서 · v0.2 · 2026-10-04</span>
+    <h1>2.5d-ui 구축 계획</h1>
+    <p class="lede">크롬북 같은 저사양 기기에서 WebGL 없이 CSS만으로 동작하는, 데이터 표현용 등각(아이소메트릭) 2.5D 컴포넌트 라이브러리를 만든다.</p>
+    <div class="meta"><span>저장소 2.5d-ui</span><span>대상 런타임 ChromeOS Chrome 120+</span><span>상태 승인 · 라이선스 MIT</span></div>
+  </header>
+
+  <figure class="demo wide" style="margin:0">
+    <div class="demo-head">
+      <h3>앱별 메모리 사용량 <span class="mono" style="font-weight:400;color:var(--muted)">MB</span></h3>
+      <small>예시 데이터 · 순수 CSS · JS 0줄</small>
+    </div>
+    <div class="iso" role="img" aria-label="앱별 메모리 사용량 등각 막대 그래프. 아래 표와 같은 값.">
+      <div class="iso-stage">
+        <div class="blk floor" style="--x:-0.5;--y:-0.5;--w:8.9;--d:2;--h:0;--i:0"><i class="t"></i></div>
+        <div class="blk" style="--x:0;--h:1.8;--i:1"><i class="l"></i><i class="r"></i><i class="t"></i><span class="v">180</span><span class="k">문서</span></div>
+        <div class="blk" style="--x:1.4;--h:2.4;--i:2"><i class="l"></i><i class="r"></i><i class="t"></i><span class="v">240</span><span class="k">시트</span></div>
+        <div class="blk hot" style="--x:2.8;--h:4.1;--i:3"><i class="l"></i><i class="r"></i><i class="t"></i><span class="v">410</span><span class="k">화상회의</span></div>
+        <div class="blk" style="--x:4.2;--h:1.5;--i:4"><i class="l"></i><i class="r"></i><i class="t"></i><span class="v">150</span><span class="k">클래스</span></div>
+        <div class="blk" style="--x:5.6;--h:3.2;--i:5"><i class="l"></i><i class="r"></i><i class="t"></i><span class="v">320</span><span class="k">동영상</span></div>
+        <div class="blk" style="--x:7;--h:0.9;--i:6"><i class="l"></i><i class="r"></i><i class="t"></i><span class="v">90</span><span class="k">그림판</span></div>
+      </div>
+    </div>
+    <table class="sr-only">
+      <caption>앱별 메모리 사용량 (예시, MB)</caption>
+      <tr><th>앱</th><th>MB</th></tr>
+      <tr><td>문서</td><td>180</td></tr><tr><td>시트</td><td>240</td></tr><tr><td>화상회의</td><td>410</td></tr>
+      <tr><td>클래스</td><td>150</td></tr><tr><td>동영상</td><td>320</td></tr><tr><td>그림판</td><td>90</td></tr>
+    </table>
+    <figcaption class="demo-note">이 그래프가 P0에서 검증할 기본 가설이다. 블록 하나는 DOM 4개(래퍼와 면 3개)이고, 2D <code>matrix()</code> 변환과 <code>color-mix()</code> 3단 음영만 쓴다. 3D 합성, 캔버스, 렌더 루프를 쓰지 않는다. 블록에 마우스를 올리면 들린다. 값 텍스트는 일반 DOM이라 선택·복사·번역이 되고, 스크린 리더는 숨김 표를 읽는다.</figcaption>
+  </figure>
+
+  <section>
+    <span class="eyebrow">배경</span>
+    <h2>왜 만드는가</h2>
+    <p>지금은 데이터 시각화 라이브러리(D3, ECharts, Recharts)와 3D 라이브러리(Three.js, Spline) 사이가 비어 있다. 2D 차트는 계층·누적·부피를 표현하는 데 한계가 있다. 3D 차트는 WebGL 스택을 통째로 가져오기 때문에 크롬북에서 무겁다. 2.5D 도형 엔진으로는 Isomer, Obelisk.js가 있지만 그림만 그리는 도구이고 데이터 바인딩, 인터랙션, 접근성 기능이 없다.</p>
+    <p>그래서 새 브라우저나 렌더링 엔진을 만들지 않는다. 크롬에 이미 최적화되어 있는 2D 래스터 파이프라인 위에 등각 투영 공식을 CSS로 올리는 방식을 택한다.</p>
+  </section>
+
+  <section>
+    <span class="eyebrow">범위</span>
+    <h2>목표와 비목표</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>만든다</th><th>만들지 않는다</th></tr></thead>
+        <tbody>
+          <tr><td>고정 등각(30°) 투영의 블록, 바닥, 라벨 프리미티브</td><td>자유 회전 카메라, 원근 투영</td></tr>
+          <tr><td>데이터 속성만 넣으면 그려지는 컴포넌트(막대, 적층, 히트맵, 원장)</td><td>범용 3D 모델(OBJ, glTF) 로더</td></tr>
+          <tr><td>CSS 단독 사용 + 선택형 경량 JS(Web Components)</td><td>WebGL, WebGPU, 실시간 조명·셰이더</td></tr>
+          <tr><td>크롬북 기준 성능 예산과 자동 측정</td><td>새 웹브라우저 또는 렌더링 엔진</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">원칙</span>
+    <h2>설계 원칙</h2>
+    <ul class="rules">
+      <li><b>투영은 고정한다.</b> 화면 좌표는 <code>X = (x − y)·0.866</code>, <code>Y = (x + y)·0.5 − z</code>로만 계산한다. 삼각함수와 프레임마다 하는 깊이 정렬이 없다.</li>
+      <li><b>2D 변환만 쓴다.</b> 각 면은 <code>matrix()</code> 하나로 그린다. <code>preserve-3d</code>는 쓰지 않아 합성 레이어가 늘지 않는다.</li>
+      <li><b>음영은 3단 고정이다.</b> 윗면은 기본색, 왼쪽 면은 18%, 오른쪽 면은 34% 어둡게 <code>color-mix(in oklch)</code>로 만든다. 색 하나(<code>--c</code>)만 바꾸면 블록 전체가 바뀐다.</li>
+      <li><b>쉴 때는 CPU를 쓰지 않는다.</b> 렌더 루프가 없다. 값이 바뀔 때만 CSS 트랜지션이 돌고 멈춘다.</li>
+      <li><b>텍스트는 DOM으로 둔다.</b> 값과 라벨은 기울이지 않은 일반 텍스트다. 데이터 그림마다 숨김 표나 <code>aria</code> 설명을 붙인다.</li>
+      <li><b>선언형으로 사용한다.</b> 사용자가 기하 계산을 하지 않는다. <code>&lt;iso-bars data="…"&gt;</code>나 <code>style="--h:3"</code> 수준에서 끝낸다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <span class="eyebrow">P0 비교 대상</span>
+    <h2>렌더링 방식 후보</h2>
+    <p>위 데모는 A안이다. 최종 결정은 P0 벤치마크 결과로 내리며, 블록 수가 아주 많을 때를 위해 D안을 보조 경로로 남겨 둔다.</p>
+  </section>
+  <div class="table-wrap wide">
+    <table>
+      <thead><tr><th>안</th><th>방식</th><th>블록당 비용</th><th>장점</th><th>위험</th><th>판단</th></tr></thead>
+      <tbody>
+        <tr><td class="num">A</td><td>CSS 2D <code>matrix()</code> 면 3개</td><td class="num">DOM 4</td><td>JS 불필요, 텍스트·이벤트 그대로, 합성 비용 낮음</td><td>노드 수 증가, 면 사이 서브픽셀 틈</td><td><span class="pill ok">기본 가설</span></td></tr>
+        <tr><td class="num">B</td><td>CSS 3D <code>preserve-3d</code> 큐브</td><td class="num">DOM 4–7</td><td>회전 연출 가능</td><td>합성 레이어 폭증, 저사양 GPU 없는 환경에서 느림</td><td><span class="pill warn">비교만</span></td></tr>
+        <tr><td class="num">C</td><td>JS로 좌표 계산 → SVG <code>polygon</code></td><td class="num">SVG 3</td><td>확대해도 선명, 대량 렌더에 유리할 수 있음</td><td>JS 필수, CSS 단독 사용 불가</td><td><span class="pill mute">후보</span></td></tr>
+        <tr><td class="num">D</td><td>Canvas 2D 일괄 그리기</td><td class="num">픽셀</td><td>수천 블록에서도 노드 0</td><td>텍스트·접근성·이벤트 직접 구현</td><td><span class="pill mute">대량 전용</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section>
+    <span class="eyebrow">성능 예산</span>
+    <h2>크롬북 기준 목표치</h2>
+    <p>기준 기기는 Intel Celeron N 계열이나 MediaTek ARM, 4GB RAM 크롬북이다. 실기기가 없으면 DevTools CPU 6배 스로틀로 대체 측정한다. 아래 수치는 목표이며 P0에서 측정한 뒤 조정한다.</p>
+  </section>
+  <div class="table-wrap wide">
+    <table>
+      <thead><tr><th>항목</th><th>예산</th><th>측정 방법</th></tr></thead>
+      <tbody>
+        <tr><td>코어 CSS 크기</td><td class="num">≤ 6 KB gzip</td><td><code>size-limit</code>, CI에서 초과 시 실패</td></tr>
+        <tr><td>선택형 JS(Web Components)</td><td class="num">≤ 4 KB gzip</td><td><code>size-limit</code></td></tr>
+        <tr><td>유휴 상태 CPU</td><td class="num">0 %</td><td>Performance 트레이스 10초, 스크립트·페인트 0건</td></tr>
+        <tr><td>호버·값 변경 애니메이션</td><td class="num">60 fps</td><td>CPU 6× 스로틀, 프레임 드랍 ≤ 5%</td></tr>
+        <tr><td>블록 500개 첫 렌더</td><td class="num">≤ 100 ms</td><td>Playwright + <code>performance.measure</code></td></tr>
+        <tr><td>추가 메모리</td><td class="num">≤ 5 MB</td><td>블록 500개 페이지의 JS 힙 + DOM 비교</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section>
+    <span class="eyebrow">구성</span>
+    <h2>컴포넌트 로드맵</h2>
+    <h3>프리미티브 (CSS만)</h3>
+    <ul>
+      <li><code>.iso-scene</code>: 단위 크기(<code>--u</code>)와 원점을 정하는 컨테이너</li>
+      <li><code>.iso-block</code>: <code>--x --y --w --d --h --c</code>로 정의하는 직육면체</li>
+      <li><code>.iso-floor</code>, <code>.iso-grid</code>: 바닥판과 격자선</li>
+      <li><code>.iso-label</code>: 윗면 중심이나 바닥 모서리에 붙는 기울이지 않은 라벨</li>
+    </ul>
+    <h3>데이터 컴포넌트</h3>
+    <ul>
+      <li><b>막대(DataTower)</b>: 값에 비례한 높이, 최댓값 기준 축척, 강조 색</li>
+      <li><b>적층 막대</b>: 한 기둥 안에 여러 계열을 쌓음(용량, 비용 구성)</li>
+      <li><b>등각 히트맵</b>: 행 × 열 격자의 셀 높이로 세 번째 변수를 표현</li>
+      <li><b>적층 원장</b>: 버전·이력을 종이 묶음처럼 쌓고, 선택한 시점을 앞으로 빼냄</li>
+      <li><b>볼륨 KPI 박스</b>: 한 지표를 채움 높이로 보여 주는 카드</li>
+    </ul>
+    <h3>템플릿</h3>
+    <ul>
+      <li>리소스 사용 대시보드, KPI 보드, 버전 이력 뷰어</li>
+    </ul>
+    <h3>패키지 구성</h3>
+    <ul>
+      <li><code>packages/core</code>: 코어 CSS와 Web Components. 프레임워크 의존성 없음</li>
+      <li><code>packages/react</code>: <code>IsoBars</code>, <code>IsoStack</code>, <code>IsoHeatmap</code>, <code>IsoLedger</code>, <code>IsoKpi</code> React 컴포넌트와 타입</li>
+    </ul>
+    <p>사용 형태는 세 가지이며 모두 같은 CSS 위에서 동작한다.</p>
+    <pre>&lt;!-- CSS만 --&gt;
+&lt;div class="iso-scene"&gt;
+  &lt;div class="iso-block" style="--x:0; --h:3.2; --c:var(--iso-blue)"&gt;…&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 선택형 JS: 데이터만 전달 --&gt;
+&lt;iso-bars max="500" data='[{"k":"문서","v":180},{"k":"화상회의","v":410}]'&gt;&lt;/iso-bars&gt;
+
+// React 래퍼(별도 패키지)
+&lt;IsoBars max={500} data={[{ k: "문서", v: 180 }, { k: "화상회의", v: 410 }]} /&gt;</pre>
+  </section>
+
+  <section>
+    <span class="eyebrow">일정</span>
+    <h2>단계별 계획</h2>
+    <p>기간은 1인 기준 추정치다. 단계마다 완료 조건(AC)을 모두 통과해야 다음 단계로 넘어간다.</p>
+    <ol class="phases">
+      <li class="phase"><span class="no">P0</span><div class="body">
+        <h3>검증 스파이크</h3><span class="dur">1주</span>
+        <p>A–D안을 같은 데이터(블록 50, 500, 2000개)로 구현하고 성능 예산 항목을 측정한다. 대화에서 나온 선행 사례 주장도 이때 확인한다.</p>
+        <p class="ac"><b>AC-P0-1</b>방식별 측정표 작성 <b>AC-P0-2</b>기본 렌더링 방식 확정을 ADR로 기록</p>
+      </div></li>
+      <li class="phase"><span class="no">P1</span><div class="body">
+        <h3>코어 CSS</h3><span class="dur">2주</span>
+        <p>프리미티브 4종, 색 토큰과 3단 음영, 다크 테마, <code>@property</code>로 등록한 <code>--h</code> 트랜지션, <code>prefers-reduced-motion</code> 대응을 만든다.</p>
+        <p class="ac"><b>AC-P1-1</b>코어 CSS ≤ 6 KB gzip <b>AC-P1-2</b>시각 회귀 스냅샷 통과(라이트·다크·모바일)</p>
+      </div></li>
+      <li class="phase"><span class="no">P2</span><div class="body">
+        <h3>데이터 컴포넌트</h3><span class="dur">3주</span>
+        <p>막대, 적층, 히트맵, 원장, KPI 박스를 만들고 축척, 라벨 충돌 회피, 접근성 표 자동 생성을 넣는다.</p>
+        <p class="ac"><b>AC-P2-1</b>컴포넌트마다 스크린 리더로 값 전체 낭독 확인 <b>AC-P2-2</b>블록 500개 첫 렌더 ≤ 100 ms</p>
+      </div></li>
+      <li class="phase"><span class="no">P3</span><div class="body">
+        <h3>Web Components와 React 래퍼</h3><span class="dur">2주</span>
+        <p><code>&lt;iso-bars&gt;</code> 등 커스텀 엘리먼트를 만든다. 값이 바뀐 블록만 다시 계산한다. 별도 패키지 <code>packages/react</code>에 타입이 있는 React 컴포넌트를 만든다.</p>
+        <p class="ac"><b>AC-P3-1</b>코어 JS ≤ 4 KB gzip <b>AC-P3-2</b>유휴 CPU 0% 트레이스 첨부 <b>AC-P3-3</b>React 18/19 props 반영 테스트 통과</p>
+      </div></li>
+      <li class="phase"><span class="no">P4</span><div class="body">
+        <h3>문서와 플레이그라운드</h3><span class="dur">1–2주</span>
+        <p>컴포넌트별 예제, 속성 표, 실시간 편집 페이지와 템플릿 3종을 만든다.</p>
+        <p class="ac"><b>AC-P4-1</b>모든 예제가 크롬북 실기기에서 동작</p>
+      </div></li>
+      <li class="phase"><span class="no">P5</span><div class="body">
+        <h3>v0.1 공개</h3><span class="dur">1주</span>
+        <p>npm 패키지와 CDN 단일 CSS 파일로 배포하고 라이선스와 변경 기록을 정리한다.</p>
+        <p class="ac"><b>AC-P5-1</b>CDN 한 줄로 데모 재현 <b>AC-P5-2</b>CI 3단계 검증 통과</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <span class="eyebrow">검증</span>
+    <h2>검증 방식</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>단계</th><th>내용</th><th>도구</th></tr></thead>
+        <tbody>
+          <tr><td>1 정적 검사</td><td>CSS 린트, 크기 예산, 지원 브라우저 기능 검사</td><td>Stylelint, size-limit, Lightning CSS</td></tr>
+          <tr><td>2 기능 테스트</td><td>좌표 계산·축척·라벨 배치 단위 테스트, 커스텀 엘리먼트 DOM 테스트</td><td>Vitest + happy-dom</td></tr>
+          <tr><td>3 시각·런타임</td><td>스크린샷 회귀, CPU 스로틀 성능 트레이스, 접근성 검사</td><td>Playwright, axe-core</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">위험</span>
+    <h2>위험과 대응</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>위험</th><th>대응</th></tr></thead>
+        <tbody>
+          <tr><td>격자에 맞지 않거나 겹치는 블록의 앞뒤 순서 오류</td><td>v0.1은 격자 정렬 블록만 지원. <code>z-index = x + y</code> 규칙. 불규칙 배치는 JS에서 한 번만 정렬</td></tr>
+          <tr><td>면 사이 서브픽셀 틈(안티앨리어싱 선)</td><td>면을 0.5px 겹치게 하거나 단위 크기를 정수 픽셀로 반올림</td></tr>
+          <tr><td>3D 차트가 값을 왜곡한다는 비판</td><td>모든 블록에 정확한 숫자 라벨, 같은 축척 유지, 2D 표 보기 전환 제공</td></tr>
+          <tr><td>블록이 많을 때 DOM 노드 증가(블록당 4개)</td><td>2000개 이상이면 D안(Canvas) 경로로 자동 전환하는 것을 P0에서 검토</td></tr>
+          <tr><td><code>color-mix()</code>, <code>@property</code> 미지원 브라우저</td><td>대상은 Chrome 111+이므로 문제없음. 그 외에는 미리 계산한 색 변수로 대체</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">확인 필요</span>
+    <h2>참고 대화에서 검증해야 할 내용</h2>
+    <p>계획의 근거로 쓴 Gemini 대화 중 아래 내용은 출처를 확인하지 않았다. P0에서 확인하고, 틀리면 계획을 고친다.</p>
+    <ul>
+      <li>“PolyCSS” 엔진의 실재 여부와 유지보수 상태</li>
+      <li>“City4Age”라는 코드 시티 사례. 확인된 사례는 Wettel의 CodeCity다</li>
+      <li>WebGL 캔버스 하나가 80–200MB를 쓴다는 수치. 크롬북에서 직접 측정해야 한다</li>
+      <li>Isomer, Obelisk.js의 현재 유지보수 상태, 데이터 컴포넌트형 2.5D 라이브러리가 실제로 없는지</li>
+      <li>Tailwind CSS v4에 포함된 3D 변환 유틸리티의 범위(겹치는 기능이 있으면 연동 방안 검토)</li>
+    </ul>
+  </section>
+
+  <section class="callout">
+    <h2>결정 사항 <span class="pill ok" style="vertical-align:middle">2026-10-04 확정</span></h2>
+    <ul>
+      <li>클래스·커스텀 속성 접두사는 <code>iso-</code> / <code>--iso-</code>로 한다</li>
+      <li>라이선스는 MIT로 한다</li>
+      <li>React 래퍼는 별도 패키지(<code>packages/react</code>)로 제공하고, 코어는 React에 의존하지 않는다</li>
+      <li>npm 패키지 이름은 v0.1 공개 단계(P5)에서 확정한다</li>
+    </ul>
+  </section>
+</main>
