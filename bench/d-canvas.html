@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>D · Canvas 2D 일괄 그리기</title>
+<style>
+html, body { margin: 0; background: #f6f5f1; overflow: hidden; }
+canvas { display: block; width: 1366px; height: 768px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+import { readN, layout, faces, shade, markRendered, tweenHeights, easeOut, DURATION, VIEW_W, VIEW_H, LIFT } from './common.js';
+const L = layout(readN());
+const cv = document.getElementById('c');
+const dpr = window.devicePixelRatio || 1;
+cv.width = VIEW_W * dpr;
+cv.height = VIEW_H * dpr;
+const ctx = cv.getContext('2d');
+const lift = new Float32Array(L.n);
+const shades = L.blocks.map((b) => [shade(b.c, 0.18), shade(b.c, 0.34), b.c]);
+
+function poly(pts) {
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
+  ctx.closePath();
+}
+function draw() {
+  ctx.setTransform(dpr, 0, 0, dpr, L.ox * dpr, L.oy * dpr);
+  ctx.clearRect(-L.ox, -L.oy, VIEW_W, VIEW_H);
+  for (const b of L.order) {
+    const f = faces(b, L.u, lift[b.i]);
+    const s = shades[b.i];
+    ctx.beginPath(); poly(f.left); ctx.fillStyle = s[0]; ctx.fill();
+    ctx.beginPath(); poly(f.right); ctx.fillStyle = s[1]; ctx.fill();
+    ctx.beginPath(); poly(f.top); ctx.fillStyle = s[2]; ctx.fill();
+  }
+}
+
+// 호버: 앞에서부터 실루엣(육각형) 안에 든 첫 블록. 들림은 180ms 동안만 rAF로 그린다.
+function inside(pts, x, y) {
+  let hit = false;
+  for (let a = 0, b = pts.length - 1; a < pts.length; b = a++) {
+    const [xa, ya] = pts[a], [xb, yb] = pts[b];
+    if (ya > y !== yb > y && x < ((xb - xa) * (y - ya)) / (yb - ya) + xa) hit = !hit;
+  }
+  return hit;
+}
+function pick(mx, my) {
+  const x = mx - L.ox, y = my - L.oy;
+  for (let k = L.order.length - 1; k >= 0; k--) {
+    const b = L.order[k];
+    const f = faces(b, L.u, lift[b.i]);
+    const hull = [f.top[0], f.top[1], f.right[0], f.right[1], f.left[0], f.top[3]];
+    if (inside(hull, x, y)) return b.i;
+  }
+  return -1;
+}
+// A·B·C의 CSS `transition: transform 0.18s ease-out`과 같은 일을 블록마다 따로 한다.
+// 올라가는 블록과 내려가는 블록이 동시에 여럿 움직일 수 있다. 중간에 방향이 바뀌면
+// CSS의 역방향 단축처럼 남은 거리에 비례해 시간을 줄인다.
+const anims = new Map(); // 블록 번호 → { from, to, start, dur }
+let hovered = -1, raf = 0;
+function setTarget(i, to, now) {
+  const from = lift[i];
+  if (from === to && !anims.has(i)) return;
+  const dur = (DURATION * Math.abs(to - from)) / LIFT;
+  if (dur === 0) { anims.delete(i); return; }
+  anims.set(i, { from, to, start: now, dur });
+  if (!raf) raf = requestAnimationFrame(tick);
+}
+function tick(now) {
+  for (const [i, a] of anims) {
+    const t = Math.min(1, (now - a.start) / a.dur);
+    lift[i] = a.from + (a.to - a.from) * easeOut(Math.max(0, t));
+    if (t >= 1) anims.delete(i);
+  }
+  draw();
+  raf = anims.size ? requestAnimationFrame(tick) : 0;
+}
+function hover(hit) {
+  if (hit === hovered) return;
+  const now = performance.now();
+  if (hovered >= 0) setTarget(hovered, 0, now);
+  if (hit >= 0) setTarget(hit, LIFT, now);
+  hovered = hit;
+}
+cv.addEventListener('mousemove', (e) => hover(pick(e.offsetX, e.offsetY)));
+cv.addEventListener('mouseleave', () => hover(-1));
+
+draw();
+// 값 변경: 모든 블록 높이를 180ms 보간하며 프레임마다 캔버스 전체를 다시 그린다.
+markRendered(L, { setHeights: (k) => tweenHeights(L, k, draw) });
+</script>
+</body>
+</html>

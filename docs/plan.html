@@ -218,16 +218,16 @@ pre { margin: 0; background: var(--surface); border: 1px solid var(--line); bord
   <section>
     <span class="eyebrow">P0 비교 대상</span>
     <h2>렌더링 방식 후보</h2>
-    <p>위 데모는 A안이다. 최종 결정은 P0 벤치마크 결과로 내리며, 블록 수가 아주 많을 때를 위해 D안을 보조 경로로 남겨 둔다.</p>
+    <p>P0 측정 결과(<code>docs/adr/0001-render-approach.md</code>, <code>bench/results.md</code>, <code>bench/results-threshold.md</code>)로 CSS 경로를 기본으로 확정했다. CSS 경로는 A안에 최적화 두 가지를 더한 A′안이다. 위치 변수를 <code>@property { inherits: false }</code>로 등록하고, 높이를 정수 px로 반올림한다. 블록이 200개를 넘으면 C안(SVG)으로 자동 전환한다. A′안이 첫 렌더 예산(≤ 100ms)을 지키는 마지막 측정점이 200개(92.2ms)이고, 300개에서는 106.6ms이기 때문이다. C안은 300개 86.1ms, 700개 96.1ms이고, 1000개까지 호버 표시 드롭 0.8% 이하, 메인 스레드 누락 0.0%였다. 값 변경 애니메이션은 두 경로 모두 예산(드롭 ≤ 5%)을 지키지 못했다(A′안 200개 66.7%, C안 200개 7.1%). 측정은 데스크톱에서 CPU를 6배 느리게 해서 했고, 크롬북 실기기 확인이 남아 있다.</p>
   </section>
   <div class="table-wrap wide">
     <table>
       <thead><tr><th>안</th><th>방식</th><th>블록당 비용</th><th>장점</th><th>위험</th><th>판단</th></tr></thead>
       <tbody>
-        <tr><td class="num">A</td><td>CSS 2D <code>matrix()</code> 면 3개</td><td class="num">DOM 4</td><td>JS 불필요, 텍스트·이벤트 그대로, 합성 비용 낮음</td><td>노드 수 증가, 면 사이 서브픽셀 틈</td><td><span class="pill ok">기본 가설</span></td></tr>
-        <tr><td class="num">B</td><td>CSS 3D <code>preserve-3d</code> 큐브</td><td class="num">DOM 4–7</td><td>회전 연출 가능</td><td>합성 레이어 폭증, 저사양 GPU 없는 환경에서 느림</td><td><span class="pill warn">비교만</span></td></tr>
-        <tr><td class="num">C</td><td>JS로 좌표 계산 → SVG <code>polygon</code></td><td class="num">SVG 3</td><td>확대해도 선명, 대량 렌더에 유리할 수 있음</td><td>JS 필수, CSS 단독 사용 불가</td><td><span class="pill mute">후보</span></td></tr>
-        <tr><td class="num">D</td><td>Canvas 2D 일괄 그리기</td><td class="num">픽셀</td><td>수천 블록에서도 노드 0</td><td>텍스트·접근성·이벤트 직접 구현</td><td><span class="pill mute">대량 전용</span></td></tr>
+        <tr><td class="num">A / A′</td><td>CSS 2D <code>matrix()</code> 면 3개. A′는 위치 변수 비상속 등록과 높이 px 반올림을 더함</td><td class="num">DOM 4</td><td>JS 불필요, 텍스트·이벤트 그대로, 호버는 컴포지터 트랜지션</td><td>노드 수 증가, 면 사이 서브픽셀 틈, 높이 값 변경은 메인 스레드 애니메이션이라 느림(200개에서 66.7% 드롭)</td><td><span class="pill ok">기본(A′) · 200개 이하</span></td></tr>
+        <tr><td class="num">B</td><td>CSS 3D <code>preserve-3d</code> 큐브</td><td class="num">DOM 4–7</td><td>회전 연출 가능</td><td>합성 레이어 폭증, 저사양 GPU 없는 환경에서 느림</td><td><span class="pill warn">기각 · 500개에서 호버 표시 프레임 30.7% 드롭</span></td></tr>
+        <tr><td class="num">C</td><td>JS로 좌표 계산 → SVG <code>polygon</code></td><td class="num">DOM 4 (<code>g</code> + <code>polygon</code> 3)</td><td>블록이 많아도 첫 렌더가 빠르고 호버 반응이 늦어지지 않음(1000개까지 측정), 확대해도 선명</td><td>JS 필수, CSS 단독 사용 불가. 노드 수는 A안과 같음. 값 변경은 500개에서 14.3% 드롭</td><td><span class="pill ok">200개 초과 시 자동 전환</span></td></tr>
+        <tr><td class="num">D</td><td>Canvas 2D 일괄 그리기</td><td class="num">픽셀</td><td>수천 블록에서도 노드 0</td><td>텍스트·접근성·이벤트 직접 구현, 움직일 때 매 프레임 전체 다시 그리기</td><td><span class="pill mute">채택 안 함 · 1000개에서 호버 표시 프레임 36.8% 드롭</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -235,18 +235,19 @@ pre { margin: 0; background: var(--surface); border: 1px solid var(--line); bord
   <section>
     <span class="eyebrow">성능 예산</span>
     <h2>크롬북 기준 목표치</h2>
-    <p>기준 기기는 Intel Celeron N 계열이나 MediaTek ARM, 4GB RAM 크롬북이다. 실기기가 없으면 DevTools CPU 6배 스로틀로 대체 측정한다. 아래 수치는 목표이며 P0에서 측정한 뒤 조정한다.</p>
+    <p>기준 기기는 Intel Celeron N 계열이나 MediaTek ARM, 4GB RAM 크롬북이다. 실기기가 없으면 DevTools CPU 6배 스로틀로 대체 측정한다. P0 측정(ADR 0001) 뒤 호버 예산의 지표와 적용 범위를 고치고, 값 변경 예산을 따로 적었다. 결과 열은 결정한 경로(200개 이하 A′안, 초과 C안)의 데스크톱 CPU 6× 스로틀 측정값이다.</p>
   </section>
   <div class="table-wrap wide">
     <table>
-      <thead><tr><th>항목</th><th>예산</th><th>측정 방법</th></tr></thead>
+      <thead><tr><th>항목</th><th>예산</th><th>측정 방법</th><th>P0 결과</th></tr></thead>
       <tbody>
-        <tr><td>코어 CSS 크기</td><td class="num">≤ 6 KB gzip</td><td><code>size-limit</code>, CI에서 초과 시 실패</td></tr>
-        <tr><td>선택형 JS(Web Components)</td><td class="num">≤ 4 KB gzip</td><td><code>size-limit</code></td></tr>
-        <tr><td>유휴 상태 CPU</td><td class="num">0 %</td><td>Performance 트레이스 10초, 스크립트·페인트 0건</td></tr>
-        <tr><td>호버·값 변경 애니메이션</td><td class="num">60 fps</td><td>CPU 6× 스로틀, 프레임 드랍 ≤ 5%</td></tr>
-        <tr><td>블록 500개 첫 렌더</td><td class="num">≤ 100 ms</td><td>Playwright + <code>performance.measure</code></td></tr>
-        <tr><td>추가 메모리</td><td class="num">≤ 5 MB</td><td>블록 500개 페이지의 JS 힙 + DOM 비교</td></tr>
+        <tr><td>코어 CSS 크기</td><td class="num">≤ 6 KB gzip</td><td><code>size-limit</code>, CI에서 초과 시 실패</td><td>P1에서 측정</td></tr>
+        <tr><td>선택형 JS(Web Components)</td><td class="num">≤ 4 KB gzip</td><td><code>size-limit</code></td><td>P3에서 측정</td></tr>
+        <tr><td>유휴 상태 CPU</td><td class="num">0 %</td><td>Performance 트레이스 10초, 스크립트·페인트 0건</td><td>충족(모든 안, rAF 0·Paint 0)</td></tr>
+        <tr><td>호버 애니메이션 (블록 1000개 이하)</td><td class="num">60 fps</td><td>CPU 6× 스로틀, 표시 프레임 드롭 ≤ 5%(cc <code>PipelineReporter</code>, 프레임 단위 합침) 그리고 메인 스레드 rAF 누락 ≤ 5%</td><td>1000개 이하 충족(표시 드롭 최대 0.8%, 메인 스레드 누락 0.0%). 2000개는 C안 메인 스레드 누락 10.4%로 범위 밖</td></tr>
+        <tr><td>값 변경 애니메이션</td><td class="num">60 fps</td><td>CPU 6× 스로틀, 모든 블록 높이를 바꾸고 되돌리는 동안 표시 프레임 드롭 ≤ 5%</td><td><b>미달.</b> A′안 50개 8.3%, 200개 66.7%. C안 200개 7.1%, 500개 14.3%. v0.1의 알려진 한계로 문서화하고 v0.2에서 개선(ADR 0001)</td></tr>
+        <tr><td>블록 500개 첫 렌더</td><td class="num">≤ 100 ms</td><td>Playwright, 내비게이션 시작부터 double rAF 뒤 <code>performance.mark</code>까지(블록 50개에서도 59.7–67.7ms인 고정 몫 포함)</td><td>충족(C안 86.9ms). A′안이었다면 132.5ms로 미달</td></tr>
+        <tr><td>추가 메모리</td><td class="num">≤ 5 MB</td><td>블록 500개 페이지의 JS 힙 + DOM 비교</td><td>JS 힙만 충족(1.22MB). DOM 네이티브 메모리는 미측정</td></tr>
       </tbody>
     </table>
   </div>
@@ -298,7 +299,7 @@ pre { margin: 0; background: var(--surface); border: 1px solid var(--line); bord
     <ol class="phases">
       <li class="phase"><span class="no">P0</span><div class="body">
         <h3>검증 스파이크</h3><span class="dur">1주</span>
-        <p>A–D안을 같은 데이터(블록 50, 500, 2000개)로 구현하고 성능 예산 항목을 측정한다. 대화에서 나온 선행 사례 주장도 이때 확인한다.</p>
+        <p>A–D안과 A′안을 같은 데이터(블록 50, 500, 1000, 2000개, A·A′·C안은 200–1000개 추가)로 구현하고 성능 예산 항목을 측정한다. 대화에서 나온 선행 사례 주장도 이때 확인한다.</p>
         <p class="ac"><b>AC-P0-1</b>방식별 측정표 작성 <b>AC-P0-2</b>기본 렌더링 방식 확정을 ADR로 기록</p>
       </div></li>
       <li class="phase"><span class="no">P1</span><div class="body">
@@ -354,7 +355,7 @@ pre { margin: 0; background: var(--surface); border: 1px solid var(--line); bord
           <tr><td>격자에 맞지 않거나 겹치는 블록의 앞뒤 순서 오류</td><td>v0.1은 격자 정렬 블록만 지원. <code>z-index = x + y</code> 규칙. 불규칙 배치는 JS에서 한 번만 정렬</td></tr>
           <tr><td>면 사이 서브픽셀 틈(안티앨리어싱 선)</td><td>면을 0.5px 겹치게 하거나 단위 크기를 정수 픽셀로 반올림</td></tr>
           <tr><td>3D 차트가 값을 왜곡한다는 비판</td><td>모든 블록에 정확한 숫자 라벨, 같은 축척 유지, 2D 표 보기 전환 제공</td></tr>
-          <tr><td>블록이 많을 때 DOM 노드 증가(블록당 4개)</td><td>2000개 이상이면 D안(Canvas) 경로로 자동 전환하는 것을 P0에서 검토</td></tr>
+          <tr><td>블록이 많을 때 DOM 노드 증가(블록당 4개)</td><td>C안도 블록당 4개라 전환으로 줄지 않는다. 200개를 넘으면 첫 렌더 때문에 C안으로 자동 전환하고, 지원 상한은 1000개로 둔다(ADR 0001). DOM 메모리는 후속 측정</td></tr>
           <tr><td><code>color-mix()</code>, <code>@property</code> 미지원 브라우저</td><td>대상은 Chrome 111+이므로 문제없음. 그 외에는 미리 계산한 색 변수로 대체</td></tr>
         </tbody>
       </table>
@@ -362,15 +363,15 @@ pre { margin: 0; background: var(--surface); border: 1px solid var(--line); bord
   </section>
 
   <section>
-    <span class="eyebrow">확인 필요</span>
-    <h2>참고 대화에서 검증해야 할 내용</h2>
-    <p>계획의 근거로 쓴 Gemini 대화 중 아래 내용은 출처를 확인하지 않았다. P0에서 확인하고, 틀리면 계획을 고친다.</p>
+    <span class="eyebrow">확인 결과</span>
+    <h2>참고 대화 사실 확인</h2>
+    <p>계획의 근거로 쓴 Gemini 대화의 주장을 P0에서 확인했다. 출처는 ADR 0001 부록에 있다.</p>
     <ul>
-      <li>“PolyCSS” 엔진의 실재 여부와 유지보수 상태</li>
-      <li>“City4Age”라는 코드 시티 사례. 확인된 사례는 Wettel의 CodeCity다</li>
-      <li>WebGL 캔버스 하나가 80–200MB를 쓴다는 수치. 크롬북에서 직접 측정해야 한다</li>
-      <li>Isomer, Obelisk.js의 현재 유지보수 상태, 데이터 컴포넌트형 2.5D 라이브러리가 실제로 없는지</li>
-      <li>Tailwind CSS v4에 포함된 3D 변환 유틸리티의 범위(겹치는 기능이 있으면 연동 방안 검토)</li>
+      <li>PolyCSS: 실재하고 유지보수 중이다. 메시 렌더러이며 데이터 컴포넌트는 아니다</li>
+      <li>City4Age: 사실이 아니다. 노인 돌봄 분야의 EU 연구 프로젝트다. 코드 시티 사례는 Wettel의 CodeCity다</li>
+      <li>WebGL 캔버스 하나에 80–200MB: 근거를 찾지 못했다. 컨텍스트 고정 오버헤드는 수 MB 수준이라 논거에서 뺐다</li>
+      <li>Isomer, Obelisk.js: 유지보수가 중단됐다(마지막 커밋 2017년, 2019년). 데이터 바인딩형 비-WebGL 2.5D 컴포넌트 라이브러리는 찾지 못했다</li>
+      <li>Tailwind CSS v4: 3D 변환 유틸리티가 있다. 모두 <code>preserve-3d</code> 계열이라 기각한 B안에 해당한다</li>
     </ul>
   </section>
 
