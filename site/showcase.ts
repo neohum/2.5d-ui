@@ -29,19 +29,19 @@ interface Layer {
 
 interface CityBuilding {
   k: string;
-  w: number;
-  d: number;
+  size: number;
   v: number;
   c?: string;
 }
 
 interface CityDistrict {
-  name: string;
-  buildings: CityBuilding[];
+  k: string;
+  children: CityBuilding[];
 }
 
 interface CityData {
-  districts: CityDistrict[];
+  k: string;
+  children: CityDistrict[];
 }
 
 type Tag = "iso-bars" | "iso-stack" | "iso-heatmap" | "iso-ledger" | "iso-kpi" | "iso-map" | "iso-layers" | "iso-city";
@@ -364,33 +364,34 @@ const LAB_ITEMS: Record<Tag, LabItem> = {
     tag: "iso-city",
     label: "마이크로서비스 클러스터 메트릭 시티",
     axis: {
-      x: { name: "도메인 구역 배치 (X w)", desc: "도메인별 구역(District) 및 건물 가로 배치" },
-      y: { name: "도메인 구역 깊이 (Y d)", desc: "구역 내 세로 깊이" },
-      z: { name: "서비스 지연시간 (Latency v)", desc: "건물 높이 = 응답 지연 (밑면 = 요청량 RPS)" },
+      x: { name: "도메인 구역 트리맵 (District)", desc: "도메인별 구역(District) 및 건물 가로 배치" },
+      y: { name: "건물 밑면 넓이 (size, RPS)", desc: "초당 트래픽/요청수 비례 바닥 면적" },
+      z: { name: "서비스 지연시간 (Latency v, ms)", desc: "건물 높이 = P99 응답 지연시간" },
     },
     defaultAttrs: { unit: "20" },
     defaultData: {
-      districts: [
+      k: "MSA 클러스터",
+      children: [
         {
-          name: "코어 서비스",
-          buildings: [
-            { k: "인증(Auth)", w: 1.8, d: 1.8, v: 4 },
-            { k: "게이트웨이", w: 2.2, d: 2.2, v: 7 },
+          k: "인증·게이트웨이",
+          children: [
+            { k: "Auth API", size: 20, v: 4 },
+            { k: "Gateway", size: 30, v: 7 },
           ],
         },
         {
-          name: "비즈니스 로직",
-          buildings: [
-            { k: "주문(Order)", w: 2, d: 2, v: 5 },
-            { k: "결제(Pay)", w: 2.2, d: 2.2, v: 9 },
+          k: "상거래 코어",
+          children: [
+            { k: "Order", size: 25, v: 5 },
+            { k: "Payment", size: 28, v: 9 },
           ],
         },
       ],
     } as CityData,
     getSliders: (data: CityData, update) => {
       const elements: HTMLElement[] = [];
-      data.districts.forEach((dist: CityDistrict) => {
-        dist.buildings.forEach((b: CityBuilding) => {
+      data.children.forEach((dist: CityDistrict) => {
+        dist.children.forEach((b: CityBuilding) => {
           const box = document.createElement("div");
           box.className = "slider-box";
           box.innerHTML = `
@@ -398,7 +399,7 @@ const LAB_ITEMS: Record<Tag, LabItem> = {
               <span><strong>${b.k}</strong> (높이 v)</span>
               <span class="slider-val">${b.v}</span>
             </div>
-            <input type="range" min="1" max="12" step="1" value="${b.v}">
+            <input type="range" min="1" max="15" step="1" value="${b.v}">
           `;
           const input = box.querySelector("input")!;
           const valSpan = box.querySelector(".slider-val")!;
@@ -650,54 +651,56 @@ function initCase4Microservices() {
   if (!chart) return;
 
   const defaultCity: CityData = {
-    districts: [
+    k: "MSA 시스템",
+    children: [
       {
-        name: "인증 & 게이트웨이",
-        buildings: [
-          { k: "Auth API", w: 1.6, d: 1.6, v: 3 },
-          { k: "Gateway", w: 2.2, d: 2.2, v: 5 },
+        k: "인증 & 게이트웨이",
+        children: [
+          { k: "Auth API", size: 20, v: 4 },
+          { k: "Gateway", size: 30, v: 6 },
         ],
       },
       {
-        name: "상거래 코어",
-        buildings: [
-          { k: "Order", w: 2.0, d: 2.0, v: 4 },
-          { k: "Payment", w: 2.2, d: 2.2, v: 6 },
-          { k: "Catalog", w: 1.8, d: 1.8, v: 3 },
+        k: "상거래 코어",
+        children: [
+          { k: "Order", size: 25, v: 5 },
+          { k: "Payment", size: 28, v: 7 },
+          { k: "Catalog", size: 22, v: 4 },
         ],
       },
       {
-        name: "지원 서비스",
-        buildings: [
-          { k: "Notification", w: 1.5, d: 1.5, v: 2 },
-          { k: "Analytics", w: 2.0, d: 2.0, v: 4 },
+        k: "지원 서비스",
+        children: [
+          { k: "Notification", size: 18, v: 2 },
+          { k: "Analytics", size: 24, v: 5 },
         ],
       },
     ],
   };
 
   const peakCity: CityData = {
-    districts: [
+    k: "MSA 시스템",
+    children: [
       {
-        name: "인증 & 게이트웨이",
-        buildings: [
-          { k: "Auth API", w: 2.2, d: 2.2, v: 7 },
-          { k: "Gateway", w: 2.8, d: 2.8, v: 10 },
+        k: "인증 & 게이트웨이",
+        children: [
+          { k: "Auth API", size: 28, v: 8 },
+          { k: "Gateway", size: 45, v: 11 },
         ],
       },
       {
-        name: "상거래 코어",
-        buildings: [
-          { k: "Order", w: 2.6, d: 2.6, v: 9 },
-          { k: "Payment (장애 위험)", w: 3.0, d: 3.0, v: 14, c: "#b42335" },
-          { k: "Catalog", w: 2.2, d: 2.2, v: 6 },
+        k: "상거래 코어",
+        children: [
+          { k: "Order", size: 35, v: 9 },
+          { k: "Payment (장애 위험)", size: 48, v: 16, c: "#b42335" },
+          { k: "Catalog", size: 28, v: 7 },
         ],
       },
       {
-        name: "지원 서비스",
-        buildings: [
-          { k: "Notification", w: 1.8, d: 1.8, v: 5 },
-          { k: "Analytics", w: 2.4, d: 2.4, v: 8 },
+        k: "지원 서비스",
+        children: [
+          { k: "Notification", size: 25, v: 6 },
+          { k: "Analytics", size: 32, v: 10 },
         ],
       },
     ],
@@ -713,9 +716,9 @@ function initCase4Microservices() {
 }
 
 // ----------------------------------------------------
-// 메인 초기화
+// 메인 초기화 (DOMContentLoaded 또는 즉시 실행 안전 보장)
 // ----------------------------------------------------
-document.addEventListener("DOMContentLoaded", () => {
+function init() {
   // 1. 실험실 탭 이벤트 바인딩
   const tabButtons = document.querySelectorAll<HTMLButtonElement>(".lab-tab-btn");
   tabButtons.forEach(btn => {
@@ -739,4 +742,10 @@ document.addEventListener("DOMContentLoaded", () => {
   initCase2Warehouse();
   initCase3Building();
   initCase4Microservices();
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}

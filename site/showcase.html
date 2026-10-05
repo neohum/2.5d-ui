@@ -116,7 +116,7 @@
   <!-- 실시간 차트 뷰포트 & 슬라이더 컨트롤러 -->
   <div class="card" style="padding: 24px; gap: 20px;">
     <div class="preview" id="lab-chart-container" style="min-height: 240px; align-items: center;">
-      <!-- JavaScript로 동적 렌더링 -->
+      <iso-bars id="lab-chart" max="500" height-units="4" unit="20" label="시스템 서비스별 메모리 점유율 (MB)" data='[{"k":"웹서버","v":320},{"k":"데이터베이스","v":460},{"k":"캐시노드","v":210},{"k":"메시지큐","v":140}]'></iso-bars>
     </div>
     
     <div style="border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 12px;">
@@ -325,27 +325,28 @@
       </div>
       <div class="preview" style="background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
         <iso-city id="case4-chart" unit="20" label="MSA 서비스 클러스터 시티" data='{
-          "districts": [
+          "k": "MSA 시스템",
+          "children": [
             {
-              "name": "인증 & 게이트웨이",
-              "buildings": [
-                { "k": "Auth API", "w": 1.6, "d": 1.6, "v": 3 },
-                { "k": "Gateway", "w": 2.2, "d": 2.2, "v": 5 }
+              "k": "인증 & 게이트웨이",
+              "children": [
+                { "k": "Auth API", "size": 20, "v": 4 },
+                { "k": "Gateway", "size": 30, "v": 6 }
               ]
             },
             {
-              "name": "상거래 코어",
-              "buildings": [
-                { "k": "Order", "w": 2.0, "d": 2.0, "v": 4 },
-                { "k": "Payment", "w": 2.2, "d": 2.2, "v": 6 },
-                { "k": "Catalog", "w": 1.8, "d": 1.8, "v": 3 }
+              "k": "상거래 코어",
+              "children": [
+                { "k": "Order", "size": 25, "v": 5 },
+                { "k": "Payment", "size": 28, "v": 7 },
+                { "k": "Catalog", "size": 22, "v": 4 }
               ]
             },
             {
-              "name": "지원 서비스",
-              "buildings": [
-                { "k": "Notification", "w": 1.5, "d": 1.5, "v": 2 },
-                { "k": "Analytics", "w": 2.0, "d": 2.0, "v": 4 }
+              "k": "지원 서비스",
+              "children": [
+                { "k": "Notification", "size": 18, "v": 2 },
+                { "k": "Analytics", "size": 24, "v": 5 }
               ]
             }
           ]
