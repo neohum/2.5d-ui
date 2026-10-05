@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2.5D 인터랙티브 3D 쇼케이스 &amp; 실무 활용 사례 · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<link rel="stylesheet" href="/packages/core/src/css/edu.css">
+<link rel="stylesheet" href="./site.css">
+<script type="module" src="/packages/core/src/index.ts"></script>
+<script type="module" src="/packages/core/src/edu.ts"></script>
+<script type="module" src="./site.ts"></script>
+<script type="module" src="./showcase.ts"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="showcase.html" aria-current="page">쇼케이스</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="map.html">iso-map</a>
+    <a href="layers.html">iso-layers</a>
+    <a href="city.html">iso-city</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+
+<main>
+<section class="head">
+  <span class="eyebrow">Interactive 3D Showcase &amp; Live Laboratory</span>
+  <h1>2.5D 인터랙티브 3D 쇼케이스 및 활용 사례</h1>
+  <p class="lede">도표와 그래프의 <strong>X축, Y축, Z(높이)축</strong>의 항목 의미를 직관적으로 확인하고, 실시간 슬라이더로 수치를 직접 조작해 보세요. 클라우드 인프라, 스마트 팩토리, 에너지 빌딩, 마이크로서비스 등 다양한 실무 현장에서 2.5D UI가 어떻게 활용되는지 실제 동작하는 라이브 데모로 만나보실 수 있습니다.</p>
+</section>
+
+<!-- ========================================================= -->
+<!-- 섹션 1: 3D 축 가이드 & 실시간 수치 조절 실험실 -->
+<!-- ========================================================= -->
+<section aria-labelledby="lab-heading">
+  <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;">
+    <h2 id="lab-heading">3D 축(X · Y · Z) 및 실시간 수치 조절 실험실</h2>
+    <span class="muted">슬라이더를 움직이면 2.5D 차트의 높이와 수치가 실시간으로 부드럽게 변합니다.</span>
+  </div>
+
+  <!-- 컴포넌트 선택 탭 -->
+  <div class="tabs" role="tablist" aria-label="2.5D 컴포넌트 선택">
+    <button class="tab-btn lab-tab-btn active" type="button" data-tag="iso-bars" aria-pressed="true">
+      <i class="fi fi-rr-chart-histogram"></i> iso-bars (막대)
+    </button>
+    <button class="tab-btn lab-tab-btn" type="button" data-tag="iso-stack" aria-pressed="false">
+      <i class="fi fi-rr-layers"></i> iso-stack (적층)
+    </button>
+    <button class="tab-btn lab-tab-btn" type="button" data-tag="iso-heatmap" aria-pressed="false">
+      <i class="fi fi-rr-grid"></i> iso-heatmap (히트맵)
+    </button>
+    <button class="tab-btn lab-tab-btn" type="button" data-tag="iso-kpi" aria-pressed="false">
+      <i class="fi fi-rr-dashboard"></i> iso-kpi (단일지표)
+    </button>
+    <button class="tab-btn lab-tab-btn" type="button" data-tag="iso-map" aria-pressed="false">
+      <i class="fi fi-rr-map-marker"></i> iso-map (공간배치)
+    </button>
+    <button class="tab-btn lab-tab-btn" type="button" data-tag="iso-layers" aria-pressed="false">
+      <i class="fi fi-rr-browsers"></i> iso-layers (층구조)
+    </button>
+    <button class="tab-btn lab-tab-btn" type="button" data-tag="iso-city" aria-pressed="false">
+      <i class="fi fi-rr-building"></i> iso-city (도시구역)
+    </button>
+  </div>
+
+  <!-- 3D 축 가이드 인포그래픽 카드 -->
+  <div class="axis-guide-card">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+      <h3 style="font-size: 1rem; display: flex; align-items: center; gap: 6px;">
+        <i class="fi fi-rr-cube"></i> 현재 컴포넌트의 3차원 축(Axis) 매핑 정보
+      </h3>
+      <span class="muted" style="font-size: 0.8rem;">2.5D 등각 투영(Isometric Projection) 기준</span>
+    </div>
+    <div class="axis-grid">
+      <!-- X축 -->
+      <div class="axis-item">
+        <span class="axis-badge axis-x">
+          <i class="fi fi-rr-arrows-h"></i> X축 (우하향 너비)
+        </span>
+        <div class="axis-item-name" id="axis-x-name">서비스 항목 (Category)</div>
+        <div class="axis-item-desc" id="axis-x-desc">아이소메트릭 X축 (우하향 배치, 라벨 비가림)</div>
+      </div>
+      <!-- Y축 -->
+      <div class="axis-item">
+        <span class="axis-badge axis-y">
+          <i class="fi fi-rr-arrows-v"></i> Y축 (좌하향 깊이)
+        </span>
+        <div class="axis-item-name" id="axis-y-name">배치 순서 (Sequence)</div>
+        <div class="axis-item-desc" id="axis-y-desc">Y축 방향 1열 선형 정렬</div>
+      </div>
+      <!-- Z축 -->
+      <div class="axis-item">
+        <span class="axis-badge axis-z">
+          <i class="fi fi-rr-arrow-up"></i> Z축 (수직 높이)
+        </span>
+        <div class="axis-item-name" id="axis-z-name">메모리 점유량 (Value, MB)</div>
+        <div class="axis-item-desc" id="axis-z-desc">수직 높이 (블록 높이 --iso-h 에 반영)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 실시간 차트 뷰포트 & 슬라이더 컨트롤러 -->
+  <div class="card" style="padding: 24px; gap: 20px;">
+    <div class="preview" id="lab-chart-container" style="min-height: 240px; align-items: center;">
+      <!-- JavaScript로 동적 렌더링 -->
+    </div>
+    
+    <div style="border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+          <i class="fi fi-rr-settings-sliders"></i> 실시간 수치 변동 컨트롤러 (Live Dimension Controls)
+        </span>
+        <span class="muted" style="font-size: 0.8rem;">CSS Matrix 트랜지션 실시간 반영</span>
+      </div>
+      <div class="slider-group" id="lab-sliders">
+        <!-- JavaScript로 동적 슬라이더 주입 -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- 섹션 2: 산업 및 실무 현장 다양한 활용 사례 -->
+<!-- ========================================================= -->
+<section aria-labelledby="cases-heading">
+  <div class="head">
+    <span class="eyebrow">Real-World Use Cases</span>
+    <h2 id="cases-heading">2.5D UI를 활용할 수 있는 다양한 실무 사례</h2>
+    <p class="muted">WebGL이나 무거운 차트 라이브러리 없이도, 가볍고 직관적인 2.5D 등각 투영을 통해 물리적 공간과 다차원 지표를 표현할 수 있습니다.</p>
+  </div>
+
+  <div class="grid" style="grid-template-columns: 1fr; gap: 24px;">
+
+    <!-- 사례 1: 데이터센터 서버 랙 3D 열화/부하 모니터링 -->
+    <article class="case-card" aria-labelledby="case1-title">
+      <div class="case-top">
+        <div>
+          <span class="case-tag">인프라 · 클라우드 엔지니어링</span>
+          <h3 id="case1-title" style="margin-top: 6px;">데이터센터 서버 랙 3D 열화 및 부하 모니터링</h3>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <span class="axis-badge axis-x" style="font-size: 0.72rem;">X축: 서버 랙 번호 (Rack A~F)</span>
+          <span class="axis-badge axis-y" style="font-size: 0.72rem;">Y축: 랙 슬롯 위치 (1U~6U)</span>
+          <span class="axis-badge axis-z" style="font-size: 0.72rem;">Z축: 코어 온도(℃) 및 발열량</span>
+        </div>
+      </div>
+      <p class="muted" style="font-size: 0.9rem;">
+        <code>&lt;iso-heatmap&gt;</code>의 3D 높이와 OKLCH 컬러 스케일을 결합하여, 수십 대의 서버 랙 중 특정 슬롯의 과열이나 냉각팬 장애를 한눈에 식별할 수 있습니다.
+      </p>
+      <div class="case-ctrls">
+        <span style="font-size: 0.85rem; font-weight: 600;">시뮬레이션 모드:</span>
+        <button class="case-btn" id="btn-case1-normal" type="button">
+          <i class="fi fi-rr-check-circle"></i> 정상 부하 (평균 38℃)
+        </button>
+        <button class="case-btn" id="btn-case1-peak" type="button">
+          <i class="fi fi-rr-flame"></i> 피크 타임 부하 (평균 80℃)
+        </button>
+        <button class="case-btn" id="btn-case1-fail" type="button" style="color: var(--bad); border-color: var(--bad);">
+          <i class="fi fi-rr-triangle-warning"></i> 냉각팬 장애 (Rack C 과열 99℃)
+        </button>
+      </div>
+      <div class="preview" style="background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+        <iso-heatmap id="case1-chart" max="100" height-units="4" unit="18" label="서버 랙 온도 모니터링 (℃)" data='{
+          "rows": ["Rack-A", "Rack-B", "Rack-C", "Rack-D", "Rack-E", "Rack-F"],
+          "cols": ["1U", "2U", "3U", "4U", "5U", "6U"],
+          "values": [
+            [32, 35, 34, 38, 36, 40],
+            [36, 38, 42, 39, 41, 44],
+            [38, 41, 45, 43, 46, 48],
+            [35, 39, 40, 42, 39, 41],
+            [33, 36, 37, 39, 38, 40],
+            [31, 33, 35, 36, 35, 37]
+          ]
+        }'></iso-heatmap>
+      </div>
+    </article>
+
+    <!-- 사례 2: 스마트 물류창고 입체 파레트 적재 현황 -->
+    <article class="case-card" aria-labelledby="case2-title">
+      <div class="case-top">
+        <div>
+          <span class="case-tag">물류 · 풀필먼트 SCM</span>
+          <h3 id="case2-title" style="margin-top: 6px;">스마트 물류창고 3D 파레트 입체 적재 현황</h3>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <span class="axis-badge axis-x" style="font-size: 0.72rem;">X축: 창고 통로 (Aisle)</span>
+          <span class="axis-badge axis-y" style="font-size: 0.72rem;">Y축: 랙 베이 (Bay)</span>
+          <span class="axis-badge axis-z" style="font-size: 0.72rem;">Z축: 파레트 적재 단수 (1~5단)</span>
+        </div>
+      </div>
+      <p class="muted" style="font-size: 0.9rem;">
+        <code>&lt;iso-map&gt;</code>을 활용하여 물류창고 출고도크, 통로, 파레트 랙의 물리적 위치를 정확한 그리드로 배치하고, 수직 적재 단수를 입체적으로 관리합니다.
+      </p>
+      <div class="case-ctrls">
+        <span style="font-size: 0.85rem; font-weight: 600;">실시간 입출고 제어:</span>
+        <button class="case-btn" id="btn-case2-in" type="button">
+          <i class="fi fi-rr-plus"></i> A-01 구역 파레트 1단 입고
+        </button>
+        <button class="case-btn" id="btn-case2-out" type="button">
+          <i class="fi fi-rr-minus"></i> A-01 구역 파레트 1단 출고
+        </button>
+      </div>
+      <div class="preview" style="background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+        <iso-map id="case2-chart" label="물류창고 3D 적재 현황" unit="22" data='{
+          "floor": { "w": 9, "d": 7 },
+          "items": [
+            { "k": "출고도크", "x": 0.5, "y": 0.5, "w": 2.5, "d": 1 },
+            { "k": "중앙통로", "x": 3.5, "y": 0.5, "w": 2, "d": 5.8 },
+            { "k": "A-01", "x": 0.6, "y": 2.2, "w": 1.2, "d": 1.2, "v": 3 },
+            { "k": "A-02", "x": 2.0, "y": 2.2, "w": 1.2, "d": 1.2, "v": 5 },
+            { "k": "A-03", "x": 0.6, "y": 3.8, "w": 1.2, "d": 1.2, "v": 2 },
+            { "k": "A-04", "x": 2.0, "y": 3.8, "w": 1.2, "d": 1.2, "v": 4 },
+            { "k": "B-01", "x": 5.8, "y": 2.2, "w": 1.2, "d": 1.2, "v": 4 },
+            { "k": "B-02", "x": 7.2, "y": 2.2, "w": 1.2, "d": 1.2, "v": 1 },
+            { "k": "B-03", "x": 5.8, "y": 3.8, "w": 1.2, "d": 1.2, "v": 5 },
+            { "k": "B-04", "x": 7.2, "y": 3.8, "w": 1.2, "d": 1.2, "v": 3 }
+          ]
+        }'></iso-map>
+      </div>
+    </article>
+
+    <!-- 사례 3: 친환경 스마트 빌딩 층별 에너지 소비 -->
+    <article class="case-card" aria-labelledby="case3-title">
+      <div class="case-top">
+        <div>
+          <span class="case-tag">스마트 빌딩 · ESG 환경</span>
+          <h3 id="case3-title" style="margin-top: 6px;">친환경 오피스 빌딩 층별 온습도 &amp; 에너지 소비 매핑</h3>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <span class="axis-badge axis-x" style="font-size: 0.72rem;">X축: 층내 구획 (동·서 구역)</span>
+          <span class="axis-badge axis-y" style="font-size: 0.72rem;">Y축: 창가·복도 구획</span>
+          <span class="axis-badge axis-z" style="font-size: 0.72rem;">Z축: 층수(Layer) &amp; 전력량(kW)</span>
+        </div>
+      </div>
+      <p class="muted" style="font-size: 0.9rem;">
+        <code>&lt;iso-layers&gt;</code>의 <strong>층 펼치기(open)</strong> 속성을 조작하면 층간 거리가 수직으로 확장되어, 빌딩 내부의 실별 공조 및 전력 소모량을 한눈에 분석할 수 있습니다.
+      </p>
+      <div class="case-ctrls" style="gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 240px;">
+          <label style="display: flex; align-items: center; gap: 8px; width: 100%;">
+            <span style="font-size: 0.85rem; font-weight: 600; white-space: nowrap;">
+              <i class="fi fi-rr-arrows-v"></i> 펼칠 층 선택 (open):
+            </span>
+            <input type="range" id="case3-open-slider" min="0" max="2" step="1" value="1" style="flex: 1;">
+            <span id="case3-open-val" class="slider-val">2F 업무공간 A (1)</span>
+          </label>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="case-btn" id="btn-case3-eco" type="button">
+            <i class="fi fi-rr-leaf"></i> 에코 절전 모드
+          </button>
+          <button class="case-btn" id="btn-case3-peak" type="button">
+            <i class="fi fi-rr-bolt"></i> 피크 소비 모드
+          </button>
+        </div>
+      </div>
+      <div class="preview" style="background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+        <iso-layers id="case3-chart" open="1" unit="20" label="오피스 빌딩 층별 전력 사용량 (kW)" data='[
+          {
+            "k": "1F 로비·카페",
+            "items": [
+              { "k": "안내데스크", "v": 15 },
+              { "k": "라운지", "v": 25 },
+              { "k": "카페테리아", "v": 30 }
+            ]
+          },
+          {
+            "k": "2F 업무공간 A",
+            "items": [
+              { "k": "사무실 201", "v": 35 },
+              { "k": "회의실 202", "v": 20 },
+              { "k": "연구개발랩", "v": 50 }
+            ]
+          },
+          {
+            "k": "3F 업무공간 B",
+            "items": [
+              { "k": "기획팀", "v": 30 },
+              { "k": "디자인팀", "v": 45 },
+              { "k": "서버룸", "v": 60 }
+            ]
+          }
+        ]'></iso-layers>
+      </div>
+    </article>
+
+    <!-- 사례 4: 마이크로서비스(MSA) 트래픽 시티 -->
+    <article class="case-card" aria-labelledby="case4-title">
+      <div class="case-top">
+        <div>
+          <span class="case-tag">소프트웨어 아키텍처 · SRE</span>
+          <h3 id="case4-title" style="margin-top: 6px;">마이크로서비스(MSA) 트래픽 &amp; 레이턴시 3D 시티</h3>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <span class="axis-badge axis-x" style="font-size: 0.72rem;">X/Y축: 서비스 도메인 구역</span>
+          <span class="axis-badge axis-y" style="font-size: 0.72rem;">밑면(w×d): 트래픽 (RPS)</span>
+          <span class="axis-badge axis-z" style="font-size: 0.72rem;">Z축: P99 지연 시간(ms)</span>
+        </div>
+      </div>
+      <p class="muted" style="font-size: 0.9rem;">
+        <code>&lt;iso-city&gt;</code>를 활용해 복잡한 마이크로서비스 아키텍처를 가상의 도시 형태로 조망합니다. 서비스의 처리량(RPS)은 건물의 밑면 넓이로, 응답 지연시간(Latency)은 건물의 높이로 직관화됩니다.
+      </p>
+      <div class="case-ctrls">
+        <span style="font-size: 0.85rem; font-weight: 600;">트래픽 시나리오:</span>
+        <button class="case-btn" id="btn-case4-normal" type="button">
+          <i class="fi fi-rr-check"></i> 평상시 트래픽
+        </button>
+        <button class="case-btn" id="btn-case4-spike" type="button" style="color: var(--bad); border-color: var(--bad);">
+          <i class="fi fi-rr-chart-line-up"></i> 블랙 프라이데이 폭증 &amp; 결제 병목 장애
+        </button>
+      </div>
+      <div class="preview" style="background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 16px;">
+        <iso-city id="case4-chart" unit="20" label="MSA 서비스 클러스터 시티" data='{
+          "districts": [
+            {
+              "name": "인증 & 게이트웨이",
+              "buildings": [
+                { "k": "Auth API", "w": 1.6, "d": 1.6, "v": 3 },
+                { "k": "Gateway", "w": 2.2, "d": 2.2, "v": 5 }
+              ]
+            },
+            {
+              "name": "상거래 코어",
+              "buildings": [
+                { "k": "Order", "w": 2.0, "d": 2.0, "v": 4 },
+                { "k": "Payment", "w": 2.2, "d": 2.2, "v": 6 },
+                { "k": "Catalog", "w": 1.8, "d": 1.8, "v": 3 }
+              ]
+            },
+            {
+              "name": "지원 서비스",
+              "buildings": [
+                { "k": "Notification", "w": 1.5, "d": 1.5, "v": 2 },
+                { "k": "Analytics", "w": 2.0, "d": 2.0, "v": 4 }
+              ]
+            }
+          ]
+        }'></iso-city>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>2.5d-ui · CSS 등각 투영 데이터 컴포넌트 라이브러리 (MIT License)</p>
+</footer>
+
+</body>
+</html>
