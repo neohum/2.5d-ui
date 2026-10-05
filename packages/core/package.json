@@ -1,8 +1,7 @@
 {
   "name": "2.5d-ui",
-  "version": "0.0.0",
-  "private": true,
-  "description": "CSS-only isometric 2.5D data components",
+  "version": "0.2.0",
+  "description": "CSS-only isometric 2.5D data components for charts, maps, layers, and city visualizations",
   "license": "MIT",
   "type": "module",
   "main": "./dist/iso.min.js",
@@ -16,8 +15,24 @@
     "./edu/layers": "./dist/iso-edu-layers.min.js",
     "./edu/map": "./dist/iso-edu-map.min.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neohum/2.5d-ui.git"
+  },
+  "keywords": [
+    "isometric",
+    "2.5d",
+    "css",
+    "web-components",
+    "charts",
+    "dataviz",
+    "heatmap",
+    "treemap"
+  ],
   "scripts": {
     "build": "node build.mjs"
   }
