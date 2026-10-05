@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>소개 · 2.5d-ui</title>
-<link rel="icon" href="data:,">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
 <link rel="stylesheet" href="/packages/core/src/css/index.css">
@@ -16,7 +16,10 @@
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="index.html">2.5d-ui</a>
+  <a class="brand" href="index.html">
+    <img src="./logo.svg" alt="" width="24" height="24" class="brand-logo">
+    <span>2.5d-ui</span>
+  </a>
   <nav aria-label="문서">
     <a href="index.html" aria-current="page">소개</a>
     <a href="showcase.html">쇼케이스</a>
@@ -32,13 +35,24 @@
     <a href="playground.html">플레이그라운드</a>
     <a href="index.html#templates">템플릿</a>
   </nav>
-  <button class="theme" type="button">테마: 시스템</button>
+  <div class="top-actions">
+    <a class="github-link" href="https://github.com/neohum/2.5d-ui" target="_blank" rel="noopener noreferrer">
+      <i class="fi fi-rr-share"></i>
+      <span>GitHub</span>
+    </a>
+    <button class="theme" type="button">테마: 시스템</button>
+  </div>
 </header>
 <main>
 <section class="head">
-  <span class="eyebrow">v0.1 준비 중 · MIT</span>
-  <h1>CSS만으로 그리는 등각 2.5D 데이터 컴포넌트</h1>
-  <p class="lede">WebGL도 캔버스도 없이, 블록 200개까지는 면 세 개를 2D <code>matrix()</code> 하나씩으로, 그보다 많으면 인라인 SVG 한 장으로 그립니다. 크롬북처럼 GPU가 약한 기기에서도 가볍게 돌고, 값이 바뀔 때가 아니면 CPU를 쓰지 않습니다.</p>
+  <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+    <img src="./logo.svg" alt="2.5d-ui Logo" width="56" height="56" style="flex-shrink: 0;">
+    <div>
+      <span class="eyebrow">v0.2 공식 릴리스 · MIT License</span>
+      <h1 style="margin-top: 4px;">CSS만으로 그리는 등각 2.5D 데이터 시각화</h1>
+    </div>
+  </div>
+  <p class="lede">WebGL도 무거운 3D 캔버스도 없이, 순수 CSS 2D <code>matrix()</code> 변환과 경량 SVG로 3차원 데이터 공간을 구현합니다. 크롬북·모바일처럼 GPU가 약한 기기에서도 가볍고 빠르게 동작하며, 유휴 상태에서는 CPU를 전혀 소모하지 않습니다.</p>
 </section>
 
 <section aria-labelledby="showcase-banner">
