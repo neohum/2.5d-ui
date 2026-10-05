@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iso-city · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <script type="module" crossorigin src="./assets/site-DBNLuV0K.js"></script>
+  <script type="module" crossorigin src="./assets/edu-wIZAvrJ6.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/site-Cz4MsWVQ.css">
+  <link rel="stylesheet" crossorigin href="./assets/edu-CYJzMXCU.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="map.html">iso-map</a>
+    <a href="layers.html">iso-layers</a>
+    <a href="city.html" aria-current="page">iso-city</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">Web Component · Edu</span>
+  <h1>&lt;iso-city&gt;</h1>
+  <p class="lede">트리맵(Treemap)으로 바닥을 구역으로 나누고, 그 위에 건물을 세웁니다. 밑면 넓이는 학생 수(size), 건물 높이는 측정 지표(v)를 나타내어 복합적인 학교 통계를 도시처럼 한눈에 조망합니다.</p>
+  <div class="note">
+    <i class="fi fi-rr-shield-check"></i>
+    <span>가상 예시 데이터이며 외부로 전송되지 않습니다. 학년·학급별 집계 지표 예시입니다.</span>
+  </div>
+</section>
+
+<section aria-labelledby="ex">
+  <h2 id="ex">예시: 학교 도시 (학년별 학급 독서량)</h2>
+  <p class="muted">구역은 학년을 나타내며, 각 구역 안의 건물은 학급입니다. 밑면은 학생 수, 높이는 1인당 월 독서 권수(권)입니다.</p>
+  <div class="card example" data-log>
+    <script type="text/html">
+      <iso-city label="학년 및 학급별 학생 수와 월평균 독서량" data='{
+        "k": "학교",
+        "children": [
+          {
+            "k": "1학년",
+            "children": [
+              { "k": "1반", "size": 25, "v": 18 },
+              { "k": "2반", "size": 24, "v": 22 },
+              { "k": "3반", "size": 26, "v": 15 }
+            ]
+          },
+          {
+            "k": "2학년",
+            "children": [
+              { "k": "1반", "size": 26, "v": 24 },
+              { "k": "2반", "size": 25, "v": 20 },
+              { "k": "3반", "size": 27, "v": 28 }
+            ]
+          },
+          {
+            "k": "3학년",
+            "children": [
+              { "k": "1반", "size": 28, "v": 14 },
+              { "k": "2반", "size": 27, "v": 31 },
+              { "k": "3반", "size": 28, "v": 26 }
+            ]
+          }
+        ]
+      }'></iso-city>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="features">
+  <h2 id="features">트리맵 알고리즘과 스마트 라벨링</h2>
+  <p class="muted"><code>iso-city</code>는 정보 밀도가 높은 다차원 계층 데이터를 효과적으로 전달하기 위해 설계되었습니다.</p>
+  <ul>
+    <li><b>Squarified 트리맵 분할:</b> 의존성 없는 순수 알고리즘으로 바닥 면적을 최적의 종횡비로 분할합니다. 학급 인원수가 많은 곳은 밑면이 넓어집니다.</li>
+    <li><b>자동 깊이 정렬:</b> 구역 판들을 먼저 그리고 건물들을 뒤에서 앞으로 완벽한 위상 순서로 렌더링합니다.</li>
+    <li><b>스마트 라벨 제어:</b> 구역 이름은 구역 상단에 항상 노출되며, 건물 라벨은 호버나 포커스 시 부드럽게 나타나 화면이 글자로 가려지지 않습니다. 건물을 가리키면 구역 이름이 흐려져 가독성을 높입니다.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="attrs">
+  <h2 id="attrs">속성</h2>
+  <div class="table"><table>
+    <thead><tr><th>속성</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>data</code></td><td>JSON 객체</td><td>계층 구조 객체(뿌리 → 구역 → 건물). 잘못된 형식이면 오류 문구를 표시합니다</td></tr>
+      <tr><td><code>max</code></td><td>숫자</td><td>축척 최댓값. 생략 시 전체 건물 중 최댓값</td></tr>
+      <tr><td><code>unit</code></td><td>숫자(px)</td><td>기본 등각 단위(<code>--iso-u</code>). 기본 24</td></tr>
+      <tr><td><code>height-units</code></td><td>숫자</td><td>최댓값일 때의 블록 높이 단위. 기본 5</td></tr>
+      <tr><td><code>label</code></td><td>문자열</td><td>접근성 캡션(<code>aria-label</code> 및 숨김 표 <code>caption</code>)</td></tr>
+      <tr><td><code>renderer</code></td><td><code>css</code> | <code>svg</code> | <code>auto</code></td><td>렌더링 방식. 기본 <code>auto</code> (건물 200개 초과 시 SVG 자동 전환)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>data 객체 (Root)</h3>
+  <div class="table"><table>
+    <thead><tr><th>키</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>k</code></td><td>문자열 · 필수</td><td>전체 이름 (예: "학교")</td></tr>
+      <tr><td><code>children</code></td><td>배열 · 필수</td><td>구역(District) 객체들의 배열</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>District 객체</h3>
+  <div class="table"><table>
+    <thead><tr><th>키</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>k</code></td><td>문자열 · 필수</td><td>구역 이름 (예: "1학년")</td></tr>
+      <tr><td><code>children</code></td><td>배열 · 필수</td><td>해당 구역 내 건물(Building) 객체들의 배열</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Building 객체</h3>
+  <div class="table"><table>
+    <thead><tr><th>키</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>k</code></td><td>문자열 · 필수</td><td>건물 이름 (예: "1반")</td></tr>
+      <tr><td><code>size</code></td><td>양의 숫자 · 필수</td><td>밑면 넓이에 반영되는 크기 (예: 학생 수)</td></tr>
+      <tr><td><code>v</code></td><td>0 이상 숫자 · 필수</td><td>건물 높이에 반영되는 측정 지표 (예: 독서량)</td></tr>
+      <tr><td><code>c</code></td><td>CSS 색 · 선택</td><td>건물 블록의 색상</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section aria-labelledby="events">
+  <h2 id="events">이벤트</h2>
+  <p>건물 블록을 누르거나 키보드로 선택하면 <code>iso-select</code>가 발생합니다. <code>detail</code>은 <code>{ district, index, item }</code>입니다.</p>
+  <pre data-copy><code>document.querySelector("iso-city").addEventListener("iso-select", (e) => {
+  const { district, index, item } = e.detail;
+  console.log(`${district}번 구역의 ${item.k}: 학생 수 ${item.size}명, 수치 ${item.v}`);
+});</code></pre>
+</section>
+
+<section aria-labelledby="states">
+  <h2 id="states">빈 상태와 오류</h2>
+  <p class="muted">데이터가 올바르지 않으면 오류 상태 메시지가 표시됩니다.</p>
+  <div class="card example">
+    <script type="text/html">
+      <iso-city data='{}'></iso-city>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="a11y">
+  <h2 id="a11y">접근성</h2>
+  <ul>
+    <li>장면 전체는 <code>role="group"</code>을 가지며 <code>label</code>이 설명으로 부여됩니다.</li>
+    <li>각 건물 블록은 <code>tabindex="0"</code>과 <code>aria-label="구역 이름: 값 (크기 수치)"</code>을 가집니다.</li>
+    <li>스크린 리더를 위해 구역, 건물 이름, 크기, 값을 표 형태로 정리한 숨김 표(<code>.iso-sr-only</code>)가 자동 생성됩니다.</li>
+  </ul>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

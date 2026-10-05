@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>템플릿 · KPI 보드 · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <script type="module" crossorigin src="./assets/site-DBNLuV0K.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/site-Cz4MsWVQ.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">템플릿</span>
+  <h1>원격 수업 KPI 보드</h1>
+  <p class="lede">한 주 동안의 원격 수업 운영 지표 여섯 개와 학년별 비교입니다.</p>
+  <span class="badge">예시 데이터 · 실제 학교 기록이 아닙니다</span>
+</section>
+
+<section aria-labelledby="week">
+  <h2 id="week">이번 주</h2>
+  <div class="kpis">
+    <div class="card"><iso-kpi value="94" max="100" suffix="%" label="출석률"></iso-kpi></div>
+    <div class="card"><iso-kpi value="87" max="100" suffix="%" label="과제 제출률"></iso-kpi></div>
+    <div class="card"><iso-kpi value="41" max="50" suffix="분" label="평균 수업 참여 시간"></iso-kpi></div>
+    <div class="card"><iso-kpi value="12" max="40" suffix="건" label="접속 장애 신고"></iso-kpi></div>
+    <div class="card"><iso-kpi value="4.3" max="5" suffix="점" label="수업 만족도"></iso-kpi></div>
+    <div class="card"><iso-kpi value="118" max="120" suffix="대" label="정상 작동 기기"></iso-kpi></div>
+  </div>
+</section>
+
+<section class="card" aria-labelledby="grades">
+  <h2 id="grades">학년별 과제 제출률 <span class="muted">%</span></h2>
+  <p class="muted">축척을 100%로 고정(<code>max="100"</code>)해 학년끼리 높이를 그대로 비교합니다.</p>
+  <div class="preview">
+    <iso-bars max="100" height-units="4" label="학년별 과제 제출률 (%)" data='[{"k":"1학년","v":91},{"k":"2학년","v":88},{"k":"3학년","v":84},{"k":"4학년","v":86},{"k":"5학년","v":79},{"k":"6학년","v":83}]'></iso-bars>
+  </div>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

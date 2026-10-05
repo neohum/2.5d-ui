@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>템플릿 · 학교 도시 · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <script type="module" crossorigin src="./assets/tpl-schoolcity--CZgK-gz.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/site-DBNLuV0K.js">
+  <link rel="modulepreload" crossorigin href="./assets/edu-wIZAvrJ6.js">
+  <link rel="stylesheet" crossorigin href="./assets/site-Cz4MsWVQ.css">
+  <link rel="stylesheet" crossorigin href="./assets/edu-CYJzMXCU.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="map.html">iso-map</a>
+    <a href="layers.html">iso-layers</a>
+    <a href="city.html">iso-city</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates" aria-current="page">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">교육용 템플릿</span>
+  <h1>학교 도시</h1>
+  <p class="lede"><code>&lt;iso-city&gt;</code>를 활용해 전교 6개 학년 24개 학급을 입체 도시로 시각화합니다. 건물의 밑면 넓이는 학급 인원수, 건물 높이는 1인당 월평균 독서량을 나타냅니다.</p>
+  <span class="badge edu-shield">
+    <i class="fi fi-rr-shield-check"></i>
+    가상 예시 데이터이며 외부로 전송되지 않습니다 (학급 통계 지표)
+  </span>
+</section>
+
+<div class="tabs" role="tablist" aria-label="표시 지표 선택">
+  <button class="tab-btn active" role="tab" id="tab-metric-read" aria-selected="true" data-metric="read"><i class="fi fi-rr-book-alt"></i> 1인당 월평균 독서량 (권)</button>
+  <button class="tab-btn" role="tab" id="tab-metric-loan" aria-selected="false" data-metric="loan"><i class="fi fi-rr-bookmark"></i> 학급별 도서관 대출 횟수 (건)</button>
+</div>
+
+<div class="edu-layout">
+  <section class="card" aria-labelledby="city-title">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;">
+      <h2 id="city-title">전교 학급별 독서 활동 도시</h2>
+      <span class="muted" style="font-size: 0.85rem;">밑면 = 학생 수 · 높이 = 독서 지표</span>
+    </div>
+    <div class="preview">
+      <iso-city id="school-city" label="전교 6개 학년 학급별 학생 수 및 독서량 도시" data='{
+        "k": "학교",
+        "children": [
+          {
+            "k": "1학년",
+            "children": [
+              { "k": "1반", "size": 24, "v": 28 },
+              { "k": "2반", "size": 25, "v": 22 },
+              { "k": "3반", "size": 23, "v": 31 },
+              { "k": "4반", "size": 24, "v": 19 }
+            ]
+          },
+          {
+            "k": "2학년",
+            "children": [
+              { "k": "1반", "size": 25, "v": 24 },
+              { "k": "2반", "size": 26, "v": 20 },
+              { "k": "3반", "size": 25, "v": 26 },
+              { "k": "4반", "size": 24, "v": 17 }
+            ]
+          },
+          {
+            "k": "3학년",
+            "children": [
+              { "k": "1반", "size": 26, "v": 18 },
+              { "k": "2반", "size": 27, "v": 34 },
+              { "k": "3반", "size": 26, "v": 22 },
+              { "k": "4반", "size": 25, "v": 15 }
+            ]
+          },
+          {
+            "k": "4학년",
+            "children": [
+              { "k": "1반", "size": 27, "v": 21 },
+              { "k": "2반", "size": 28, "v": 16 },
+              { "k": "3반", "size": 26, "v": 25 },
+              { "k": "4반", "size": 27, "v": 29 }
+            ]
+          },
+          {
+            "k": "5학년",
+            "children": [
+              { "k": "1반", "size": 28, "v": 14 },
+              { "k": "2반", "size": 27, "v": 23 },
+              { "k": "3반", "size": 28, "v": 19 },
+              { "k": "4반", "size": 26, "v": 27 }
+            ]
+          },
+          {
+            "k": "6학년",
+            "children": [
+              { "k": "1반", "size": 28, "v": 12 },
+              { "k": "2반", "size": 28, "v": 18 },
+              { "k": "3반", "size": 27, "v": 22 },
+              { "k": "4반", "size": 26, "v": 15 }
+            ]
+          }
+        ]
+      }'></iso-city>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.82rem; color: var(--iso-ink-muted); margin-top: 4px;">
+      <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fi fi-rr-vector-alt"></i> 구역 판: 학년 (트리맵 영역)</span>
+      <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fi fi-rr-building"></i> 건물: 학급 (밑면=인원, 높이=독서량)</span>
+      <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fi fi-rr-cursor"></i> 건물을 가리키거나 클릭하면 세부 정보 표시</span>
+    </div>
+  </section>
+
+  <aside class="detail-panel" id="class-panel" aria-labelledby="class-title">
+    <div class="detail-header">
+      <h3 id="class-title">3학년 2반 독서 분석</h3>
+      <span class="badge" id="class-rank" style="color:var(--accent);">최우수 독서 학급</span>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-item">
+        <span class="stat-label">학급 학생 수</span>
+        <span class="stat-val" id="stat-students">27명</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label" id="label-metric">1인당 월 독서량</span>
+        <span class="stat-val" id="stat-val">34권</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">인기 독서 분야</span>
+        <span class="stat-val" id="stat-category" style="font-size:1rem;">과학·탐구</span>
+      </div>
+    </div>
+
+    <div>
+      <h4 style="font-size: 0.92rem; margin: 0 0 8px;">이달의 학급 다독 추천 도서</h4>
+      <div class="table"><table>
+        <thead><tr><th>도서명</th><th>저자/출판사</th><th>대출 수</th></tr></thead>
+        <tbody id="book-list">
+          <tr><td>어린이를 위한 우주 과학 이야기</td><td>김우주 글 / 미래아이</td><td>19회</td></tr>
+          <tr><td>신기한 곤충 탐험 백과</td><td>이생물 글 / 창의숲</td><td>16회</td></tr>
+          <tr><td>시간을 달리는 수학 교실</td><td>박연산 글 / 상상주니어</td><td>14회</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </aside>
+</div>
+
+<section aria-labelledby="desc">
+  <h2 id="desc">다차원 학교 통계의 직관적 해석</h2>
+  <p class="muted">고학년으로 갈수록 학생 수는 유지되나 학업 부담 등으로 인해 독서량이 점진적으로 줄어드는 경향을 도시 전체의 고층 건물 분포를 통해 한눈에 비교할 수 있습니다. 이를 바탕으로 교내 도서관 맞춤 도서 확충 계획을 수립할 수 있습니다.</p>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+
+</body>
+</html>

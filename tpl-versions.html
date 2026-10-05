@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>템플릿 · 버전 기록 뷰어 · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <script type="module" crossorigin src="./assets/tpl-versions-98HKhStM.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/site-DBNLuV0K.js">
+  <link rel="stylesheet" crossorigin href="./assets/site-Cz4MsWVQ.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">템플릿</span>
+  <h1>버전 기록 뷰어</h1>
+  <p class="lede">수업용 앱 하나의 릴리스 기록을 장부로 쌓았습니다. 가장 최근 버전이 맨 위에 놓입니다. 목록이나 장부에서 버전을 고르면 그 장이 오른쪽으로 빠져나오고 내용이 아래에 보입니다. 장부에서 같은 장을 한 번 더 누르면 선택이 풀립니다.</p>
+  <span class="badge">예시 데이터 · 실제 릴리스가 아닙니다</span>
+</section>
+
+<div class="grid">
+  <section class="card" aria-labelledby="book">
+    <h2 id="book">릴리스 장부</h2>
+    <div class="preview">
+      <iso-ledger id="ledger" selected="4" label="릴리스 기록"></iso-ledger>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="list">
+    <h2 id="list">버전</h2>
+    <ul class="versions" id="versions"></ul>
+  </section>
+</div>
+
+<section class="card" aria-labelledby="detail-title" aria-live="polite">
+  <h2 id="detail-title">v2.0</h2>
+  <p class="muted" id="detail-date"></p>
+  <p id="detail-note"></p>
+</section>
+
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

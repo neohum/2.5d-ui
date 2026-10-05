@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSS 프리미티브 · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <script type="module" crossorigin src="./assets/site-DBNLuV0K.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/site-Cz4MsWVQ.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html" aria-current="page">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">코어 CSS · JS 0줄</span>
+  <h1>CSS 프리미티브</h1>
+  <p class="lede">Web Components 없이 클래스와 커스텀 속성만으로 블록을 직접 배치합니다. 모든 클래스는 <code>iso-</code>, 모든 변수는 <code>--iso-</code>로 시작하며, 위치·크기는 단위 없는 숫자에 <code>--iso-u</code>를 곱해 씁니다.</p>
+</section>
+
+<section aria-labelledby="ex-single">
+  <h2 id="ex-single">블록 하나</h2>
+  <p class="muted">면 세 개(<code>.iso-left</code>, <code>.iso-right</code>, <code>.iso-top</code>)와 값·이름 라벨. 장면의 높이와 원점은 직접 정합니다.</p>
+  <div class="card example">
+    <script type="text/html">
+      <div class="iso-scene" style="--iso-u: 32px; height: 220px">
+        <div class="iso-origin" style="--iso-ox: calc(50% - 14px); --iso-oy: 62%">
+          <div class="iso-block" tabindex="0" role="button" aria-label="문서 300" style="--iso-w: 2; --iso-h: 3">
+            <i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i>
+            <span class="iso-label">300</span>
+            <span class="iso-label iso-label--ground">문서</span>
+          </div>
+        </div>
+      </div>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="ex-floor">
+  <h2 id="ex-floor">격자 바닥과 겹침 순서</h2>
+  <p class="muted">뒤에서 앞으로 <code>x + y</code>가 커질수록 <code>--iso-z</code>를 키워야 앞 블록이 뒤 블록을 덮습니다. 가운데 주황 블록에는 <code>.iso-is-active</code>를 걸었습니다.</p>
+  <div class="card example">
+    <script type="text/html">
+      <div class="iso-scene" style="--iso-u: 24px; height: 250px">
+        <div class="iso-origin" style="--iso-ox: 50%; --iso-oy: 70px">
+          <div class="iso-floor iso-grid" style="--iso-w: 6; --iso-d: 6"><i class="iso-top"></i></div>
+          <div class="iso-block" tabindex="0" role="button" aria-label="파랑, 높이 2" style="--iso-x: 1; --iso-y: 1; --iso-h: 2; --iso-z: 2">
+            <i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i>
+          </div>
+          <div class="iso-block iso-is-active" tabindex="0" role="button" aria-label="주황, 높이 3, 강조" style="--iso-x: 3; --iso-y: 2; --iso-h: 3; --iso-z: 5; --iso-c: var(--iso-color-2)">
+            <i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i>
+          </div>
+          <div class="iso-block" tabindex="0" role="button" aria-label="초록, 높이 1" style="--iso-x: 2; --iso-y: 4; --iso-w: 2; --iso-h: 1; --iso-z: 6; --iso-c: var(--iso-color-3)">
+            <i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i>
+          </div>
+        </div>
+      </div>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="palette">
+  <h2 id="palette">범주 팔레트</h2>
+  <p class="muted"><code>--iso-color-1</code>…<code>--iso-color-6</code>. 다크 테마에서는 토큰 값만 바뀝니다.</p>
+  <div class="card example">
+    <script type="text/html">
+      <div class="iso-scene" style="--iso-u: 22px; height: 200px">
+        <div class="iso-origin" style="--iso-ox: calc(50% - 85px); --iso-oy: 60px">
+          <div class="iso-block" style="--iso-x: 0; --iso-h: 1; --iso-z: 1; --iso-c: var(--iso-color-1)"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i></div>
+          <div class="iso-block" style="--iso-x: 1.8; --iso-h: 1.5; --iso-z: 2; --iso-c: var(--iso-color-2)"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i></div>
+          <div class="iso-block" style="--iso-x: 3.6; --iso-h: 2; --iso-z: 3; --iso-c: var(--iso-color-3)"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i></div>
+          <div class="iso-block" style="--iso-x: 5.4; --iso-h: 1.5; --iso-z: 4; --iso-c: var(--iso-color-4)"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i></div>
+          <div class="iso-block" style="--iso-x: 7.2; --iso-h: 1; --iso-z: 5; --iso-c: var(--iso-color-5)"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i></div>
+          <div class="iso-block" style="--iso-x: 9; --iso-h: 0.6; --iso-z: 6; --iso-c: var(--iso-color-6)"><i class="iso-left"></i><i class="iso-right"></i><i class="iso-top"></i></div>
+        </div>
+      </div>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="classes">
+  <h2 id="classes">클래스</h2>
+  <div class="table"><table>
+    <thead><tr><th>클래스</th><th>역할</th></tr></thead>
+    <tbody>
+      <tr><td><code>.iso-scene</code></td><td>컨테이너. <code>position: relative</code>. <code>--iso-u</code>를 정한다</td></tr>
+      <tr><td><code>.iso-origin</code></td><td><code>.iso-scene</code>의 자식. 세계 원점. <code>left: var(--iso-ox, 50%)</code>, <code>top: var(--iso-oy, 50%)</code></td></tr>
+      <tr><td><code>.iso-block</code></td><td>직육면체. <code>.iso-origin</code> 안에 둔다</td></tr>
+      <tr><td><code>.iso-top</code>, <code>.iso-left</code>, <code>.iso-right</code></td><td><code>.iso-block</code>의 면 세 개(이 순서로 마크업하지 않아도 됨)</td></tr>
+      <tr><td><code>.iso-label</code></td><td>윗면 중심 위에 뜨는 값 텍스트(기울이지 않음)</td></tr>
+      <tr><td><code>.iso-label--ground</code></td><td>앞 바닥 모서리 아래의 항목 이름</td></tr>
+      <tr><td><code>.iso-floor</code></td><td>바닥판. <code>.iso-top</code> 면만 쓰며 <code>--iso-h: 0</code></td></tr>
+      <tr><td><code>.iso-grid</code></td><td><code>.iso-floor</code>에 격자선을 더하는 수식 클래스</td></tr>
+      <tr><td><code>.iso-is-active</code></td><td>강조 상태(호버와 같은 들림 + 윤곽)</td></tr>
+      <tr><td><code>.iso-sr-only</code></td><td>시각적으로 숨긴 접근성 표</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section aria-labelledby="vars">
+  <h2 id="vars">블록 변수</h2>
+  <p class="muted"><code>.iso-block</code>과 <code>.iso-floor</code>에 씁니다. 화면 좌표는 <code>X = (x − y)·0.866·u</code>, <code>Y = ((x + y)·0.5 − z)·u</code>입니다.</p>
+  <div class="table"><table>
+    <thead><tr><th>변수</th><th>기본값</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>--iso-x</code>, <code>--iso-y</code></td><td><code>0</code></td><td>바닥 위치</td></tr>
+      <tr><td><code>--iso-w</code>, <code>--iso-d</code></td><td><code>1</code></td><td>x, y 방향 크기</td></tr>
+      <tr><td><code>--iso-h</code></td><td><code>1</code></td><td>높이. <code>@property</code>로 <code>&lt;number&gt;</code> 등록되어 트랜지션된다</td></tr>
+      <tr><td><code>--iso-c</code></td><td><code>var(--iso-color-1)</code></td><td>기본색. 왼쪽 면은 <code>--iso-shade-left</code>(18%), 오른쪽 면은 <code>--iso-shade-right</code>(34%)만큼 검정과 섞는다</td></tr>
+      <tr><td><code>--iso-z</code></td><td><code>0</code></td><td><code>z-index</code>(정수). 격자 배치에서는 <code>x + y</code> 순서로 증가</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section aria-labelledby="tokens">
+  <h2 id="tokens">토큰</h2>
+  <div class="table"><table>
+    <thead><tr><th>토큰</th><th>쓰임</th></tr></thead>
+    <tbody>
+      <tr><td><code>--iso-color-1</code> … <code>-6</code></td><td>범주 팔레트</td></tr>
+      <tr><td><code>--iso-floor</code>, <code>--iso-grid-line</code></td><td>바닥판 색, 격자선 색</td></tr>
+      <tr><td><code>--iso-ink</code>, <code>--iso-ink-muted</code></td><td>값 라벨, 이름 라벨 글자색</td></tr>
+      <tr><td><code>--iso-lift</code></td><td>호버·포커스·강조 때 들리는 높이(기본 <code>6px</code>)</td></tr>
+      <tr><td><code>--iso-duration</code></td><td>높이·들림 트랜지션 시간(기본 <code>180ms</code>)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section aria-labelledby="a11y">
+  <h2 id="a11y">접근성</h2>
+  <ul>
+    <li>누를 수 있는 블록에는 <code>tabindex="0"</code>, <code>role="button"</code>, 값을 담은 <code>aria-label</code>을 직접 붙이세요. 키보드 포커스는 점선 윤곽으로, 강조(<code>.iso-is-active</code>)는 실선 윤곽으로 구분됩니다.</li>
+    <li>장식용 블록(위 팔레트처럼)에는 포커스를 주지 말고, 값을 전하려면 <code>.iso-sr-only</code> 표를 함께 두세요.</li>
+    <li><code>prefers-reduced-motion: reduce</code>에서는 트랜지션과 들림이 꺼집니다.</li>
+  </ul>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

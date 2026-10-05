@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>템플릿 · 학교 평면도 · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <script type="module" crossorigin src="./assets/tpl-floorplan-_pjhvG8f.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/site-DBNLuV0K.js">
+  <link rel="modulepreload" crossorigin href="./assets/edu-wIZAvrJ6.js">
+  <link rel="stylesheet" crossorigin href="./assets/site-Cz4MsWVQ.css">
+  <link rel="stylesheet" crossorigin href="./assets/edu-CYJzMXCU.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="map.html">iso-map</a>
+    <a href="layers.html">iso-layers</a>
+    <a href="city.html">iso-city</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates" aria-current="page">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">교육용 템플릿</span>
+  <h1>학교 평면도</h1>
+  <p class="lede"><code>&lt;iso-map&gt;</code>의 평면 배치와 임의 크기 칸 깊이 정렬을 활용해 학교 본관의 1층부터 4층까지의 실별 공간 현황 및 크롬북 기기 활용도를 한눈에 파악합니다.</p>
+  <span class="badge edu-shield">
+    <i class="fi fi-rr-shield-check"></i>
+    가상 예시 데이터이며 외부로 전송되지 않습니다
+  </span>
+</section>
+
+<div class="tabs" role="tablist" aria-label="학교 층별 선택">
+  <button class="tab-btn active" role="tab" id="tab-1f" aria-selected="true" data-floor="1"><i class="fi fi-rr-building"></i> 1층 (행정·보건·도서관)</button>
+  <button class="tab-btn" role="tab" id="tab-2f" aria-selected="false" data-floor="2"><i class="fi fi-rr-building"></i> 2층 (1·2학년 교실)</button>
+  <button class="tab-btn" role="tab" id="tab-3f" aria-selected="false" data-floor="3"><i class="fi fi-rr-building"></i> 3층 (3·4학년 교실·과학실)</button>
+  <button class="tab-btn" role="tab" id="tab-4f" aria-selected="false" data-floor="4"><i class="fi fi-rr-building"></i> 4층 (5·6학년 교실·컴퓨터실)</button>
+</div>
+
+<div class="edu-layout">
+  <section class="card" aria-labelledby="floor-title">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;">
+      <h2 id="floor-title">본관 1층 평면도</h2>
+      <span class="muted" style="font-size: 0.85rem;">높이 = 주간 크롬북 사용 시간 (시간)</span>
+    </div>
+    <div class="preview">
+      <iso-map id="floor-map" label="본관 1층 평면도 크롬북 사용 시간" data='{
+        "floor": { "w": 10.5, "d": 7.5 },
+        "items": [
+          { "k": "중앙복도", "x": 0.5, "y": 3.0, "w": 9.5, "d": 1.2 },
+          { "k": "행정실", "x": 0.5, "y": 0.5, "w": 2.2, "d": 2.0, "v": 12 },
+          { "k": "교장실", "x": 3.0, "y": 0.5, "w": 1.8, "d": 2.0, "v": 4 },
+          { "k": "보건실", "x": 5.1, "y": 0.5, "w": 2.0, "d": 2.0, "v": 8 },
+          { "k": "방송실", "x": 7.4, "y": 0.5, "w": 2.6, "d": 2.0, "v": 15 },
+          { "k": "도서관", "x": 0.5, "y": 4.5, "w": 4.5, "d": 2.5, "v": 32 },
+          { "k": "돌봄교실1", "x": 5.3, "y": 4.5, "w": 2.2, "d": 2.5, "v": 18 },
+          { "k": "돌봄교실2", "x": 7.8, "y": 4.5, "w": 2.2, "d": 2.5, "v": 20 }
+        ]
+      }'></iso-map>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.82rem; color: var(--iso-ink-muted); margin-top: 4px;">
+      <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fi fi-rr-apps"></i> 실별 블록: 사용 시간(h)</span>
+      <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fi fi-rr-arrows-h"></i> 복도: 공용 고정 구조물</span>
+    </div>
+  </section>
+
+  <aside class="detail-panel" id="room-panel" aria-labelledby="room-name">
+    <div class="detail-header">
+      <h3 id="room-name">도서관</h3>
+      <span class="badge" id="room-tag">특별실</span>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-item">
+        <span class="stat-label">주간 크롬북 사용</span>
+        <span class="stat-val" id="stat-usage">32.0h</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">특별실 예약률</span>
+        <span class="stat-val" id="stat-reserve">88%</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">동시 접속 기기</span>
+        <span class="stat-val" id="stat-devices">24대</span>
+      </div>
+    </div>
+
+    <div>
+      <h4 style="font-size: 0.92rem; margin: 0 0 8px;">주간 예약 및 활용 일정</h4>
+      <div class="table"><table>
+        <thead><tr><th>교시</th><th>학급/단체</th><th>활동 내용</th></tr></thead>
+        <tbody id="room-schedule">
+          <tr><td>2교시</td><td>3학년 1반</td><td>디지털 온작품 읽기</td></tr>
+          <tr><td>3교시</td><td>4학년 2반</td><td>미디어 정보 탐색 수업</td></tr>
+          <tr><td>5교시</td><td>도서 자치동아리</td><td>북트레일러 영상 제작</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </aside>
+</div>
+
+<section aria-labelledby="desc">
+  <h2 id="desc">평면도 구성 원리</h2>
+  <p class="muted"><code>iso-map</code>의 <code>w</code>와 <code>d</code> 속성을 실제 교실과 특별실의 건축 비율(예: 일반 교실 1칸, 도서관 2칸 등)에 맞추어 유연하게 조절할 수 있습니다. 층을 단면으로 겹치지 않고 탭으로 분리하여 각 층의 세부 공간을 명확히 확인하도록 설계했습니다.</p>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+
+</body>
+</html>

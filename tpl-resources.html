@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>템플릿 · 자원 대시보드 · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <script type="module" crossorigin src="./assets/site-DBNLuV0K.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/site-Cz4MsWVQ.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">템플릿</span>
+  <h1>크롬북 자원 대시보드</h1>
+  <p class="lede">한 학교의 학생용 크롬북 120대가 자원을 어떻게 쓰는지 한 화면에 모았습니다.</p>
+  <span class="badge">예시 데이터 · 실제 기기 측정값이 아닙니다</span>
+</section>
+
+<section aria-labelledby="now">
+  <h2 id="now">지금</h2>
+  <div class="kpis">
+    <div class="card"><iso-kpi value="38" max="100" suffix="%" label="평균 CPU 사용률"></iso-kpi></div>
+    <div class="card"><iso-kpi value="2.9" max="4" suffix=" GB" label="평균 메모리 사용"></iso-kpi></div>
+    <div class="card"><iso-kpi value="64" max="100" suffix="%" label="평균 배터리 잔량"></iso-kpi></div>
+  </div>
+</section>
+
+<div class="grid">
+  <section class="card" aria-labelledby="apps">
+    <h2 id="apps">앱별 메모리 <span class="muted">MB</span></h2>
+    <div class="preview">
+      <iso-bars label="앱별 평균 메모리 사용량 (MB)" data='[{"k":"문서","v":180},{"k":"시트","v":240},{"k":"화상회의","v":410},{"k":"클래스","v":150},{"k":"동영상","v":320}]'></iso-bars>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="months">
+    <h2 id="months">월별 저장 공간 <span class="muted">GB</span></h2>
+    <p class="muted">계열: 문서(파랑) · 사진(주황) · 앱 캐시(초록)</p>
+    <div class="preview">
+      <iso-stack label="월별 평균 저장 공간 사용 (GB)" data='[{"k":"3월","parts":[{"name":"문서","v":4},{"name":"사진","v":6},{"name":"앱 캐시","v":3}]},{"k":"4월","parts":[{"name":"문서","v":5},{"name":"사진","v":8},{"name":"앱 캐시","v":4}]},{"k":"5월","parts":[{"name":"문서","v":6},{"name":"사진","v":9},{"name":"앱 캐시","v":2}]}]'></iso-stack>
+    </div>
+  </section>
+</div>
+
+<section class="card" aria-labelledby="heat">
+  <h2 id="heat">요일·교시별 동시 접속 <span class="muted">대</span></h2>
+  <div class="preview">
+    <iso-heatmap label="요일·교시별 동시 접속 기기 수" data='{"rows":["월","화","수","목","금"],"cols":["1교시","2교시","3교시","4교시","5교시"],"values":[[96,104,88,40,72],[101,110,92,38,80],[90,99,85,35,70],[98,108,90,42,76],[84,92,70,30,52]]}'></iso-heatmap>
+  </div>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

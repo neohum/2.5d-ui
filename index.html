@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>소개 · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+  <script type="module" crossorigin src="./assets/site-DBNLuV0K.js"></script>
+  <script type="module" crossorigin src="./assets/edu-wIZAvrJ6.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/site-Cz4MsWVQ.css">
+  <link rel="stylesheet" crossorigin href="./assets/edu-CYJzMXCU.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html" aria-current="page">소개</a>
+    <a href="showcase.html">쇼케이스</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="map.html">iso-map</a>
+    <a href="layers.html">iso-layers</a>
+    <a href="city.html">iso-city</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">v0.1 준비 중 · MIT</span>
+  <h1>CSS만으로 그리는 등각 2.5D 데이터 컴포넌트</h1>
+  <p class="lede">WebGL도 캔버스도 없이, 블록 200개까지는 면 세 개를 2D <code>matrix()</code> 하나씩으로, 그보다 많으면 인라인 SVG 한 장으로 그립니다. 크롬북처럼 GPU가 약한 기기에서도 가볍게 돌고, 값이 바뀔 때가 아니면 CPU를 쓰지 않습니다.</p>
+</section>
+
+<section aria-labelledby="showcase-banner">
+  <div class="card" style="border: 2px solid var(--accent); background: color-mix(in oklch, var(--accent) 5%, var(--surface)); padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+    <div style="display: grid; gap: 6px;">
+      <span class="badge" style="border-color: var(--accent); color: var(--accent); font-weight: 600;">NEW · 인터랙티브 체험관</span>
+      <h2 id="showcase-banner" style="font-size: 1.25rem;">2.5D 3D 축 가이드 &amp; 실시간 수치 조절 쇼케이스</h2>
+      <p class="muted">도표와 그래프의 X축, Y축, Z(높이)축 항목의 의미를 확인하고, 슬라이더로 수치를 직접 변경해 보세요. 클라우드 랙, 물류창고, 에너지 빌딩, 마이크로서비스 등 다양한 실무 사례도 함께 체험할 수 있습니다.</p>
+    </div>
+    <a class="tab-btn" href="showcase.html" style="background: var(--accent); color: #fff; font-weight: 600; text-decoration: none; padding: 10px 18px; border-radius: 8px;">
+      <i class="fi fi-rr-cube"></i> 쇼케이스 열기
+    </a>
+  </div>
+</section>
+
+<section aria-labelledby="hero-title">
+  <div class="card">
+    <h2 id="hero-title">앱별 메모리 사용량 <span class="muted">MB · 예시 데이터</span></h2>
+    <div class="example" data-log>
+      <script type="text/html">
+        <iso-bars label="앱별 메모리 사용량 (MB)" data='[{"k":"문서","v":180},{"k":"시트","v":240},{"k":"화상회의","v":410},{"k":"클래스","v":150},{"k":"동영상","v":320},{"k":"그림판","v":90}]'></iso-bars>
+      </script>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="why">
+  <h2 id="why">이렇게 만듭니다</h2>
+  <ul>
+    <li><b>2D 변환만.</b> <code>preserve-3d</code>, 캔버스, 렌더 루프를 쓰지 않습니다.</li>
+    <li><b>색 하나로 세 면.</b> 옆면 음영은 <code>color-mix(in oklch)</code>로 만들어, <code>--iso-c</code> 하나만 바꾸면 블록 전체가 바뀝니다.</li>
+    <li><b>텍스트는 DOM.</b> 값과 이름은 일반 텍스트라 선택·복사·번역·스크린 리더가 그대로 동작합니다. 모든 값을 담은 숨김 표도 함께 만듭니다.</li>
+    <li><b>테마와 동작 줄이기.</b> 다크 모드(<code>prefers-color-scheme</code>, <code>data-theme</code>)와 <code>prefers-reduced-motion</code>을 토큰 단계에서 따릅니다.</li>
+    <li><b>학생 개인정보 원칙.</b> 교육용 컴포넌트와 템플릿의 모든 데이터는 가상 예시 데이터이며 학생은 번호로만 식별되고 외부로 전송되지 않습니다.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="render">
+  <h2 id="render">렌더링 방식</h2>
+  <p>엘리먼트는 두 경로 중 하나로 그립니다. 고르는 것은 <code>renderer</code> 속성(React는 <code>renderer</code> prop)이고, 기본값 <code>auto</code>는 블록 수로 고릅니다. 기준은 측정으로 정했습니다(<code>docs/adr/0001-render-approach.md</code>).</p>
+  <div class="table"><table>
+    <thead><tr><th>경로</th><th>언제</th><th>그리는 법</th></tr></thead>
+    <tbody>
+      <tr><td>CSS 면</td><td><code>auto</code>에서 블록 200개(<code>SVG_THRESHOLD</code>) 이하, 또는 <code>renderer="css"</code></td><td>블록마다 <code>div</code>와 면 세 개, 2D <code>matrix()</code>. <a href="primitives.html">CSS 프리미티브</a>와 같은 구조</td></tr>
+      <tr><td>SVG</td><td><code>auto</code>에서 200개 초과, 또는 <code>renderer="svg"</code></td><td>장면 하나에 인라인 <code>&lt;svg&gt;</code> 한 장, 블록마다 다각형 세 개. 호버는 블록 1000개까지 예산 안입니다. 첫 렌더는 500개에서 예산 안이고, 1000개에서는 측정 방법에 따라 90–106ms로 예산(100ms) 경계에 걸립니다. 1000개를 넘어도 그리지만 예산은 보장하지 않습니다</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>두 경로에서 같은 것:</b> <code>iso-select</code> 이벤트(클릭·Enter·Space), 키보드 탭 순서와 포커스 유지, 블록의 <code>role</code>·<code>aria-label</code>, 숨김 접근성 표, 색 검사와 빈·오류 상태, 다크 테마·팔레트 토큰, 호버·포커스 들림과 동작 줄이기.</p>
+  <p><b>알려진 한계 (v0.1)</b></p>
+  <ul>
+    <li>값이 바뀔 때의 높이 애니메이션은 두 경로 모두 프레임 예산(표시 프레임 드롭 ≤ 5%)을 지키지 못합니다. 개선은 v0.2로 미뤘습니다.</li>
+    <li>SVG 경로는 값 변경을 움직이지 않고 새 높이로 바로 바꿉니다(<code>iso-ledger</code>의 빼냄도 바로 옮깁니다).</li>
+    <li>블록마다 <code>--iso-x</code>·<code>-y</code>·<code>-w</code>·<code>-d</code>·<code>-h</code>·<code>-z</code>를 CSS로 덮어쓰는 것은 CSS 경로에서만 듣습니다. SVG 경로는 좌표를 JS가 다각형에 직접 씁니다. 색 <code>--iso-c</code>는 두 경로 모두 듣습니다.</li>
+  </ul>
+  <pre data-copy><code>&lt;!-- 블록 수와 무관하게 SVG로 --&gt;
+&lt;iso-heatmap renderer="svg" data='…'&gt;&lt;/iso-heatmap&gt;
+
+// React
+&lt;IsoHeatmap renderer="svg" data={data} /&gt;</code></pre>
+</section>
+
+<section aria-labelledby="install">
+  <h2 id="install">설치 및 사용법</h2>
+  
+  <h3>1. npm 패키지로 설치</h3>
+  <p class="muted">프로젝트에 npm 패키지 <code>2.5d-ui</code>를 설치하여 번들러(Vite, Webpack, Next.js 등)에서 직접 import할 수 있습니다.</p>
+  <pre data-copy><code>npm install 2.5d-ui</code></pre>
+  <pre data-copy><code>// JavaScript / TypeScript 번들러
+import "2.5d-ui/css";
+import "2.5d-ui";
+
+// 교육용 컴포넌트 (map, layers, city) 필요 시
+import "2.5d-ui/edu/css";
+import "2.5d-ui/edu"; // 또는 경량 엔트리: import "2.5d-ui/edu/map" 등</code></pre>
+
+  <h3>2. CDN으로 HTML에 직접 넣기 (jsDelivr / unpkg)</h3>
+  <p class="muted">별도 설치나 빌드 과정 없이 전 세계 CDN을 통해 HTML 문서에 태그 두 줄로 즉시 사용할 수 있습니다. npm에 등록된 패키지는 jsDelivr와 unpkg에서 실시간 미러링됩니다.</p>
+  <pre data-copy><code>&lt;!-- jsDelivr CDN --&gt;
+&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/2.5d-ui@0.2.0/dist/iso.min.css"&gt;
+&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/2.5d-ui@0.2.0/dist/iso-edu.min.css"&gt;
+&lt;script type="module" src="https://cdn.jsdelivr.net/npm/2.5d-ui@0.2.0/dist/iso.min.js"&gt;&lt;/script&gt;
+&lt;script type="module" src="https://cdn.jsdelivr.net/npm/2.5d-ui@0.2.0/dist/iso-edu.min.js"&gt;&lt;/script&gt;</code></pre>
+
+  <h3>3. 로컬 소스로 개발 및 빌드</h3>
+  <p class="muted">저장소를 클론받아 Vite 개발 서버나 정적 빌드를 직접 돌릴 수도 있습니다.</p>
+  <pre data-copy><code>git clone https://github.com/neohum/2.5d-ui.git
+cd 2.5d-ui &amp;&amp; npm ci
+npm run site      # 로컬 개발 서버 (http://localhost:5173/)
+npm run build     # core 번들 생성 (packages/core/dist/)</code></pre>
+</section>
+
+<section aria-labelledby="components">
+  <h2 id="components">구성 요소</h2>
+  <ul class="links">
+    <li><a class="card" href="showcase.html" style="border-color: var(--accent);"><b><i class="fi fi-rr-cube"></i> 3D 인터랙티브 쇼케이스</b><span>X·Y·Z 축 안내와 실시간 수치 조절, 다양한 실무 사례</span></a></li>
+    <li><a class="card" href="primitives.html"><b><i class="fi fi-rr-box"></i> CSS 프리미티브</b><span>JS 없이 블록·바닥판·라벨을 직접 배치</span></a></li>
+    <li><a class="card" href="bars.html"><b><i class="fi fi-rr-chart-simple"></i> &lt;iso-bars&gt;</b><span>한 줄 막대</span></a></li>
+    <li><a class="card" href="stack.html"><b><i class="fi fi-rr-chart-histogram"></i> &lt;iso-stack&gt;</b><span>기둥 안에 계열을 쌓는 적층 막대</span></a></li>
+    <li><a class="card" href="heatmap.html"><b><i class="fi fi-rr-grid"></i> &lt;iso-heatmap&gt;</b><span>행×열 격자, 셀 높이로 값</span></a></li>
+    <li><a class="card" href="ledger.html"><b><i class="fi fi-rr-book-bookmark"></i> &lt;iso-ledger&gt;</b><span>장부처럼 쌓은 기록, 한 장을 앞으로</span></a></li>
+    <li><a class="card" href="kpi.html"><b><i class="fi fi-rr-tachometer-fast"></i> &lt;iso-kpi&gt;</b><span>지표 하나를 채움 높이로</span></a></li>
+    <li><a class="card" href="map.html"><b><i class="fi fi-rr-map-marker"></i> &lt;iso-map&gt;</b><span>바닥 평면 위 임의 칸 배치 (교육용)</span></a></li>
+    <li><a class="card" href="layers.html"><b><i class="fi fi-rr-layers"></i> &lt;iso-layers&gt;</b><span>위아래 순서 판과 층 펼침 (교육용)</span></a></li>
+    <li><a class="card" href="city.html"><b><i class="fi fi-rr-building"></i> &lt;iso-city&gt;</b><span>트리맵 기반 구역과 건물 (교육용)</span></a></li>
+    <li><a class="card" href="playground.html"><b><i class="fi fi-rr-play"></i> 플레이그라운드</b><span>JSON과 속성을 바꿔 가며 바로 확인</span></a></li>
+  </ul>
+</section>
+
+<section aria-labelledby="templates">
+  <h2 id="templates">템플릿</h2>
+  <p class="muted">여러 컴포넌트를 함께 쓴 화면 예시입니다. 모든 값은 가상 예시 데이터입니다.</p>
+  <ul class="links">
+    <li><a class="card" href="tpl-resources.html"><b><i class="fi fi-rr-dashboard"></i> 자원 대시보드</b><span>기기 자원 사용량을 한 화면에</span></a></li>
+    <li><a class="card" href="tpl-kpi.html"><b><i class="fi fi-rr-chart-pie-alt"></i> KPI 보드</b><span>핵심 지표 여섯 개와 비교 막대</span></a></li>
+    <li><a class="card" href="tpl-versions.html"><b><i class="fi fi-rr-time-past"></i> 버전 기록 뷰어</b><span>릴리스 장부에서 한 버전 살펴보기</span></a></li>
+    <li><a class="card" href="tpl-seating.html"><b><i class="fi fi-rr-chair"></i> 교실 좌석표</b><span>iso-map 활용 20인 좌석 및 과제 기록</span></a></li>
+    <li><a class="card" href="tpl-floorplan.html"><b><i class="fi fi-rr-map"></i> 학교 평면도</b><span>iso-map 활용 1~4층 탭 전환 및 기기 현황</span></a></li>
+    <li><a class="card" href="tpl-achievement.html"><b><i class="fi fi-rr-layers"></i> 성취기준 층 구조</b><span>iso-layers 활용 3~6학년 단원 성취 분석</span></a></li>
+    <li><a class="card" href="tpl-schoolcity.html"><b><i class="fi fi-rr-building"></i> 학교 도시</b><span>iso-city 활용 6개 학년 학급 독서 활동</span></a></li>
+  </ul>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

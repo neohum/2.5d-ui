@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iso-stack · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <script type="module" crossorigin src="./assets/site-DBNLuV0K.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/site-Cz4MsWVQ.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html" aria-current="page">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">Web Component</span>
+  <h1>&lt;iso-stack&gt;</h1>
+  <p class="lede">기둥 하나 안에 여러 계열을 아래에서 위로 쌓습니다. 기둥 꼭대기에는 합계가, 바닥에는 항목 이름이 붙습니다.</p>
+</section>
+
+<section aria-labelledby="ex">
+  <h2 id="ex">예시</h2>
+  <p class="muted">계열: CPU(파랑) · 메모리(주황) · 디스크(초록). 계열 색은 조각 순서대로 범주 팔레트를 씁니다. 같은 계열은 기둥마다 같은 자리에 두세요.</p>
+  <div class="card example" data-log>
+    <script type="text/html">
+      <iso-stack label="월별 자원 사용 (GB)" data='[{"k":"1월","parts":[{"name":"CPU","v":30},{"name":"메모리","v":20},{"name":"디스크","v":10}]},{"k":"2월","parts":[{"name":"CPU","v":45},{"name":"메모리","v":25},{"name":"디스크","v":15}]},{"k":"3월","parts":[{"name":"CPU","v":20},{"name":"메모리","v":40},{"name":"디스크","v":5}]},{"k":"4월","parts":[{"name":"CPU","v":35},{"name":"메모리","v":30},{"name":"디스크","v":12}]}]'></iso-stack>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="ex-color">
+  <h2 id="ex-color">계열 색 지정</h2>
+  <p class="muted">계열: 제출(초록) · 지각(주황). 조각마다 <code>c</code>로 색을 정합니다.</p>
+  <div class="card example">
+    <script type="text/html">
+      <iso-stack max="60" height-units="4" label="반별 과제 제출 (건)" data='[{"k":"1반","parts":[{"name":"제출","v":24,"c":"#2e9e6a"},{"name":"지각","v":4,"c":"#d9772b"}]},{"k":"2반","parts":[{"name":"제출","v":27,"c":"#2e9e6a"},{"name":"지각","v":2,"c":"#d9772b"}]},{"k":"3반","parts":[{"name":"제출","v":19,"c":"#2e9e6a"},{"name":"지각","v":8,"c":"#d9772b"}]}]'></iso-stack>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="attrs">
+  <h2 id="attrs">속성</h2>
+  <div class="table"><table>
+    <thead><tr><th>속성</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>data</code></td><td>JSON</td><td>기둥 배열. 잘못된 JSON이면 그리지 않고 <code>console.error</code> 후 오류 문구를 보인다</td></tr>
+      <tr><td><code>max</code></td><td>숫자</td><td>기둥 합계의 축척 최댓값. 없으면 가장 큰 합계. 합계가 넘으면 기둥이 꽉 찬 높이에서 잘리고, 그 위 조각은 그리지 않는다(숨김 표에는 남는다)</td></tr>
+      <tr><td><code>unit</code></td><td>숫자(px)</td><td><code>--iso-u</code> 값. 기본 24</td></tr>
+      <tr><td><code>height-units</code></td><td>숫자</td><td>최댓값이 차지하는 블록 높이. 기본 5</td></tr>
+      <tr><td><code>label</code></td><td>문자열</td><td>접근성 캡션(<code>aria-label</code>과 숨김 표 <code>caption</code>)</td></tr>
+      <tr><td><code>renderer</code></td><td><code>css</code> | <code>svg</code> | <code>auto</code></td><td>그리는 방식. 기본 <code>auto</code>(그 밖의 값도 같음): 블록 200개 이하면 CSS 면, 넘으면 SVG. <code>css</code>·<code>svg</code>는 블록 수와 무관하게 고정. <a href="index.html#render">렌더링 방식</a></td></tr>
+    </tbody>
+  </table></div>
+  <h3>data 항목</h3>
+  <div class="table"><table>
+    <thead><tr><th>키</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>k</code></td><td>문자열 · 필수</td><td>기둥 이름(바닥 라벨)</td></tr>
+      <tr><td><code>parts</code></td><td>배열 · 필수</td><td>아래에서 위로 쌓을 조각</td></tr>
+      <tr><td><code>parts[].name</code></td><td>문자열 · 선택</td><td>계열 이름. 없으면 "계열 n"</td></tr>
+      <tr><td><code>parts[].v</code></td><td>0 이상 숫자 · 필수</td><td>조각 값</td></tr>
+      <tr><td><code>parts[].c</code></td><td>CSS 색 · 선택</td><td>조각 색. 없거나 문자열이 아니면 조각 순서의 범주 팔레트. <a href="bars.html#colors">색 규칙</a>을 따르며, 그려지는 조각에 거부되는 색이 있으면 오류 상태. <code>max</code>에 잘려 그리지 않는 조각의 색은 검사하지 않는다</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section aria-labelledby="events">
+  <h2 id="events">이벤트</h2>
+  <p>조각을 누르거나 Enter·Space를 누르면 <code>iso-select</code>가 버블링됩니다. <code>detail</code>은 <code>{ index, item, part }</code> — <code>index</code>는 기둥, <code>part</code>는 그 기둥 안 조각의 순번입니다.</p>
+  <pre data-copy><code>document.querySelector("iso-stack").addEventListener("iso-select", (e) => {
+  const { index, item, part } = e.detail;
+  console.log(item.k, item.parts[part].name, item.parts[part].v);
+});</code></pre>
+</section>
+
+<section aria-labelledby="a11y">
+  <h2 id="a11y">접근성</h2>
+  <ul>
+    <li>조각 하나하나가 포커스를 받으며 이름은 <code>"기둥 계열: 값"</code>입니다(예: "1월 CPU: 30").</li>
+    <li>숨김 표는 항목·계열·값 세 열로 모든 조각을 담습니다.</li>
+    <li>색만으로 계열을 구분하지 않도록, 화면 가까이에 계열 범례를 글로 함께 두세요.</li>
+  </ul>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

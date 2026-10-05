@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iso-ledger · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+  <script type="module" crossorigin src="./assets/site-DBNLuV0K.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/site-Cz4MsWVQ.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html" aria-current="page">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">Web Component</span>
+  <h1>&lt;iso-ledger&gt;</h1>
+  <p class="lede">기록을 장부처럼 한 장씩 쌓습니다. 배열 순서가 시간 순서이고 <b>마지막 항목(가장 최근)이 맨 위</b>에 놓입니다. <code>selected</code>로 고른 장은 오른쪽으로 빠져나옵니다.</p>
+</section>
+
+<section aria-labelledby="ex">
+  <h2 id="ex">예시</h2>
+  <p class="muted">릴리스 기록, 세 번째 장(v1.2) 선택 (예시 데이터). 장을 누르면 그 장이 선택되고, 선택된 장을 한 번 더 누르면 선택이 풀립니다.</p>
+  <div class="card example" data-log>
+    <script type="text/html">
+      <iso-ledger selected="2" label="릴리스 기록" data='[{"k":"v1.0","note":"첫 공개"},{"k":"v1.1","note":"다크 테마"},{"k":"v1.2","note":"키보드 탐색"},{"k":"v1.3","note":"적층 막대"},{"k":"v2.0","note":"React 래퍼"}]'></iso-ledger>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="attrs">
+  <h2 id="attrs">속성</h2>
+  <div class="table"><table>
+    <thead><tr><th>속성</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>data</code></td><td>JSON</td><td>기록 배열(오래된 것부터). 잘못된 JSON이면 그리지 않고 <code>console.error</code> 후 오류 문구를 보인다</td></tr>
+      <tr><td><code>selected</code></td><td>정수(인덱스)</td><td>빼낼 장. 없으면 아무 장도 빼지 않는다. 엘리먼트가 클릭·Enter에 맞춰 스스로 바꾸며, 그 장 블록에 <code>aria-pressed="true"</code>를 단다</td></tr>
+      <tr><td><code>unit</code></td><td>숫자(px)</td><td><code>--iso-u</code> 값. 기본 24</td></tr>
+      <tr><td><code>label</code></td><td>문자열</td><td>접근성 캡션(<code>aria-label</code>과 숨김 표 <code>caption</code>)</td></tr>
+      <tr><td><code>renderer</code></td><td><code>css</code> | <code>svg</code> | <code>auto</code></td><td>그리는 방식. 기본 <code>auto</code>(그 밖의 값도 같음): 블록 200개 이하면 CSS 면, 넘으면 SVG. <code>css</code>·<code>svg</code>는 블록 수와 무관하게 고정. <a href="index.html#render">렌더링 방식</a></td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted">장 두께는 값이 아니라 고정이므로 <code>max</code>와 <code>height-units</code>는 장부 모양에 영향을 주지 않습니다.</p>
+  <h3>data 항목</h3>
+  <div class="table"><table>
+    <thead><tr><th>키</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>k</code></td><td>문자열 · 필수</td><td>장 이름(예: 버전)</td></tr>
+      <tr><td><code>note</code></td><td>문자열 · 선택</td><td>설명. 라벨에 <code>"k · note"</code>로 붙는다</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section aria-labelledby="events">
+  <h2 id="events">이벤트</h2>
+  <p>장을 누르거나 Enter·Space를 누르면 <code>iso-select</code>(<code>detail: { index, item }</code>)가 버블링됩니다. 엘리먼트는 이 이벤트로 <code>selected</code>를 먼저 바꿔 두므로(같은 장이면 지움), 바깥에서는 <code>selected</code> 속성을 읽어 화면을 맞추면 됩니다.</p>
+  <pre data-copy><code>const ledger = document.querySelector("iso-ledger");
+ledger.addEventListener("iso-select", () => {
+  const s = ledger.getAttribute("selected"); // null이면 선택 해제
+  console.log(s == null ? "선택 없음" : "선택: " + s);
+});</code></pre>
+</section>
+
+<section aria-labelledby="a11y">
+  <h2 id="a11y">접근성</h2>
+  <ul>
+    <li>장마다 포커스를 받고, 선택 여부를 <code>aria-pressed</code>로 알립니다. 화면의 선택 강조도 같은 <code>aria-pressed="true"</code>에서 나옵니다 — 오른쪽으로 빠지고(CSS 경로에서는 미끄러지듯, SVG 경로에서는 바로), 살짝 들리고(<code>--iso-lift</code>, 동작 줄이기에서는 들리지 않음), 실선 윤곽이 생깁니다. 그 장에 키보드 포커스가 있으면 포커스의 점선 윤곽이 대신 보입니다.</li>
+    <li>숨김 표가 모든 장의 이름과 설명을 담습니다.</li>
+    <li>선택은 위치(빠져나옴)로 보입니다. 고른 장의 내용은 화면의 글로도 함께 보여 주세요 — <a href="tpl-versions.html">버전 기록 뷰어</a>가 그 예입니다.</li>
+  </ul>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>
