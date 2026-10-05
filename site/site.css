@@ -82,7 +82,7 @@ section { display: grid; gap: 14px; min-width: 0; }
 
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
 /* 그리드 항목이 넓은 장면·코드에 밀려 페이지 폭을 넘지 않게 한다(넘치는 쪽이 스스로 스크롤). */
-:is(main, section, .card, .grid, .play) > * { min-width: 0; }
+:is(main, section, .card, .grid, .play, .edu-layout) > * { min-width: 0; }
 .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
 .links { list-style: none; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
 .links a { display: grid; gap: 2px; height: 100%; text-decoration: none; color: inherit; }
@@ -93,7 +93,7 @@ section { display: grid; gap: 14px; min-width: 0; }
 /* 예시: 엘리먼트 장면은 데이터로 폭이 정해지므로 넘치면 이 상자 안에서만 가로로 스크롤한다. */
 .preview { overflow-x: auto; display: grid; justify-items: center; padding-block: 4px; }
 .preview > * { max-width: none; }
-:is(iso-bars, iso-stack, iso-heatmap, iso-ledger, iso-kpi) { display: block; }
+:is(iso-bars, iso-stack, iso-heatmap, iso-ledger, iso-kpi, iso-map, iso-layers, iso-city) { display: block; }
 
 
 /* 칸이 작아 화면 라벨이 겹치는 큰 예시: 라벨만 숨긴다(aria-label·숨김 표는 남는다). */
@@ -139,10 +139,53 @@ textarea[aria-invalid="true"] { border-color: var(--bad); }
 
 /* ---------- 템플릿 ---------- */
 .badge { justify-self: start; font-size: 0.75rem; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; color: var(--iso-ink-muted); }
+.badge.edu-shield { border-color: var(--field-line); color: var(--iso-ink); font-weight: 500; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; }
 .kpis { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
 .kpis .card { justify-items: center; }
 .versions { list-style: none; padding: 0; display: grid; gap: 4px; }
 .versions button { width: 100%; text-align: left; font: inherit; font-size: 0.9rem; color: var(--iso-ink); background: none; border: 1px solid transparent; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
 .versions button[aria-pressed="true"] { border-color: var(--line); background: var(--bg); font-weight: 600; }
+
+/* 2열 반응형 교육용 대시보드 레이아웃 */
+.edu-layout { display: grid; gap: 20px; align-items: start; }
+@media (min-width: 860px) {
+  .edu-layout { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+}
+
+/* 교육용 탭 목록 (좌측 정렬 준수) */
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.tab-btn {
+  display: inline-flex; align-items: center; justify-content: flex-start; text-align: left; gap: 6px;
+  font: inherit; font-size: 0.88rem; line-height: 1; padding: 8px 14px; border: 1px solid var(--line);
+  border-radius: 6px; background: var(--surface); color: var(--iso-ink); cursor: pointer;
+}
+.tab-btn:hover { border-color: var(--accent); }
+.tab-btn[aria-pressed="true"], .tab-btn.active {
+  background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600;
+}
+
+/* 사이드바 / 목록형 버튼 (좌측 정렬 원칙 준수) */
+.btn-list { list-style: none; padding: 0; display: grid; gap: 6px; }
+.btn-list button {
+  width: 100%; display: flex; align-items: center; justify-content: flex-start; text-align: left;
+  font: inherit; font-size: 0.9rem; color: var(--iso-ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; cursor: pointer; gap: 8px;
+}
+.btn-list button:hover { border-color: var(--accent); }
+.btn-list button[aria-pressed="true"], .btn-list button.active {
+  border-color: var(--accent); background: var(--bg); font-weight: 600;
+}
+
+/* 상세 정보 패널 */
+.detail-panel {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 18px; display: grid; gap: 14px;
+}
+.detail-header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.detail-header h3 { font-size: 1.15rem; margin: 0; }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+.stat-item { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; display: grid; gap: 2px; }
+.stat-item .stat-label { font-size: 0.75rem; color: var(--iso-ink-muted); }
+.stat-item .stat-val { font-family: var(--f-mono); font-size: 1.15rem; font-weight: 700; color: var(--iso-ink); }
 
 footer { border-top: 1px solid var(--line); padding: 16px; font-size: 0.82rem; color: var(--iso-ink-muted); text-align: center; }

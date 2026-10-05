@@ -6,9 +6,12 @@
 <title>플레이그라운드 · 2.5d-ui</title>
 <link rel="icon" href="data:,">
 <script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
 <link rel="stylesheet" href="/packages/core/src/css/index.css">
+<link rel="stylesheet" href="/packages/core/src/css/edu.css">
 <link rel="stylesheet" href="./site.css">
 <script type="module" src="/packages/core/src/index.ts"></script>
+<script type="module" src="/packages/core/src/edu.ts"></script>
 <script type="module" src="./site.ts"></script>
 </head>
 <body>
@@ -22,6 +25,9 @@
     <a href="heatmap.html">iso-heatmap</a>
     <a href="ledger.html">iso-ledger</a>
     <a href="kpi.html">iso-kpi</a>
+    <a href="map.html">iso-map</a>
+    <a href="layers.html">iso-layers</a>
+    <a href="city.html">iso-city</a>
     <a href="playground.html" aria-current="page">플레이그라운드</a>
     <a href="index.html#templates">템플릿</a>
   </nav>
@@ -44,6 +50,9 @@
           <option value="iso-heatmap">iso-heatmap</option>
           <option value="iso-ledger">iso-ledger</option>
           <option value="iso-kpi">iso-kpi</option>
+          <option value="iso-map">iso-map</option>
+          <option value="iso-layers">iso-layers</option>
+          <option value="iso-city">iso-city</option>
         </select>
       </label>
       <label>max <input id="pg-max" type="number" min="0.01" step="any" inputmode="decimal" placeholder="데이터 최댓값"></label>

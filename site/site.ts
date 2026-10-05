@@ -82,8 +82,13 @@ for (const ex of document.querySelectorAll<HTMLElement>(".example")) {
     log.setAttribute("aria-live", "polite");
     ex.append(log);
     ex.addEventListener("iso-select", (e) => {
-      const { index, item } = (e as CustomEvent<{ index: number; item: unknown }>).detail;
-      log.textContent = `iso-select → index: ${index}, item: ${JSON.stringify(item)}`;
+      const d = ((e as CustomEvent).detail || {}) as Record<string, unknown>;
+      const parts: string[] = [];
+      if ("layer" in d) parts.push(`layer: ${d.layer}`);
+      if ("district" in d) parts.push(`district: ${d.district}`);
+      if ("index" in d) parts.push(`index: ${d.index}`);
+      if ("item" in d) parts.push(`item: ${JSON.stringify(d.item)}`);
+      log.textContent = `iso-select → ${parts.join(", ")}`;
     });
   }
   ex.append(pre);

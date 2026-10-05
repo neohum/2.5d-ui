@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>템플릿 · 교실 좌석표 · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<link rel="stylesheet" href="/packages/core/src/css/edu.css">
+<link rel="stylesheet" href="./site.css">
+<script type="module" src="/packages/core/src/index.ts"></script>
+<script type="module" src="/packages/core/src/edu.ts"></script>
+<script type="module" src="./site.ts"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="map.html">iso-map</a>
+    <a href="layers.html">iso-layers</a>
+    <a href="city.html">iso-city</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates" aria-current="page">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">교육용 템플릿</span>
+  <h1>교실 좌석표</h1>
+  <p class="lede"><code>&lt;iso-map&gt;</code>을 활용해 교실 책상 배치와 학생별 주간 학습 참여도를 직관적으로 시각화합니다. 좌석을 클릭하면 해당 학생의 세부 기록이 연동됩니다.</p>
+  <span class="badge edu-shield">
+    <i class="fi fi-rr-shield-check"></i>
+    가상 예시 데이터이며 외부로 전송되지 않습니다 (학생은 번호로만 표시)
+  </span>
+</section>
+
+<div class="edu-layout">
+  <section class="card" aria-labelledby="seating-map">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;">
+      <h2 id="seating-map">3학년 2반 좌석 배치도</h2>
+      <span class="muted" style="font-size: 0.85rem;">높이 = 주간 과제 제출 횟수 (0~8회)</span>
+    </div>
+    <div class="preview">
+      <iso-map id="seating-chart" label="3학년 2반 좌석표 과제 제출 횟수" data='{
+        "floor": { "w": 9.5, "d": 8.5 },
+        "items": [
+          { "k": "교탁", "x": 3.25, "y": 0.4, "w": 3, "d": 0.9 },
+          { "k": "1번", "x": 0.8, "y": 2.2, "v": 6 },
+          { "k": "2번", "x": 2.6, "y": 2.2, "v": 7 },
+          { "k": "3번", "x": 4.4, "y": 2.2, "v": 3 },
+          { "k": "4번", "x": 6.2, "y": 2.2, "state": "absent" },
+          { "k": "5번", "x": 8.0, "y": 2.2, "v": 8 },
+          { "k": "6번", "x": 0.8, "y": 3.8, "v": 5 },
+          { "k": "7번", "x": 2.6, "y": 3.8, "v": 2 },
+          { "k": "8번", "x": 4.4, "y": 3.8, "v": 7 },
+          { "k": "9번", "x": 6.2, "y": 3.8, "v": 6 },
+          { "k": "10번", "x": 8.0, "y": 3.8, "v": 4 },
+          { "k": "11번", "x": 0.8, "y": 5.4, "v": 8 },
+          { "k": "12번", "x": 2.6, "y": 5.4, "v": 6 },
+          { "k": "13번", "x": 4.4, "y": 5.4, "state": "empty" },
+          { "k": "14번", "x": 6.2, "y": 5.4, "v": 5 },
+          { "k": "15번", "x": 8.0, "y": 5.4, "v": 7 },
+          { "k": "16번", "x": 0.8, "y": 7.0, "v": 3 },
+          { "k": "17번", "x": 2.6, "y": 7.0, "v": 7 },
+          { "k": "18번", "x": 4.4, "y": 7.0, "v": 6 },
+          { "k": "19번", "x": 6.2, "y": 7.0, "v": 8 },
+          { "k": "20번", "x": 8.0, "y": 7.0, "v": 1 }
+        ]
+      }'></iso-map>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.82rem; color: var(--iso-ink-muted); margin-top: 4px;">
+      <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fi fi-rr-chair"></i> 좌석 블록: 제출 횟수</span>
+      <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fi fi-rr-cross-circle"></i> 결석(absent): 높이 0 점선</span>
+      <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fi fi-rr-minus-circle"></i> 빈자리(empty): 점선</span>
+      <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fi fi-rr-cube"></i> 교탁: 고정 구조물</span>
+    </div>
+  </section>
+
+  <aside class="detail-panel" id="student-panel" aria-labelledby="panel-title">
+    <div class="detail-header">
+      <h3 id="panel-title">1번 학생 학습 활동 기록</h3>
+      <span class="badge" id="student-status">정상 출석</span>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-item">
+        <span class="stat-label">주간 과제 제출</span>
+        <span class="stat-val" id="stat-homework">6회</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">발표 참여 횟수</span>
+        <span class="stat-val" id="stat-speech">4회</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">크롬북 학습 시간</span>
+        <span class="stat-val" id="stat-time">8.5h</span>
+      </div>
+    </div>
+
+    <div>
+      <h4 style="font-size: 0.92rem; margin: 0 0 8px;">이번 주 일별 과제 현황</h4>
+      <div class="table"><table>
+        <thead><tr><th>요일</th><th>과목</th><th>상태</th></tr></thead>
+        <tbody id="student-tasks">
+          <tr><td>월요일</td><td>수학 익힘책 풀이</td><td><span style="color:var(--accent);">제출 완료</span></td></tr>
+          <tr><td>화요일</td><td>국어 독서록 기록</td><td><span style="color:var(--accent);">제출 완료</span></td></tr>
+          <tr><td>수요일</td><td>사회 탐구 과제</td><td><span style="color:var(--accent);">제출 완료</span></td></tr>
+          <tr><td>목요일</td><td>과학 실험 관찰</td><td><span style="color:var(--accent);">제출 완료</span></td></tr>
+          <tr><td>금요일</td><td>영어 낱말 쓰기</td><td><span style="color:var(--accent);">제출 완료</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <button class="btn" type="button" id="btn-mock-attend"><i class="fi fi-rr-check"></i> 출석 처리</button>
+      <button class="btn" type="button" id="btn-mock-absent"><i class="fi fi-rr-cross"></i> 결석 처리</button>
+    </div>
+  </aside>
+</div>
+
+<section aria-labelledby="desc">
+  <h2 id="desc">설계 의도 및 활용 방안</h2>
+  <p class="muted">교사는 교탁 앞에 서서 교실을 바라보는 시선 그대로 화면에서 각 좌석의 위치를 파악할 수 있습니다. 수치만 나열된 표와 달리, 교실 뒤편이나 창가 좌석 학생들의 과제 참여율 편차를 시각적으로 즉각 감지할 수 있습니다.</p>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+
+<script type="module">
+  const students = {
+    "1번": { state: "normal", v: 6, speech: 4, time: "8.5h" },
+    "2번": { state: "normal", v: 7, speech: 5, time: "9.2h" },
+    "3번": { state: "normal", v: 3, speech: 2, time: "5.0h" },
+    "4번": { state: "absent", v: 0, speech: 0, time: "0h" },
+    "5번": { state: "normal", v: 8, speech: 6, time: "10.1h" },
+    "6번": { state: "normal", v: 5, speech: 3, time: "7.0h" },
+    "7번": { state: "normal", v: 2, speech: 1, time: "4.2h" },
+    "8번": { state: "normal", v: 7, speech: 5, time: "8.8h" },
+    "9번": { state: "normal", v: 6, speech: 4, time: "7.9h" },
+    "10번": { state: "normal", v: 4, speech: 3, time: "6.5h" },
+    "11번": { state: "normal", v: 8, speech: 7, time: "11.0h" },
+    "12번": { state: "normal", v: 6, speech: 4, time: "8.0h" },
+    "13번": { state: "empty", v: 0, speech: 0, time: "0h" },
+    "14번": { state: "normal", v: 5, speech: 2, time: "6.8h" },
+    "15번": { state: "normal", v: 7, speech: 5, time: "9.5h" },
+    "16번": { state: "normal", v: 3, speech: 1, time: "4.8h" },
+    "17번": { state: "normal", v: 7, speech: 4, time: "8.6h" },
+    "18번": { state: "normal", v: 6, speech: 3, time: "7.5h" },
+    "19번": { state: "normal", v: 8, speech: 6, time: "10.4h" },
+    "20번": { state: "normal", v: 1, speech: 1, time: "3.0h" }
+  };
+
+  const chart = document.getElementById("seating-chart");
+  const title = document.getElementById("panel-title");
+  const badge = document.getElementById("student-status");
+  const hw = document.getElementById("stat-homework");
+  const speech = document.getElementById("stat-speech");
+  const time = document.getElementById("stat-time");
+
+  let currentKey = "1번";
+
+  function selectStudent(key) {
+    if (!students[key]) return;
+    currentKey = key;
+    const s = students[key];
+    title.textContent = `${key} 학생 학습 활동 기록`;
+    if (s.state === "absent") {
+      badge.textContent = "결석";
+      badge.style.color = "var(--bad)";
+    } else if (s.state === "empty") {
+      badge.textContent = "빈자리";
+      badge.style.color = "var(--iso-ink-muted)";
+    } else {
+      badge.textContent = "정상 출석";
+      badge.style.color = "var(--accent)";
+    }
+    hw.textContent = `${s.v}회`;
+    speech.textContent = `${s.speech}회`;
+    time.textContent = s.time;
+  }
+
+  chart.addEventListener("iso-select", (e) => {
+    const item = e.detail?.item;
+    if (item && item.k) {
+      selectStudent(String(item.k));
+    }
+  });
+
+  document.getElementById("btn-mock-attend").addEventListener("click", () => {
+    if (students[currentKey]) {
+      students[currentKey].state = "normal";
+      students[currentKey].v = 5;
+      selectStudent(currentKey);
+    }
+  });
+
+  document.getElementById("btn-mock-absent").addEventListener("click", () => {
+    if (students[currentKey]) {
+      students[currentKey].state = "absent";
+      students[currentKey].v = 0;
+      selectStudent(currentKey);
+    }
+  });
+</script>
+</body>
+</html>

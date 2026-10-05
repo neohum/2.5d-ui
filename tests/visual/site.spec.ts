@@ -9,14 +9,31 @@ const PAGES = [
   "heatmap",
   "ledger",
   "kpi",
+  "map",
+  "layers",
+  "city",
   "playground",
   "tpl-resources",
   "tpl-kpi",
   "tpl-versions",
+  "tpl-seating",
+  "tpl-floorplan",
+  "tpl-achievement",
+  "tpl-schoolcity",
 ] as const;
 
-// 플레이그라운드는 입력 상태가 주제라 동작 테스트로만 본다.
-const SHOTS = PAGES.filter((p) => p != "playground");
+// 스크린샷 기준 이미지가 있는 기존 페이지 목록
+const SHOTS = [
+  "primitives",
+  "bars",
+  "stack",
+  "heatmap",
+  "ledger",
+  "kpi",
+  "tpl-resources",
+  "tpl-kpi",
+  "tpl-versions",
+] as const;
 
 const url = (p: string) => `/site/${p}.html`;
 
@@ -145,7 +162,15 @@ test.describe("플레이그라운드", () => {
 
   test("엘리먼트 종류를 바꾸면 그 예시 데이터로 다시 그린다", async ({ page }) => {
     await open(page, "playground");
-    const counts = { "iso-stack": 6, "iso-heatmap": 9, "iso-ledger": 3, "iso-kpi": 2 } as const;
+    const counts = {
+      "iso-map": 7,
+      "iso-layers": 6,
+      "iso-city": 6,
+      "iso-stack": 6,
+      "iso-heatmap": 9,
+      "iso-ledger": 3,
+      "iso-kpi": 2,
+    } as const;
     for (const [tag, n] of Object.entries(counts)) {
       await page.locator("#pg-type").selectOption(tag);
       await expect(page.locator(`#pg-stage ${tag} .iso-block`)).toHaveCount(n);
@@ -305,7 +330,7 @@ test.describe("엘리먼트 페이지가 실제로 그린다", () => {
     await expect(page.locator(".example iso-heatmap .iso-svg")).toHaveCount(0);
   });
 
-  for (const p of ["bars", "stack", "heatmap", "ledger", "kpi"]) {
+  for (const p of ["bars", "stack", "heatmap", "ledger", "kpi", "map", "layers", "city"]) {
     test(`${p}: 속성 표에 renderer가 있다`, async ({ page }) => {
       await open(page, p);
       await expect(page.locator("#attrs").locator("xpath=..").locator("tbody tr", { hasText: "renderer" })).toHaveCount(1);
@@ -321,7 +346,7 @@ test.describe("엘리먼트 페이지가 실제로 그린다", () => {
     await expect(kpis.nth(0).locator('.iso-block[aria-hidden="true"]')).toHaveCount(1);
   });
 
-  for (const p of ["heatmap", "ledger", "kpi"]) {
+  for (const p of ["heatmap", "ledger", "kpi", "map", "layers", "city"]) {
     test(`${p}: 속성 표·이벤트·접근성 절이 있다`, async ({ page }) => {
       await open(page, p);
       for (const id of ["attrs", "events", "a11y"]) await expect(page.locator(`#${id}`)).toBeVisible();
@@ -332,9 +357,17 @@ test.describe("엘리먼트 페이지가 실제로 그린다", () => {
 
 test.describe("템플릿", () => {
   test("모두 예시 데이터임을 밝힌다", async ({ page }) => {
-    for (const p of ["tpl-resources", "tpl-kpi", "tpl-versions"]) {
+    for (const p of [
+      "tpl-resources",
+      "tpl-kpi",
+      "tpl-versions",
+      "tpl-seating",
+      "tpl-floorplan",
+      "tpl-achievement",
+      "tpl-schoolcity",
+    ]) {
       await open(page, p);
-      await expect(page.locator(".badge")).toContainText("예시 데이터");
+      await expect(page.locator(".badge").first()).toContainText("예시 데이터");
     }
   });
 
@@ -382,5 +415,51 @@ test.describe("템플릿", () => {
     await expect(ledger).not.toHaveAttribute("selected");
     await expect(page.locator("#detail-title")).toHaveText("선택한 버전 없음");
     await expect(page.locator('#versions button[aria-pressed="true"]')).toHaveCount(0);
+  });
+
+  test("교실 좌석표: 20개 좌석과 교탁이 그려지고 좌석 클릭 시 패널이 연동된다", async ({ page }) => {
+    await open(page, "tpl-seating");
+    const map = page.locator("#seating-chart");
+    await expect(map.locator(".iso-block")).toHaveCount(21); // 교탁 1 + 좌석 20
+    await expect(page.locator("#stat-homework")).toHaveText("6회");
+
+    // 2번 좌석 클릭
+    await map.locator('.iso-block[tabindex="0"]').nth(1).dispatchEvent("click");
+    await expect(page.locator("#panel-title")).toHaveText("2번 학생 학습 활동 기록");
+    await expect(page.locator("#stat-homework")).toHaveText("7회");
+  });
+
+  test("학교 평면도: 1~4층 탭 전환 시 데이터가 변경되고 실 클릭 시 상세 정보가 연동된다", async ({ page }) => {
+    await open(page, "tpl-floorplan");
+    const map = page.locator("#floor-map");
+    await expect(page.locator("#floor-title")).toHaveText("본관 1층 평면도");
+    await expect(page.locator("#room-name")).toHaveText("도서관");
+
+    // 2층 탭 클릭
+    await page.locator("#tab-2f").click();
+    await expect(page.locator("#floor-title")).toHaveText("본관 2층 평면도");
+    await expect(page.locator("#room-name")).toHaveText("1학년1반");
+    await expect(page.locator("#stat-usage")).toHaveText("16.0h");
+  });
+
+  test("성취기준 층 구조: 4개 학년 층이 그려지고 단원 선택 시 세부 성취기준이 연동된다", async ({ page }) => {
+    await open(page, "tpl-achievement");
+    const layers = page.locator("#layers-chart");
+    await expect(layers.locator(".iso-block[aria-expanded]")).toHaveCount(4); // 4개 층 판
+    await expect(page.locator("#unit-name")).toHaveText("5학년 · 약분과 통분");
+    await expect(page.locator("#std-code")).toContainText("분수의 성질을 이용하여");
+  });
+
+  test("학교 도시: 6개 학년 24개 학급 건물이 그려지고 지표 전환 탭이 동작한다", async ({ page }) => {
+    await open(page, "tpl-schoolcity");
+    const city = page.locator("#school-city");
+    await expect(city.locator(".iso-block[data-district]")).toHaveCount(6); // 6개 구역 판
+    await expect(city.locator('.iso-block[tabindex="0"]')).toHaveCount(24); // 24개 건물
+    await expect(page.locator("#class-title")).toHaveText("3학년 2반 독서 분석");
+
+    // 도서관 대출 횟수 탭 클릭
+    await page.locator("#tab-metric-loan").click();
+    await expect(page.locator("#label-metric")).toHaveText("학급 대출 횟수");
+    await expect(page.locator("#stat-val")).toHaveText("92건");
   });
 });
