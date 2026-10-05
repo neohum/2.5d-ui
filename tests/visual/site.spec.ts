@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 // 문서 사이트(site/). 저장소 루트를 띄운 vite 서버에서 /site/… 로 연다.
 const PAGES = [
   "index",
+  "showcase",
   "primitives",
   "bars",
   "stack",
@@ -463,3 +464,57 @@ test.describe("템플릿", () => {
     await expect(page.locator("#stat-val")).toHaveText("92건");
   });
 });
+
+test.describe("쇼케이스", () => {
+  test("3D 축 안내 패널과 실시간 수치 조절 실험실이 동작한다", async ({ page }) => {
+    await open(page, "showcase");
+
+    // 기본 iso-bars 축 정보 확인
+    await expect(page.locator("#axis-x-name")).toHaveText("서비스 항목 (Category)");
+    await expect(page.locator("#axis-z-name")).toContainText("메모리");
+    await expect(page.locator("#lab-chart")).toHaveCount(1);
+
+    // 탭 전환: iso-heatmap
+    const heatmapTab = page.locator('.lab-tab-btn[data-tag="iso-heatmap"]');
+    await heatmapTab.click();
+    await expect(page.locator("#axis-x-name")).toHaveText("시간대 (Hour)");
+    await expect(page.locator("#axis-y-name")).toHaveText("요일 (Day)");
+    await expect(page.locator("#lab-chart")).toHaveAttribute("label", "요일·시간대별 네트워크 트래픽 (Gbps)");
+
+    // 탭 전환: iso-layers
+    const layersTab = page.locator('.lab-tab-btn[data-tag="iso-layers"]');
+    await layersTab.click();
+    await expect(page.locator("#axis-z-name")).toContainText("층수(Layer)");
+  });
+
+  test("실무 사례 1~4 시뮬레이션 인터랙션이 정상 반영된다", async ({ page }) => {
+    await open(page, "showcase");
+
+    // 사례 1: 데이터센터 랙 냉각 장애 버튼 클릭
+    const case1FailBtn = page.locator("#btn-case1-fail");
+    await case1FailBtn.click();
+    const case1Chart = page.locator("#case1-chart");
+    await expect(case1Chart).toHaveAttribute("data", /99/);
+
+    // 사례 2: 스마트 물류창고 입고 버튼 클릭
+    const case2InBtn = page.locator("#btn-case2-in");
+    await case2InBtn.click();
+    const case2Chart = page.locator("#case2-chart");
+    await expect(case2Chart).toHaveAttribute("data", /A-01/);
+
+    // 사례 3: 스마트 빌딩 층 간격 펼침 슬라이더 조작
+    const case3Slider = page.locator("#case3-open-slider");
+    await case3Slider.fill("2");
+    await case3Slider.dispatchEvent("input");
+    const case3Chart = page.locator("#case3-chart");
+    await expect(case3Chart).toHaveAttribute("open", "2");
+    await expect(page.locator("#case3-open-val")).toContainText("3F 업무공간 B");
+
+    // 사례 4: 마이크로서비스 트래픽 폭증 버튼 클릭
+    const case4SpikeBtn = page.locator("#btn-case4-spike");
+    await case4SpikeBtn.click();
+    const case4Chart = page.locator("#case4-chart");
+    await expect(case4Chart).toHaveAttribute("data", /장애 위험/);
+  });
+});
+

@@ -19,6 +19,7 @@
   <a class="brand" href="index.html">2.5d-ui</a>
   <nav aria-label="문서">
     <a href="index.html" aria-current="page">소개</a>
+    <a href="showcase.html">쇼케이스</a>
     <a href="primitives.html">CSS 프리미티브</a>
     <a href="bars.html">iso-bars</a>
     <a href="stack.html">iso-stack</a>
@@ -38,6 +39,19 @@
   <span class="eyebrow">v0.1 준비 중 · MIT</span>
   <h1>CSS만으로 그리는 등각 2.5D 데이터 컴포넌트</h1>
   <p class="lede">WebGL도 캔버스도 없이, 블록 200개까지는 면 세 개를 2D <code>matrix()</code> 하나씩으로, 그보다 많으면 인라인 SVG 한 장으로 그립니다. 크롬북처럼 GPU가 약한 기기에서도 가볍게 돌고, 값이 바뀔 때가 아니면 CPU를 쓰지 않습니다.</p>
+</section>
+
+<section aria-labelledby="showcase-banner">
+  <div class="card" style="border: 2px solid var(--accent); background: color-mix(in oklch, var(--accent) 5%, var(--surface)); padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+    <div style="display: grid; gap: 6px;">
+      <span class="badge" style="border-color: var(--accent); color: var(--accent); font-weight: 600;">NEW · 인터랙티브 체험관</span>
+      <h2 id="showcase-banner" style="font-size: 1.25rem;">2.5D 3D 축 가이드 &amp; 실시간 수치 조절 쇼케이스</h2>
+      <p class="muted">도표와 그래프의 X축, Y축, Z(높이)축 항목의 의미를 확인하고, 슬라이더로 수치를 직접 변경해 보세요. 클라우드 랙, 물류창고, 에너지 빌딩, 마이크로서비스 등 다양한 실무 사례도 함께 체험할 수 있습니다.</p>
+    </div>
+    <a class="tab-btn" href="showcase.html" style="background: var(--accent); color: #fff; font-weight: 600; text-decoration: none; padding: 10px 18px; border-radius: 8px;">
+      <i class="fi fi-rr-cube"></i> 쇼케이스 열기
+    </a>
+  </div>
 </section>
 
 <section aria-labelledby="hero-title">
@@ -114,6 +128,7 @@ cp packages/core/dist/iso*.min.css packages/core/dist/iso*.min.js 내-페이지-
 <section aria-labelledby="components">
   <h2 id="components">구성 요소</h2>
   <ul class="links">
+    <li><a class="card" href="showcase.html" style="border-color: var(--accent);"><b><i class="fi fi-rr-cube"></i> 3D 인터랙티브 쇼케이스</b><span>X·Y·Z 축 안내와 실시간 수치 조절, 다양한 실무 사례</span></a></li>
     <li><a class="card" href="primitives.html"><b><i class="fi fi-rr-box"></i> CSS 프리미티브</b><span>JS 없이 블록·바닥판·라벨을 직접 배치</span></a></li>
     <li><a class="card" href="bars.html"><b><i class="fi fi-rr-chart-simple"></i> &lt;iso-bars&gt;</b><span>한 줄 막대</span></a></li>
     <li><a class="card" href="stack.html"><b><i class="fi fi-rr-chart-histogram"></i> &lt;iso-stack&gt;</b><span>기둥 안에 계열을 쌓는 적층 막대</span></a></li>
