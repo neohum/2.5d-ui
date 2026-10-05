@@ -10,6 +10,8 @@
     "site": "vite site",
     "site:build": "vite build site",
     "build": "npm run build -w packages/core",
+    "publish:core": "npm run build && npm publish -w packages/core --access public",
+    "publish:core:dry": "npm run build && npm publish -w packages/core --dry-run",
     "test": "vitest run",
     "pretest:react18": "npm ci --prefix tests/react18 --no-audit --no-fund",
     "test:react18": "vitest run --config tests/react18/vitest.config.ts && npm run typecheck:react18",
