@@ -11,6 +11,7 @@ const repo = fileURLToPath(new URL("..", import.meta.url));
 
 export default defineConfig({
   root: site,
+  base: "./",
   resolve: { alias: [{ find: /^\/packages\//, replacement: repo + "packages/" }] },
   server: { fs: { allow: [repo] } },
   build: {
