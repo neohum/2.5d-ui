@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iso-layers · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<link rel="stylesheet" href="/packages/core/src/css/edu.css">
+<link rel="stylesheet" href="./site.css">
+<script type="module" src="/packages/core/src/index.ts"></script>
+<script type="module" src="/packages/core/src/edu.ts"></script>
+<script type="module" src="./site.ts"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="map.html">iso-map</a>
+    <a href="layers.html" aria-current="page">iso-layers</a>
+    <a href="city.html">iso-city</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">Web Component · Edu</span>
+  <h1>&lt;iso-layers&gt;</h1>
+  <p class="lede">학년이나 단계처럼 위아래 순서가 있는 판을 쌓고, 판마다 항목 블록을 올립니다. 한 층을 펼치면 위 층들이 들려 올라가 안쪽 블록이 가려지지 않습니다.</p>
+  <div class="note">
+    <i class="fi fi-rr-shield-check"></i>
+    <span>가상 예시 데이터이며 외부로 전송되지 않습니다. 학년·단원별 통계 예시입니다.</span>
+  </div>
+</section>
+
+<section aria-labelledby="ex">
+  <h2 id="ex">예시: 학년별 수학 성취기준 층 구조</h2>
+  <p class="muted">판을 클릭하면 해당 층이 펼쳐지고(open), 다시 클릭하면 접힙니다. 키보드 화살표 키(위/아래: 층, 좌/우: 항목)로 자유롭게 탐색할 수 있습니다.</p>
+  <div class="card example" data-log>
+    <script type="text/html">
+      <iso-layers label="초등 3~6학년 수학 단원별 성취도 (%)" open="1" data='[
+        {
+          "k": "3학년",
+          "items": [
+            { "k": "덧셈과 뺄셈", "v": 85 },
+            { "k": "평면도형", "v": 78 },
+            { "k": "나눗셈", "v": 72 },
+            { "k": "분수", "v": 68 }
+          ]
+        },
+        {
+          "k": "4학년",
+          "items": [
+            { "k": "큰 수", "v": 88 },
+            { "k": "각도", "v": 82 },
+            { "k": "곱셈과 나눗셈", "v": 74 },
+            { "k": "분수의 덧셈", "v": 70 }
+          ]
+        },
+        {
+          "k": "5학년",
+          "items": [
+            { "k": "약수와 배수", "v": 65 },
+            { "k": "약분과 통분", "v": 62 },
+            { "k": "분수의 곱셈", "v": 76 },
+            { "k": "합동과 대칭", "v": 80 }
+          ]
+        },
+        {
+          "k": "6학년",
+          "items": [
+            { "k": "분수의 나눗셈", "v": 69 },
+            { "k": "소수의 나눗셈", "v": 73 },
+            { "k": "공간과 입체", "v": 84 },
+            { "k": "비례식과 비례배분", "v": 66 }
+          ]
+        }
+      ]'></iso-layers>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="features">
+  <h2 id="features">층 펼침과 키보드 내비게이션</h2>
+  <p class="muted"><code>iso-layers</code>는 수직 위계와 항목별 세부 수치를 동시에 표현할 수 있는 최적의 구조를 제공합니다.</p>
+  <ul>
+    <li><b>부드러운 판 들림 (GPU 가속):</b> 층이 펼쳐질 때 레이아웃을 다시 계산하지 않고 CSS <code>translate</code>로 위쪽 판들을 들어 올리므로 60fps 이상의 부드러운 애니메이션이 유지됩니다.</li>
+    <li><b>로빙 탭인덱스 (Roving tabindex):</b> 화살표 위/아래 키로 층간을 오가고, 좌/우 키로 층 내 단원 항목들을 차례로 이동하며 포커스된 항목의 층이 자동으로 펼쳐집니다.</li>
+    <li><b>측면 판 라벨:</b> 각 층의 판 우측에 학년/단계 이름 라벨이 깔끔하게 정렬되어 항상 노출됩니다.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="attrs">
+  <h2 id="attrs">속성</h2>
+  <div class="table"><table>
+    <thead><tr><th>속성</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>data</code></td><td>JSON 배열</td><td>층들의 배열(<code>Layer[]</code>). 잘못된 형식이면 오류 문구를 표시합니다</td></tr>
+      <tr><td><code>open</code></td><td>정수 (0 이상)</td><td>현재 펼쳐진 층의 0-based 인덱스. 지정하지 않거나 유효하지 않으면 모든 층이 기본 높이로 닫힘</td></tr>
+      <tr><td><code>max</code></td><td>숫자</td><td>축척 최댓값. 생략 시 전체 항목 중 최댓값</td></tr>
+      <tr><td><code>unit</code></td><td>숫자(px)</td><td>기본 등각 단위(<code>--iso-u</code>). 기본 24</td></tr>
+      <tr><td><code>height-units</code></td><td>숫자</td><td>최댓값일 때의 블록 높이 단위. 기본 5</td></tr>
+      <tr><td><code>label</code></td><td>문자열</td><td>접근성 캡션(<code>aria-label</code> 및 숨김 표 <code>caption</code>)</td></tr>
+      <tr><td><code>renderer</code></td><td><code>css</code> | <code>svg</code> | <code>auto</code></td><td>렌더링 방식. 기본 <code>auto</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>data 항목 (Layer)</h3>
+  <div class="table"><table>
+    <thead><tr><th>키</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>k</code></td><td>문자열 · 필수</td><td>층 이름 (예: "3학년", "초급")</td></tr>
+      <tr><td><code>items</code></td><td>배열 · 필수</td><td>해당 층에 올라갈 항목 객체들의 배열</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>items 세부 항목</h3>
+  <div class="table"><table>
+    <thead><tr><th>키</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>k</code></td><td>문자열 · 필수</td><td>항목 이름 (예: 단원명)</td></tr>
+      <tr><td><code>v</code></td><td>0 이상 숫자 · 필수</td><td>항목의 측정값 (예: 성취도%)</td></tr>
+      <tr><td><code>c</code></td><td>CSS 색 · 선택</td><td>항목 블록 색상</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section aria-labelledby="events">
+  <h2 id="events">이벤트</h2>
+  <p>판 또는 항목 블록을 누르거나 키보드로 선택하면 <code>iso-select</code>가 발생합니다. 판을 클릭한 경우 <code>index: -1</code>이 전달되어 해당 층의 펼침 상태가 토글됩니다.</p>
+  <pre data-copy><code>document.querySelector("iso-layers").addEventListener("iso-select", (e) => {
+  const { layer, index, item } = e.detail;
+  if (index &lt; 0) {
+    console.log(`${layer}번 층 토글: ${item.k}`);
+  } else {
+    console.log(`${layer}번 층의 ${index}번 항목: ${item.k} (${item.v})`);
+  }
+});</code></pre>
+</section>
+
+<section aria-labelledby="states">
+  <h2 id="states">빈 상태와 오류</h2>
+  <p class="muted">데이터가 비어 있거나 올바르지 않으면 안내 메시지가 표시됩니다.</p>
+  <div class="card example">
+    <script type="text/html">
+      <iso-layers data="[]"></iso-layers>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="a11y">
+  <h2 id="a11y">접근성</h2>
+  <ul>
+    <li>장면 전체는 <code>role="group"</code>을 가지며 전달된 <code>label</code>이 적용됩니다.</li>
+    <li>각 층 판은 <code>aria-expanded="true|false"</code> 속성을 통해 펼침 상태를 보조 기술에 명확히 알립니다.</li>
+    <li>화살표 키로 층과 항목을 자연스럽게 탐색할 수 있는 키보드 접근성을 제공합니다.</li>
+    <li>층, 항목, 값을 구조화한 숨김 표(<code>.iso-sr-only</code>)가 기본 생성되어 스크린 리더에서 읽을 수 있습니다.</li>
+  </ul>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

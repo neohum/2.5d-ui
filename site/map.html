@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iso-map · 2.5d-ui</title>
+<link rel="icon" href="data:,">
+<script>try{var t=localStorage.getItem("iso-docs-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+<link rel="stylesheet" href="/packages/core/src/css/index.css">
+<link rel="stylesheet" href="/packages/core/src/css/edu.css">
+<link rel="stylesheet" href="./site.css">
+<script type="module" src="/packages/core/src/index.ts"></script>
+<script type="module" src="/packages/core/src/edu.ts"></script>
+<script type="module" src="./site.ts"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">2.5d-ui</a>
+  <nav aria-label="문서">
+    <a href="index.html">소개</a>
+    <a href="primitives.html">CSS 프리미티브</a>
+    <a href="bars.html">iso-bars</a>
+    <a href="stack.html">iso-stack</a>
+    <a href="heatmap.html">iso-heatmap</a>
+    <a href="ledger.html">iso-ledger</a>
+    <a href="kpi.html">iso-kpi</a>
+    <a href="map.html" aria-current="page">iso-map</a>
+    <a href="layers.html">iso-layers</a>
+    <a href="city.html">iso-city</a>
+    <a href="playground.html">플레이그라운드</a>
+    <a href="index.html#templates">템플릿</a>
+  </nav>
+  <button class="theme" type="button">테마: 시스템</button>
+</header>
+<main>
+<section class="head">
+  <span class="eyebrow">Web Component · Edu</span>
+  <h1>&lt;iso-map&gt;</h1>
+  <p class="lede">바닥 평면 위에 위치와 크기가 제각각인 칸을 배치합니다. 교실 좌석표나 학교 평면도처럼 실제 공간의 물리적 배치 자체가 데이터의 핵심 의미를 가질 때 사용합니다.</p>
+  <div class="note">
+    <i class="fi fi-rr-shield-check"></i>
+    <span>가상 예시 데이터이며 외부로 전송되지 않습니다. 학생은 번호로만 표시됩니다.</span>
+  </div>
+</section>
+
+<section aria-labelledby="ex">
+  <h2 id="ex">예시: 교실 좌석표</h2>
+  <p class="muted">교탁(구조물 fixture)과 좌석(값 칸)이 함께 놓이며, 결석(absent) 학생은 높이 0의 점선으로 구분됩니다.</p>
+  <div class="card example" data-log>
+    <script type="text/html">
+      <iso-map label="3학년 2반 과제 제출 현황 (가상 데이터)" data='{
+        "floor": { "w": 9, "d": 8 },
+        "items": [
+          { "k": "교탁", "x": 3, "y": 0.5, "w": 3, "d": 0.9 },
+          { "k": "1번", "x": 1, "y": 2.5, "v": 6 },
+          { "k": "2번", "x": 3, "y": 2.5, "v": 8 },
+          { "k": "3번", "x": 5, "y": 2.5, "v": 4 },
+          { "k": "4번", "x": 7, "y": 2.5, "state": "absent" },
+          { "k": "5번", "x": 1, "y": 4.5, "v": 7 },
+          { "k": "6번", "x": 3, "y": 4.5, "v": 5 },
+          { "k": "7번", "x": 5, "y": 4.5, "state": "empty" },
+          { "k": "8번", "x": 7, "y": 4.5, "v": 9 }
+        ]
+      }'></iso-map>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="features">
+  <h2 id="features">불규칙 배치와 상태 구분</h2>
+  <p class="muted">크기가 제각각인 칸들이 겹치지 않는 한, 위상 정렬(<code>order.ts</code>)을 통해 앞뒤 순서를 정확히 계산해 렌더링합니다.</p>
+  <ul>
+    <li><b>값 칸 (Value Item):</b> <code>v</code> 값이 주어지면 값에 비례하는 높이로 블록이 솟아오릅니다. 호버 또는 키보드 포커스 시 번호와 수치 라벨이 나타납니다.</li>
+    <li><b>상태 칸 (State Item):</b> <code>state</code>가 <code>"absent"</code>(결석), <code>"empty"</code>(빈자리), <code>"closed"</code>(사용 안 함)인 경우 높이가 0이 되며 윗면에 점선 윤곽선이 표시됩니다.</li>
+    <li><b>구조물 (Fixture):</b> 값(<code>v</code>)과 상태(<code>state</code>)가 모두 없는 칸은 교탁이나 복도 같은 고정 구조물로 간주되어 높이 0.5, 진한 회색 음영으로 렌더링되며 포커스나 선택이 되지 않습니다.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="attrs">
+  <h2 id="attrs">속성</h2>
+  <div class="table"><table>
+    <thead><tr><th>속성</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>data</code></td><td>JSON 객체</td><td>바닥판(<code>floor</code>)과 항목 목록(<code>items</code>). 잘못된 형식이면 <code>console.error</code> 후 오류 문구를 표시합니다</td></tr>
+      <tr><td><code>max</code></td><td>숫자</td><td>축척 최댓값. 생략 시 항목들의 최댓값</td></tr>
+      <tr><td><code>unit</code></td><td>숫자(px)</td><td>기본 등각 단위(<code>--iso-u</code>). 기본 24</td></tr>
+      <tr><td><code>height-units</code></td><td>숫자</td><td>최댓값일 때의 블록 높이 단위. 기본 5</td></tr>
+      <tr><td><code>label</code></td><td>문자열</td><td>접근성 설명(<code>aria-label</code> 및 숨김 표 <code>caption</code>)</td></tr>
+      <tr><td><code>renderer</code></td><td><code>css</code> | <code>svg</code> | <code>auto</code></td><td>렌더링 방식. 기본 <code>auto</code> (블록 200개 초과 시 SVG 자동 전환)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>data 객체</h3>
+  <div class="table"><table>
+    <thead><tr><th>키</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>floor</code></td><td>객체 · 선택</td><td>바닥 평면 크기 <code>{ "w": 폭, "d": 깊이 }</code>. 생략 시 항목 전체를 감싸는 사각형으로 자동 계산</td></tr>
+      <tr><td><code>items</code></td><td>배열 · 필수</td><td>배치할 칸들의 배열</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>items 항목</h3>
+  <div class="table"><table>
+    <thead><tr><th>키</th><th>형식</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>k</code></td><td>문자열 | 숫자 · 필수</td><td>칸 이름 또는 학생 번호</td></tr>
+      <tr><td><code>x</code>, <code>y</code></td><td>숫자 · 필수</td><td>바닥 좌표계에서의 시작 위치 (0 이상)</td></tr>
+      <tr><td><code>w</code>, <code>d</code></td><td>양의 숫자 · 선택</td><td>칸의 가로 폭과 세로 깊이. 기본 1</td></tr>
+      <tr><td><code>v</code></td><td>0 이상 숫자 · 선택</td><td>칸의 측정값. 생략되고 <code>state</code>도 없으면 고정 구조물(fixture)</td></tr>
+      <tr><td><code>c</code></td><td>CSS 색 · 선택</td><td>블록의 테마 색상</td></tr>
+      <tr><td><code>state</code></td><td><code>"absent"</code> | <code>"empty"</code> | <code>"closed"</code></td><td>특수 상태. 높이 0과 점선 테두리로 표시</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section aria-labelledby="events">
+  <h2 id="events">이벤트</h2>
+  <p>값이나 상태가 지정된 칸을 클릭하거나 키보드로 포커스 후 Enter 또는 Space를 누르면 <code>iso-select</code> 커스텀 이벤트가 버블링됩니다. 구조물은 포커스 및 이벤트가 발생하지 않습니다.</p>
+  <pre data-copy><code>document.querySelector("iso-map").addEventListener("iso-select", (e) => {
+  const { index, item } = e.detail;
+  console.log(`선택된 칸: ${item.k}, 값: ${item.v ?? item.state}`);
+});</code></pre>
+</section>
+
+<section aria-labelledby="states">
+  <h2 id="states">빈 상태와 오류</h2>
+  <p class="muted">칸들의 위치가 겹치거나(overlap) 바닥 밖으로 벗어난 경우 오류 상태가 되며 메시지가 표시됩니다.</p>
+  <div class="card example">
+    <script type="text/html">
+      <iso-map data='{ "items": [] }'></iso-map>
+    </script>
+  </div>
+</section>
+
+<section aria-labelledby="a11y">
+  <h2 id="a11y">접근성</h2>
+  <ul>
+    <li>장면은 <code>role="group"</code>을 가지며 <code>label</code>이 그룹의 이름이 됩니다.</li>
+    <li>각 값 및 상태 칸은 <code>tabindex="0"</code>과 <code>role="button"</code>을 가지며 <code>aria-label="이름: 값"</code>이 제공됩니다.</li>
+    <li>스크린 리더를 위해 칸 이름, 값, 행 순위, 열 순위를 담은 숨김 표(<code>.iso-sr-only</code>)가 자동 생성됩니다.</li>
+    <li>교탁, 복도 등 구조물은 <code>aria-hidden="true"</code>로 설정되어 보조 기술의 탐색 혼란을 방지합니다.</li>
+  </ul>
+</section>
+</main>
+<footer>2.5d-ui · MIT 라이선스 · CSS만으로 그리는 등각 데이터 컴포넌트</footer>
+</body>
+</html>

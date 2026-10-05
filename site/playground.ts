@@ -1,7 +1,7 @@
 // 플레이그라운드: textarea의 JSON과 속성 입력을 엘리먼트 하나에 그대로 옮긴다.
 // 잘못된 JSON도 data 속성에 그대로 넣어, 엘리먼트 자신의 오류 상태를 보여 준다.
 
-type Tag = "iso-bars" | "iso-stack" | "iso-heatmap" | "iso-ledger" | "iso-kpi";
+type Tag = "iso-bars" | "iso-stack" | "iso-heatmap" | "iso-ledger" | "iso-kpi" | "iso-map" | "iso-layers" | "iso-city";
 
 interface Sample {
   data: unknown;
@@ -42,6 +42,62 @@ const SAMPLES: Record<Tag, Sample> = {
   },
   // iso-kpi는 data 대신 value·suffix 속성을 받으므로, 이 JSON의 키를 속성으로 옮긴다.
   "iso-kpi": { label: "배터리 평균 잔량", max: "100", data: { value: 72, suffix: "%" } },
+  "iso-map": {
+    label: "교실 좌석 배치도 (과제 제출 횟수)",
+    data: {
+      floor: { w: 8, d: 7 },
+      items: [
+        { k: "교탁", x: 2.5, y: 0.5, w: 3, d: 0.8 },
+        { k: "1번", x: 1, y: 2, v: 6 },
+        { k: "2번", x: 3, y: 2, v: 8 },
+        { k: "3번", x: 5, y: 2, state: "absent" },
+        { k: "4번", x: 1, y: 4, v: 5 },
+        { k: "5번", x: 3, y: 4, state: "empty" },
+        { k: "6번", x: 5, y: 4, v: 7 },
+      ],
+    },
+  },
+  "iso-layers": {
+    label: "학년별 수학 단원 성취도 (%)",
+    data: [
+      {
+        k: "3학년",
+        items: [
+          { k: "덧셈과 뺄셈", v: 85 },
+          { k: "평면도형", v: 78 },
+        ],
+      },
+      {
+        k: "4학년",
+        items: [
+          { k: "큰 수", v: 90 },
+          { k: "각도", v: 82 },
+        ],
+      },
+    ],
+  },
+  "iso-city": {
+    label: "학년별 학급 독서 활동",
+    data: {
+      k: "학교",
+      children: [
+        {
+          k: "1학년",
+          children: [
+            { k: "1반", size: 25, v: 24 },
+            { k: "2반", size: 24, v: 18 },
+          ],
+        },
+        {
+          k: "2학년",
+          children: [
+            { k: "1반", size: 26, v: 22 },
+            { k: "2반", size: 25, v: 30 },
+          ],
+        },
+      ],
+    },
+  },
 };
 
 // renderer는 select(빈 값 = auto, 속성 없음). 엘리먼트 종류를 바꿔도 고른 값을 유지한다.
