@@ -1,6 +1,6 @@
 {
   "name": "2.5d-ui",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "CSS-only isometric 2.5D data components for charts, maps, layers, and city visualizations",
   "license": "MIT",
   "type": "module",
@@ -16,7 +16,9 @@
     "./edu/map": "./dist/iso-edu-map.min.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "sideEffects": true,
   "repository": {

@@ -1,6 +1,6 @@
 import { build } from "esbuild";
 import { bundle } from "lightningcss";
-import { mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -114,3 +114,7 @@ for (const f of [...r.outputFiles, ...agg.outputFiles]) {
 const js = readdirSync(out).filter((f) => f.endsWith(".js")).sort();
 const want = ["iso.min.js", "iso-edu.min.js", ...Object.values(CHUNKS), ...eduNames.map((n) => `iso-edu-${n}.min.js`)].sort();
 if (js.join() != want.join()) throw Error(`예상한 JS 산출물(${want})과 다르다: ${js}`);
+
+copyFileSync(resolve(here, "../../README.md"), resolve(here, "README.md"));
+copyFileSync(resolve(here, "../../LICENSE"), resolve(here, "LICENSE"));
+
