@@ -1,0 +1,1 @@
+import"./site-CgCxYYnE.js";const l=document.getElementById("live"),e=[[92,85,97,78],[88,91,80,95],[76,83,90,89]];let t=0;document.getElementById("shuffle").addEventListener("click",()=>{t=(t+1)%e.length,l.setAttribute("data",JSON.stringify(e[t].map((n,d)=>({k:d+1+"반",v:n}))))});

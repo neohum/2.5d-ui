@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="top1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f8bf9" />
+      <stop offset="100%" stop-color="#2c64c9" />
+    </linearGradient>
+    <linearGradient id="top2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <linearGradient id="top3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#93c5fd" />
+      <stop offset="100%" stop-color="#60a5fa" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.18" />
+    </filter>
+  </defs>
+
+  <!-- 바닥 그리드 가이드 (아이소메트릭 평면) -->
+  <path d="M32 4 L58 19 L32 34 L6 19 Z" fill="none" stroke="#2c64c9" stroke-width="1.5" stroke-dasharray="2 3" opacity="0.35" />
+
+  <g filter="url(#shadow)">
+    <!-- 뒤쪽 가장 높은 기둥 (Z = 높음) -->
+    <g id="pillar-high">
+      <!-- Left face -->
+      <polygon points="23,21 32,26 32,49 23,44" fill="#1e40af" />
+      <!-- Right face -->
+      <polygon points="32,26 41,21 41,44 32,49" fill="#1d3557" />
+      <!-- Top face -->
+      <polygon points="32,15 41,21 32,26 23,21" fill="url(#top1)" />
+    </g>
+
+    <!-- 오른쪽 중간 기둥 -->
+    <g id="pillar-mid">
+      <!-- Left face -->
+      <polygon points="37,31 46,36 46,55 37,50" fill="#2563eb" />
+      <!-- Right face -->
+      <polygon points="46,36 55,31 55,50 46,55" fill="#1e3a8a" />
+      <!-- Top face -->
+      <polygon points="46,25 55,31 46,36 37,31" fill="url(#top2)" />
+    </g>
+
+    <!-- 왼쪽 앞 낮은 기둥 -->
+    <g id="pillar-low">
+      <!-- Left face -->
+      <polygon points="9,37 18,42 18,56 9,51" fill="#3b82f6" />
+      <!-- Right face -->
+      <polygon points="18,42 27,37 27,51 18,56" fill="#1d4ed8" />
+      <!-- Top face -->
+      <polygon points="18,32 27,37 18,42 9,37" fill="url(#top3)" />
+    </g>
+  </g>
+
+  <!-- 2.5D 심볼 포인트 빛 반사 효과 -->
+  <circle cx="32" cy="15" r="1.5" fill="#ffffff" opacity="0.8" />
+  <circle cx="46" cy="25" r="1.2" fill="#ffffff" opacity="0.8" />
+  <circle cx="18" cy="32" r="1.2" fill="#ffffff" opacity="0.8" />
+</svg>
